@@ -1,9 +1,12 @@
 import * as keyboard from "./keyboard.ts";
 import display from "../display.ts";
 import Pane from "./pane.ts";
+
 import Map from "./map.ts";
 import Saloon from "./saloon.ts";
 import Hotel from "./hotel.ts";
+import Store from "./store.ts";
+import Help from "./help.ts";
 
 
 const dom = {
@@ -18,7 +21,9 @@ dom.tabs = [...dom.nav.querySelectorAll<HTMLElement>("[data-content]")];
 const panes = {
 	map: new Map(),
 	saloon: new Saloon(),
-	hotel: new Hotel()
+	hotel: new Hotel(),
+	store: new Store(),
+	help: new Help()
 }
 type PaneName = keyof typeof panes;
 let activePane: Pane | undefined;
@@ -65,8 +70,6 @@ export function activate(pane: PaneName) {
 
 let navHandler = {
 	handleKey(e: KeyboardEvent): boolean {
-		if (e.type != "keydown") { return false; }
-
 		let tab = dom.tabs.find(tab => {
 			let kbd = tab.querySelector<HTMLElement>("kbd");
 			if (!kbd) { return false; }
@@ -90,5 +93,6 @@ export async function init() {
 	keyboard.pushHandler(navHandler);
 	keyboard.on();
 
-	activate("map");
+//	activate("map");
+	activate("saloon");
 }

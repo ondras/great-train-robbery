@@ -1,10 +1,10 @@
 import { emptyTown } from "./town/town.ts";
+import * as random from "./random.ts";
 import Renderer from "./town/renderer.ts";
 import display from "./display.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
-import * as random from "./random.ts";
-import * as train from "./train.ts";
+import * as train from "./npc/train.ts";
 import * as ui from "./ui/ui.ts";
 
 
@@ -40,9 +40,9 @@ function createTown(W: number, H: number) {
 	renderer.renderBuildings();
 
 	let firstTrack = renderer.renderPath(path);
-	train.create(firstTrack);
+//	train.create(firstTrack);
 
-	npcGenerator.generatePeople();
+	npcGenerator.generatePeople(renderer);
 }
 
 async function init() {

@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&display=swap');
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-neon@5.2.5/index.min.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-argon@5.2.5/index.min.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-xenon@5.2.5/index.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap');
+
+@import url(border.css);
+
+
+@font-face {
+	font-family: "monaspace xenon 2";
+	src: url("fonts/Monaspace Xenon/Monaspace Xenon Var.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "monaspace xenon 3";
+	src: url("fonts/monaspace-xenon-latin-400-normal.woff2") format("woff2");
+	font-weight: 400;
+}
+
+@font-face {
+	font-family: "monaspace xenon 3";
+	src: url("fonts/monaspace-xenon-latin-700-normal.woff2") format("woff2");
+	font-weight: 700;
+}
+
+@font-face {
+	font-family: "input";
+	src: url("fonts/Input-Regular.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: "metrickal";
+	src: url("fonts/Metrickal-Regular.otf") format("opentype");
+}
+
+@font-face {
+	font-family: "mononoki";
+	src: url("fonts/mononoki-Regular.otf") format("opentype");
+}
+
+:root {
+	--border-width: 2px;
+	line-height: 1.2;
+
+	&[data-font=monospace] { font-family: monospace; }
+	&[data-font=cascadiacode] { font-family: cascadia code; }
+	&[data-font=cascadiamono] { font-family: cascadia mono; }
+	&[data-font=xenon3] { font-family: "monaspace xenon 3"; }
+	&[data-font=xenon2] { font-family: "monaspace xenon 2"; }
+	&[data-font=input] { font-family: "input"; }
+	&[data-font=metrickal] { font-family: "metrickal"; }
+	&[data-font=mononoki] { font-family: "mononoki"; }
+	&[data-font=inconsolata] { font-family: "inconsolata"; }
+}
+
+rl-display {
+	font-family: inherit;
+	--tile-width: 15px;
+	--tile-height: 20px;
+}
+
+button, input, select, option, kbd {
+	font: inherit;
+}
+
+button {
+	border: none;
+	padding: 1lh 2ch;
+
+	&:focus-visible {
+		outline: none;
+		font-weight: bold;
+
+	}
+}
+
+dialog {
+	border: none;
+	padding: 1lh 1ch;
+}
+
+.box {
+	position: relative;
+	&::before {
+		content: "";
+		position: absolute;
+		inset: calc(0.5lh - var(--border-width)/2) calc(0.5ch - var(--border-width)/2);
+		border: var(--border-width) solid lime;
+	}
+}
+
+body {
+	margin: 0;
+	width: 100dvw;
+	height: 100dvh;
+
+/*
+	font-size: 16px;
+	width: 600px;
+	margin: 0 auto;
+	*/
+}
+
+kbd {
+	font-weight: bold;
+	color: var(--highlight);
+	text-decoration: underline;
+}
+
+x {
+color: #e4c388;
+color: #cb9651;
+color: #a06335;
+color: #663219;
+color: #250f0b;
+}
+
+#game {
+	--fg: #cb9651;
+	--bg: #663219;
+	--highlight: #e4c388;
+	--border: var(--highlight);
+
+	background-color: var(--bg);
+	color: var(--fg);
+	display: grid;
+	grid-template-areas:
+		"heading heading"
+		"nav log"
+		"main log"
+		"status status";
+
+	grid-template-columns: auto 40ch;
+	grid-template-rows: auto auto auto auto;
+
+	width: fit-content;
+
+	#heading {
+		grid-area: heading;
+		font-weight: bold;
+		text-align: center;
+		padding: 1lh 0;
+		--border: var(--fg);
+	}
+
+	#main {
+		grid-area: main;
+	}
+
+	#map {
+		width: 100%;
+		height: 100%;
+
+		&:not([hidden]) { display: flex; }
+		align-items: center;
+		justify-content: center;
+
+		rl-display {
+			--tile-height: 1rem;
+			--tile-width: 0.75rem;
+			&[hidden] { display: none; }
+		}
+	}
+
+
+	#log {
+		grid-area: log;
+		overflow: auto;
+		background-color: gray;
+	}
+
+	#nav {
+		grid-area: nav;
+		display: flex;
+		gap: 1ch;
+		padding-left: 1ch;
+
+		span {
+			padding: 1lh 1ch;
+		}
+	}
+
+	#status {
+		grid-area: status;
+	}
+
+	table.persons {
+		td {
+			padding: 0 1ch;
+		}
+		&.active {
+			font-weight: bold;
+		}
+	}
+
+}
+

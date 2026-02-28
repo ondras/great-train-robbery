@@ -1,5 +1,5 @@
 import * as face from "https://cdn.jsdelivr.net/gh/ondras/face@main/face.ts"
-import { Train, TrainPart } from "./train.ts"
+import { Train, TrainPart } from "./npc/train.ts"
 import { Task } from "./npc/tasks.ts"
 
 
@@ -30,6 +30,7 @@ export interface Person {
 	name: string;
 	items: Entity[];
 	price: number;
+	active: boolean;
 }
 
 export interface Inventory {

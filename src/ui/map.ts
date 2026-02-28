@@ -1,4 +1,7 @@
 import Pane from "./pane.ts";
+import { scheduler } from "../world.ts";
+import * as tasks from "../npc/tasks.ts";
+import * as util from "../util.ts";
 
 
 export default class Map extends Pane {
@@ -13,6 +16,8 @@ export default class Map extends Pane {
 
 		let ac = new AbortController();
 		this.ac = ac;
+
+		run(ac.signal);
 	}
 
 	deactivate() {
@@ -23,19 +28,11 @@ export default class Map extends Pane {
 	}
 }
 
-async function run() {
-	while (true) {
+async function run(signal: AbortSignal) {
+	while (!signal.aborted) {
 		let entity = scheduler.next();
 		if (!entity) { break; }
-
-		switch (world.requireComponent(entity, "actor").type) {
-			case "npc": {
-				await npcGenerator.moveRandomly(entity);
-				break;
-			}
-			case "train": {
-				await train.move(entity);
-			}
-		}
+//		await tasks.run(entity);
+		await tasks.runTask({type:"wander"}, entity);
 	}
 }

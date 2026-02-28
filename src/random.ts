@@ -17,6 +17,14 @@ export function float() {
     return generator();
 }
 
+export function arrayIndex(arr: unknown[]) {
+    return Math.floor(float() * arr.length);
+}
+
+export function arrayItem<T>(arr: T[]): T {
+    return arr[arrayIndex(arr)];
+}
+
 Array.prototype.random = function() {
-    return this[Math.floor(float() * this.length)];
+    return arrayItem(this);
 }
