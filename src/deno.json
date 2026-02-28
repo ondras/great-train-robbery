@@ -1,0 +1,6 @@
+{
+	"compilerOptions": {
+		"noImplicitOverride": false,
+		"lib": ["esnext", "dom"]
+	}
+}
