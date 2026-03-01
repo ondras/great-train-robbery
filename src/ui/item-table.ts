@@ -14,6 +14,7 @@ export default class ItemTable<T extends {id:number}> {
 		const { options, offset } = this;
 
 		let table = document.createElement("table");
+		table.classList.add("item-table");
 
 		data.forEach((item, index) => {
 			let number = (index + 1 + offset) % 10;

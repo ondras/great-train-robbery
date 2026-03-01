@@ -1,4 +1,5 @@
 @import url(tui.css);
+@import url(layout.css);
 @import url(skin.css);
 
 
@@ -19,34 +20,14 @@ body {
 }
 
 #game {
-	display: grid;
-	grid-template-areas:
-		"heading heading"
-		"nav log"
-		"main log"
-		"status status";
-
-	grid-template-columns: auto 40ch;
-	grid-template-rows: auto auto auto auto;
-
-	width: fit-content;
-
 	#heading {
-		grid-area: heading;
 		font-weight: bold;
-		text-align: center;
-		padding: 1lh 0;
-		--border: var(--fg);
-	}
-
-	#main {
-		grid-area: main;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	#map {
-		width: 100%;
-		height: 100%;
-
 		&:not([hidden]) { display: flex; }
 		align-items: center;
 		justify-content: center;
@@ -54,28 +35,11 @@ body {
 
 
 	#log {
-		grid-area: log;
-		overflow: auto;
 		background-color: gray;
 	}
 
-	#nav {
-		grid-area: nav;
-		display: flex;
-		gap: 1ch;
-		padding-left: 1ch;
-
-		span {
-			xpadding: 0 1ch;
-
-			&:not(.border-visible) {
-				--border-color: transparent;
-			}
-		}
-	}
-
-	#status {
-		grid-area: status;
+	#saloon {
+		padding: 0 1ch;
 	}
 }
 

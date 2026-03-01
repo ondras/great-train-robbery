@@ -6,7 +6,7 @@
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body>
-		<select id="font" style="position:absolute;z-index:1">
+		<select id="font" style="position:fixed;top:0;right:0;">
 			<option value="inconsolata">inconsolata</option>
 			<option value="monospace">monospace (has box drawing)</option>
 			<option value="mononoki">mononoki (has box drawing)</option>
@@ -28,16 +28,16 @@
 		<main id="intro">intro</main>
 -->
 		<main id="game">
-			<section id="heading" class="border-bottom">The Great Train Robbery</section>
-
 			<section id="nav">
-				<span class="border outside single" data-content="map">Town <kbd>m</kbd>ap</span>
-				<span class="border outside single" data-content="saloon"><kbd>S</kbd>aloon</span>
-				<span class="border outside single" data-content="store"><kbd>G</kbd>eneral store</span>
-				<span class="border outside single" data-content="hotel"><kbd>H</kbd>otel</span>
-				<span class="border outside single" data-content="action">Start the <kbd>a</kbd>ction</span>
-				<span class="border outside single" data-content="help">Help<kbd>?</kbd></span>
+				<span data-content="map">Town <kbd>m</kbd>ap</span>
+				<span data-content="saloon"><kbd>S</kbd>aloon</span>
+				<span data-content="store"><kbd>G</kbd>eneral store</span>
+				<span data-content="hotel"><kbd>H</kbd>otel</span>
+				<span data-content="action">Start the <kbd>a</kbd>ction</span>
+				<span data-content="help">Help<kbd>?</kbd></span>
 			</section>
+
+			<section id="heading">The Great Train Robbery</section>
 
 			<section id="main">
 				<section id="map"></section>

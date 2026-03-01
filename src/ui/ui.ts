@@ -57,7 +57,7 @@ function syncDisplaySize() {
 }
 
 function showNav(id: PaneName) {
-	dom.tabs.forEach(tab => tab.classList.toggle("border-visible", tab.dataset.content == id));
+	dom.tabs.forEach(tab => tab.classList.toggle("active", tab.dataset.content == id));
 }
 
 export function activate(pane: PaneName | "map-action") {

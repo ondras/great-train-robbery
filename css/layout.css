@@ -1,0 +1,26 @@
+#game {
+	display: grid;
+	grid-template-areas:
+		"nav heading"
+		"main log"
+		"status status";
+
+	grid-template-columns: auto 40ch;
+	grid-template-rows: auto auto auto;
+
+	width: fit-content;
+
+	#nav { grid-area: nav; }
+	#main { grid-area: main; }
+	#status { grid-area: status; }
+
+	#map {
+		width: 100%;
+		height: 100%;
+	}
+
+	#log {
+		grid-area: log;
+		overflow: auto;
+	}
+}

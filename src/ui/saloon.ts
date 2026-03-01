@@ -119,9 +119,9 @@ function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: bo
 	price.classList.add("price");
 	price.textContent = `price: ${person.price}$`;
 
-	if (isActive) {
-		let action = row.insertCell();
+	let action = row.insertCell();
 
+	if (isActive) {
 		if (person.active) {
 			action.innerHTML = "<kbd>F</kbd>ire";
 		} else {
