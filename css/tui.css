@@ -70,6 +70,10 @@ dialog {
 		display: flex;
 		justify-content: space-between;
 		padding: 0 2ch;
+
+		&:has(span:only-child) {
+			justify-content: center;
+		}
 	}
 }
 
@@ -111,7 +115,7 @@ kbd {
 	}
 }
 
-table.persons {
+table {
 	border-collapse: collapse;
 
 	td {

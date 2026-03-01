@@ -1,6 +1,7 @@
 import Pane from "./pane.ts";
 import { confirm } from "./dialog.ts";
 import * as ui from "./ui.ts";
+import * as util from "../util.ts";
 
 
 export default class Action extends Pane {
@@ -33,7 +34,7 @@ export default class Action extends Pane {
 	}
 
 	protected async tryStart() {
-		let content = this.template(".confirm");
+		let content = util.template(".confirm-action");
 		let ok = await confirm(content);
 		if (!ok) { return; }
 

@@ -41,20 +41,13 @@
 
 			<section id="main">
 				<section id="map"></section>
-				<section id="saloon">
-					These are all the people in our town. Manage your party here.
-					<template class="confirm-hire">Really hire <span class="name"></span>? It will cost you <span class="gold"></span>.</template>
-					<template class="confirm-fire">Really fire <span class="name"></span>? You will get your <span class="gold"></span> back.</template>
-				</section>
+				<section id="saloon"></section>
 				<section id="store">
 					Your party needs supplies! Buy anything to help you here.
 				</section>
-				<section id="hotel">
-					This is where we plan the heist.
-				</section>
+				<section id="hotel"></section>
 				<section id="action">
 					<kbd>G</kbd>o for it!
-					<template class="confirm">Start the action? Once we start, there is no going back.</template>
 				</section>
 				<section id="help">???</section>
 			</section>
@@ -64,6 +57,11 @@
 			<section id="status">
 				status
 			</section>
+
+			<template class="confirm-hire">Really hire <span class="name"></span>? It will cost you <span class="gold"></span>.</template>
+			<template class="confirm-fire">Really fire <span class="name"></span>? You will get your <span class="gold"></span> back.</template>
+			<template class="confirm-action">Start the action? Once we start, there is no going back.</template>
+
 		</main>
 
 		<script src="index.js"></script>

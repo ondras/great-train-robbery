@@ -11,7 +11,8 @@ function createPerson(x: number, y: number) {
 		name: name(),
 		items: [],
 		price: 100,
-		active: false,
+		active: random.float() > 0.5,
+		location: undefined,
 		hp: 10
 	}
 

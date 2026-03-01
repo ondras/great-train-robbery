@@ -112,7 +112,7 @@ function renderBuilding(building: Building, options: RendererOptions) {
 
 	let b = {
 		...bbox,
-		type: "test"
+		type: building.name
 	}
 	world.createEntity({building: b});
 

@@ -31,6 +31,7 @@ export interface Person {
 	items: Entity[];
 	price: number;
 	active: boolean;
+	location?: Entity; // FIXME
 	hp: number;
 }
 
