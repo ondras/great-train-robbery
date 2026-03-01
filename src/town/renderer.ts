@@ -1,6 +1,6 @@
 import { Town, Crossing, Plot, Building, Path } from "./town.ts";
 import display from "../display.ts";
-import { spatialIndex, world } from "../world.ts";
+import { spatialIndex, world, Track } from "../world.ts";
 import * as util from "../util.ts";
 
 
@@ -14,12 +14,6 @@ interface Cell {
 	ch: string;
 	fg?: string;
 	bg?: string;
-}
-
-export interface PathPart {
-	x: number;
-	y: number;
-	nextDirection: number | undefined;
 }
 
 export default class CharRenderer {
@@ -51,21 +45,24 @@ export default class CharRenderer {
 		town.buildings.forEach(building => renderBuilding(building, options));
 	}
 
-	renderPath(path: Path): PathPart[] {
+	renderPath(path: Path) {
 		const { options } = this;
 
-		let pathParts: PathPart[] = [];
+		let positions: Track["positions"] = [];
+
 		path.forEach((crossing, i) => {
 			let segment = renderPathSegment(crossing, i, path, options);
-			pathParts = pathParts.concat(segment);
+			positions = positions.concat(segment);
 		});
-		return pathParts;
+
+		let track = { positions };
+		world.createEntity({track});
 	}
 }
 
 function renderPathSegment(crossing: Crossing, i: number, path: Path, options: RendererOptions) {
-	let pathParts: PathPart[] = [];
-	if (i == 0) { return pathParts; }
+	let positions: Track["positions"] = [];
+	if (i == 0) { return positions; }
 
 	let current = crossingToXY(crossing, options);
 	let prev = crossingToXY(path[i-1], options);
@@ -81,18 +78,17 @@ function renderPathSegment(crossing: Crossing, i: number, path: Path, options: R
 		let x = prev[0] + dx*j;
 		let y = prev[1] + dy*j;
 
-		let pathPart = { x, y, nextDirection: direction };
-		pathParts.push(pathPart);
+		let position = { x, y, nextDirection: direction };
+		positions.push(position);
 
-		let e = [...spatialIndex.list(x, y)][0];
 		display.draw(x, y, {
 			ch: "#",
 			fg: "#777",
 			bg: "#630"
-		}, {id: e});
+		}, {part:"track"});
 	}
 
-	return pathParts;
+	return positions;
 }
 
 function renderBuilding(building: Building, options: RendererOptions) {

@@ -1,0 +1,1 @@
+export const MOVE_DELAY = 0.1;

@@ -4,7 +4,6 @@ import Renderer from "./town/renderer.ts";
 import display from "./display.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
-import * as train from "./npc/train.ts";
 import * as ui from "./ui/ui.ts";
 
 
@@ -38,9 +37,7 @@ function createTown(W: number, H: number) {
 
 	renderer.renderGround();
 	renderer.renderBuildings();
-
-	let firstTrack = renderer.renderPath(path);
-//	train.create(firstTrack);
+	renderer.renderPath(path);
 
 	npcGenerator.generatePeople(renderer);
 }

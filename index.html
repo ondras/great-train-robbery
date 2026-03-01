@@ -6,7 +6,7 @@
 		<link rel="stylesheet" href="index.css" />
 	</head>
 	<body>
-		<select id="font" style="position: absolute">
+		<select id="font" style="position:absolute;z-index:1">
 			<option value="inconsolata">inconsolata</option>
 			<option value="monospace">monospace (has box drawing)</option>
 			<option value="mononoki">mononoki (has box drawing)</option>
@@ -35,15 +35,28 @@
 				<span data-content="saloon"><kbd>S</kbd>aloon</span>
 				<span data-content="store"><kbd>G</kbd>eneral store</span>
 				<span data-content="hotel"><kbd>H</kbd>otel</span>
-				<span data-content="help"><kbd>?</kbd> Help</span>
+				<span data-content="action">Start the <kbd>a</kbd>ction</span>
+				<span data-content="help">Help<kbd>?</kbd></span>
 			</section>
 
 			<section id="main">
 				<section id="map"></section>
-				<section id="saloon"></section>
-				<section id="store">store</section>
-				<section id="hotel">hotel</section>
-				<section id="help">help</section>
+				<section id="saloon">
+					These are all the people in our town. Manage your party here.
+					<template class="confirm-hire">Really hire <span class="name"></span>? It will cost you <span class="gold"></span>.</template>
+					<template class="confirm-fire">Really fire <span class="name"></span>? You will get your <span class="gold"></span> back.</template>
+				</section>
+				<section id="store">
+					Your party needs supplies! Buy anything to help you here.
+				</section>
+				<section id="hotel">
+					This is where we plan the heist.
+				</section>
+				<section id="action">
+					<kbd>G</kbd>o for it!
+					<template class="confirm">Start the action? Once we start, there is no going back.</template>
+				</section>
+				<section id="help">???</section>
 			</section>
 
 			<section id="log">log</section>

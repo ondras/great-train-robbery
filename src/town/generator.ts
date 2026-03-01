@@ -4,7 +4,7 @@ import * as random from "../random.ts"
 
 
 const NAMES = [
-	"bank", "sheriff", "saloon", "church", "station",
+	"bank", "sheriff", "saloon", "church", "station", "hotel", "brothel",
 	"jail", "eatery", "general\nstore", "barber", "doctor's",
 	"undertaker", "post\noffice", "town\hall", "water tower",
 	"cattle\npen", "stable"

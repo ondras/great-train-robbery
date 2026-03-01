@@ -1,5 +1,6 @@
 import Pane from "./pane.ts";
 import { world, Entity } from "../world.ts";
+import { confirm } from "./dialog.ts";
 
 
 export default class Saloon extends Pane {
@@ -16,6 +17,15 @@ export default class Saloon extends Pane {
 	}
 
 	handleKey(e: KeyboardEvent): boolean {
+		const { activePerson } = this;
+
+		if (activePerson) {
+			switch (e.key.toLowerCase()) {
+				case "f": this.tryFire(activePerson); return true;
+				case "h": this.tryHire(activePerson); return true;
+			}
+		}
+
 		let entity = this.keyToEntity(e);
 		if (!entity) { return false; }
 
@@ -23,6 +33,28 @@ export default class Saloon extends Pane {
 		this.renderPersons();
 
 		return true;
+	}
+
+	protected async tryHire(entity: Entity) {
+		const { person } = world.requireComponents(entity, "person", "visual");
+
+		let content = this.template(".confirm-hire", {name: person.name, gold: person.price});
+		let ok = await confirm(content);
+		if (!ok) { return; }
+
+		person.active = true;
+		this.renderPersons();
+	}
+
+	protected async tryFire(entity: Entity) {
+		const { person } = world.requireComponents(entity, "person", "visual");
+
+		let content = this.template(".confirm-fire", {name: person.name, gold: person.price});
+		let ok = await confirm(content);
+		if (!ok) { return; }
+
+		person.active = false;
+		this.renderPersons();
 	}
 
 	protected renderPersons() {
@@ -50,4 +82,8 @@ export default class Saloon extends Pane {
 
 		super.renderPersons(entities, personBuilder);
 	}
+}
+
+function money(amount: number): string {
+	return `<span class="gold">${amount}$</span>`;
 }

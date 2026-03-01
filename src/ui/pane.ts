@@ -1,4 +1,5 @@
 import * as keyboard from "./keyboard.ts";
+import { confirm } from "./dialog.ts";
 import { Entity, world } from "../world.ts";
 
 
@@ -51,7 +52,7 @@ export default class Pane extends keyboard.KeyboardHandler {
 		numberToPerson.clear();
 		personTable.replaceChildren();
 
-		let rows = entities.map((entity, index) => {
+		entities.forEach((entity, index) => {
 			let number = (index + 1) % 10;
 			numberToPerson.set(number, entity);
 
@@ -81,5 +82,16 @@ export default class Pane extends keyboard.KeyboardHandler {
 		let name = row.insertCell();
 		name.classList.add("name");
 		name.textContent = person.name;
+	}
+
+	protected template(selector: string, values: Record<string, string> = {}) {
+		let d = this.node.querySelector<HTMLTemplateElement>(selector)!;
+
+		let frag = d.content.cloneNode(true) as DocumentFragment;
+		Object.entries(values).forEach(([key, value]) => {
+			frag.querySelector(`.${key}`)!.textContent = value;
+		});
+
+		return frag;
 	}
 }

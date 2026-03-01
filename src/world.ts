@@ -1,5 +1,5 @@
 import * as face from "https://cdn.jsdelivr.net/gh/ondras/face@main/face.ts"
-import { Train, TrainPart } from "./npc/train.ts"
+import { Wagon } from "./npc/train.ts"
 import { Task } from "./npc/tasks.ts"
 
 
@@ -31,10 +31,37 @@ export interface Person {
 	items: Entity[];
 	price: number;
 	active: boolean;
+	hp: number;
 }
 
 export interface Inventory {
 	items: Entity[];
+}
+
+export interface Building {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	type: string; // FIXME
+}
+
+export interface Track {
+	positions: {
+		x: number;
+		y: number;
+		nextDirection?: number;
+	}[];
+}
+
+export interface Train {
+	wagons: Wagon[];
+	track: Entity;
+}
+
+export interface TrainPart {
+	wagon: Wagon;
+	pathIndex: number;
 }
 
 interface Components {
@@ -44,6 +71,8 @@ interface Components {
 	train: Train;
 	trainPart: TrainPart;
 	person: Person;
+	building: Building;
+	track: Track;
 }
 
 export const world = new face.World<Components>();

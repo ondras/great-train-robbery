@@ -12,7 +12,8 @@ function createPerson(x: number, y: number) {
 		name: name(),
 		items: [],
 		price: 100,
-		active: false
+		active: false,
+		hp: 10
 	}
 
 	let components = {
@@ -42,7 +43,8 @@ export function generatePeople(renderer: Renderer) {
 
 function color() {
 	let h = random.float() * 360;
-	return `hsl(${h} 100% 50%)`;
+	let l = random.float() * 0.5 + 0.25;
+	return `hsl(${h} 100% ${l * 100}%)`;
 }
 
 function name() {
@@ -50,7 +52,6 @@ function name() {
 }
 
 function computeFreePositions(renderer: Renderer): number[][] {
-	console.time("free positions");
 	let positions: number[][] = [];
 
 	for (let x=0;x<renderer.width;x++) {
@@ -60,6 +61,5 @@ function computeFreePositions(renderer: Renderer): number[][] {
 		}
 	}
 
-	console.timeEnd("free positions");
 	return positions;
 }

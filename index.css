@@ -40,7 +40,11 @@
 }
 
 :root {
-	--border-width: 2px;
+	--fg: #cb9651;
+	--bg: #663219;
+	--highlight: #e4c388;
+	--border: var(--highlight);
+
 	line-height: 1.2;
 
 	&[data-font=monospace] { font-family: monospace; }
@@ -58,6 +62,8 @@ rl-display {
 	font-family: inherit;
 	--tile-width: 15px;
 	--tile-height: 20px;
+
+	&::part(track) { font-weight: bold; }
 }
 
 button, input, select, option, kbd {
@@ -77,16 +83,18 @@ button {
 
 dialog {
 	border: none;
-	padding: 1lh 1ch;
-}
+	outline: none;
+	padding: 2lh 2ch;
+	color: inherit;
+	background-color: inherit;
 
-.box {
-	position: relative;
-	&::before {
-		content: "";
-		position: absolute;
-		inset: calc(0.5lh - var(--border-width)/2) calc(0.5ch - var(--border-width)/2);
-		border: var(--border-width) solid lime;
+	&::backdrop { background-color: rgba(0 0 0 / 0.5); }
+
+	footer {
+		margin-top: 1lh;
+		display: flex;
+		justify-content: space-between;
+		padding: 0 2ch;
 	}
 }
 
@@ -117,11 +125,6 @@ color: #250f0b;
 }
 
 #game {
-	--fg: #cb9651;
-	--bg: #663219;
-	--highlight: #e4c388;
-	--border: var(--highlight);
-
 	background-color: var(--bg);
 	color: var(--fg);
 	display: grid;

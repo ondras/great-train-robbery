@@ -2,6 +2,7 @@ import { spatialIndex, world, Entity } from "../world.ts";
 import display from "../display.ts";
 import * as util from "../util.ts";
 import * as train from "./train.ts";
+import * as conf from "../conf.ts";
 
 
 interface TrainTask {
@@ -41,13 +42,13 @@ async function wander(entity: Entity) {
 	pos.x += dir[0];
 	pos.y += dir[1];
 	spatialIndex.update(entity);
-	await display.move(entity, pos.x, pos.y, 50);
+	await display.move(entity, pos.x, pos.y, conf.MOVE_DELAY);
 }
 
 export function runTask(task: Task, entity: Entity) {
 	switch (task.type) {
 		case "wander": return wander(entity);
-		case "train": return moveTrain(entity);
+		case "train": return train.move(entity);
 	}
 }
 
@@ -67,42 +68,6 @@ export function run(entity: Entity) {
 	return runTask(task, entity);
 }
 
-export async function moveTrain(entity: Entity) {
-	let { path, wagons } = world.requireComponent(entity, "train");
-
-	let promises: Promise<unknown>[] = [];
-
-	wagons.forEach(wagon => {
-		wagon.parts.forEach((entity, j) => {
-			let { position, trainPart } = world.requireComponents(entity, "position", "trainPart");
-
-			trainPart.pathIndex++;
-			if (trainPart.pathIndex >= path.length) {
-				display.delete(entity);
-				world.removeEntity(entity);
-				// FIXME remove from wagon/train
-				return;
-			}
-
-			let {x, y, nextDirection} = path[trainPart.pathIndex];
-
-			let visual = train.createWagonPartVisual(j, nextDirection!); // FIXME undefined
-			display.draw(x, y, visual, {id: entity, zIndex:1});
-
-			position.x = x;
-			position.y = y;
-
-			spatialIndex.update(entity);
-//			let promise = display.move(entity, position.x, position.y);
-
-//			promises.push(promise);
-		});
-	});
-
-	return util.sleep(300);
-
-//	return Promise.all(promises);
-}
 
 function isConditionFulfilled(condition: Condition, entity: Entity): boolean {
 	return false;

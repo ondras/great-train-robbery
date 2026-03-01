@@ -1,7 +1,8 @@
 import Pane from "./pane.ts";
-import { scheduler } from "../world.ts";
+import { Entity, scheduler, world } from "../world.ts";
 import * as tasks from "../npc/tasks.ts";
-import * as util from "../util.ts";
+import * as train from "../npc/train.ts";
+import { gameOver } from "./dialog.ts";
 
 
 export default class Map extends Pane {
@@ -11,13 +12,16 @@ export default class Map extends Pane {
 		super("map");
 	}
 
-	activate() {
+	activate(action = false) {
 		super.activate();
 
-		let ac = new AbortController();
-		this.ac = ac;
-
-		run(ac.signal);
+		if (action) {
+			runAction();
+		} else {
+			let ac = new AbortController();
+			this.ac = ac;
+			runDemo(ac.signal);
+		}
 	}
 
 	deactivate() {
@@ -28,11 +32,42 @@ export default class Map extends Pane {
 	}
 }
 
-async function run(signal: AbortSignal) {
+async function runAction() {
+	train.create();
+
+	while (true) {
+		let finished = isGameFinished();
+		if (finished) {
+			gameOver(finished);
+			return;
+		}
+
+		let entity = scheduler.next();
+		if (!entity) { break; }
+		await tasks.run(entity);
+	}
+}
+
+async function runDemo(signal: AbortSignal) {
 	while (!signal.aborted) {
 		let entity = scheduler.next();
 		if (!entity) { break; }
-//		await tasks.run(entity);
 		await tasks.runTask({type:"wander"}, entity);
 	}
+}
+
+let personQuery = world.query("person");
+
+function arePersonsDead(entities: Set<Entity>) {
+	for (let entity of entities) {
+		if (world.requireComponent(entity, "person").hp > 0) { return false; }
+	}
+	return false;
+}
+
+function isGameFinished() {
+	if (arePersonsDead(personQuery.entities)) { return "dead"; }
+	if (!train.isInTown()) { return "gone"; }
+
+	return false;
 }

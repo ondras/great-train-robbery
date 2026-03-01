@@ -6,6 +6,7 @@ import Map from "./map.ts";
 import Saloon from "./saloon.ts";
 import Hotel from "./hotel.ts";
 import Store from "./store.ts";
+import Action from "./action.ts";
 import Help from "./help.ts";
 
 
@@ -23,6 +24,7 @@ const panes = {
 	saloon: new Saloon(),
 	hotel: new Hotel(),
 	store: new Store(),
+	action: new Action(),
 	help: new Help()
 }
 type PaneName = keyof typeof panes;
@@ -52,20 +54,24 @@ function syncDisplaySize() {
 	let tileHeight = cs.getPropertyValue("--tile-height");
 	dom.main.style.width = `calc(${display.cols + 2} * ${tileWidth})`;
 	dom.main.style.height = `calc(${display.rows + 2} * ${tileHeight})`;
-
 }
 
 function showNav(id: PaneName) {
 	dom.tabs.forEach(tab => tab.classList.toggle("border", tab.dataset.content == id));
 }
 
-export function activate(pane: PaneName) {
+export function activate(pane: PaneName | "map-action") {
 	if (activePane) { activePane.deactivate(); }
 
-	activePane = panes[pane];
-	activePane.activate();
-
-	showNav(pane);
+	if (pane == "map-action") {
+		keyboard.popHandler(); // FIXME disable tabs visually?
+		showNav("map");
+		panes.map.activate(true);
+	} else {
+		showNav(pane);
+		activePane = panes[pane];
+		activePane.activate();
+	}
 }
 
 let navHandler = {
@@ -79,7 +85,7 @@ let navHandler = {
 
 		activate(tab.dataset.content as PaneName);
 		return true;
-}
+	}
 }
 
 export async function init() {
@@ -94,5 +100,5 @@ export async function init() {
 	keyboard.on();
 
 //	activate("map");
-	activate("saloon");
+	activate("action");
 }
