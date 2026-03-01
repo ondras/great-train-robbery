@@ -24,11 +24,13 @@ type Condition = string;
 
 
 async function wander(entity: Entity) {
+	let { town } = world.findEntities("town").values().next().value!;
+
 	let pos = world.requireComponent(entity, "position");
 	let availableDirs = util.DIRS_8.filter(dir => {
 		let x = pos.x + dir[0];
 		let y = pos.y + dir[1];
-		if (x < 0 || y < 0) { return false; }
+		if (x < 0 || y < 0 || x >= town.width || y >= town.height) { return false; }
 
 		let targetEntities = spatialIndex.list(x, y);
 		return [...targetEntities].every(e => {

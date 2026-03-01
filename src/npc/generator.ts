@@ -1,7 +1,6 @@
-import { spatialIndex, world } from "../world.ts";
+import { spatialIndex, world, Building } from "../world.ts";
 import display from "../display.ts";
 import * as random from "../random.ts";
-import Renderer from "../town/renderer.ts";
 
 
 function createPerson(x: number, y: number) {
@@ -31,8 +30,8 @@ function createPerson(x: number, y: number) {
 
 const COUNT = 10;
 
-export function generatePeople(renderer: Renderer) {
-	let freePositions = computeFreePositions(renderer);
+export function generatePeople() {
+	let freePositions = computeFreePositions();
 
 	for (let i=0;i<COUNT;i++) {
 		let index = random.arrayIndex(freePositions);
@@ -51,11 +50,22 @@ function name() {
 	return ["John", "Jane", "Jack", "Jill", "James", "Jenny", "Joe", "Jessica"].random();
 }
 
-function computeFreePositions(renderer: Renderer): number[][] {
+function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean {
+	return buildings.some(b => {
+		return (x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height);
+	});
+}
+
+function computeFreePositions(): number[][] {
+	const { town } = world.findEntities("town").values().next().value!;
+
+	// FIXME building asi nemusi byt komponenta, staci pridat k town?
+	let buildings = [...world.findEntities("building").values()].map(e => e.building);
 	let positions: number[][] = [];
 
-	for (let x=0;x<renderer.width;x++) {
-		for (let y=0;y<renderer.height;y++) {
+	for (let x=0;x<town.width;x++) {
+		for (let y=0;y<town.height;y++) {
+			if (isInsideBuilding(x, y, buildings)) { continue; }
 			let items = spatialIndex.list(x, y);
 			if (items.size == 0) { positions.push([x, y]); }
 		}

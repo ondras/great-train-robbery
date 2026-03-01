@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="stylesheet" href="index.css" />
+		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body>
 		<select id="font" style="position:absolute;z-index:1">
@@ -31,12 +31,12 @@
 			<section id="heading" class="border-bottom">The Great Train Robbery</section>
 
 			<section id="nav">
-				<span data-content="map" class="border">Town <kbd>m</kbd>ap</span>
-				<span data-content="saloon"><kbd>S</kbd>aloon</span>
-				<span data-content="store"><kbd>G</kbd>eneral store</span>
-				<span data-content="hotel"><kbd>H</kbd>otel</span>
-				<span data-content="action">Start the <kbd>a</kbd>ction</span>
-				<span data-content="help">Help<kbd>?</kbd></span>
+				<span class="border outside single" data-content="map">Town <kbd>m</kbd>ap</span>
+				<span class="border outside single" data-content="saloon"><kbd>S</kbd>aloon</span>
+				<span class="border outside single" data-content="store"><kbd>G</kbd>eneral store</span>
+				<span class="border outside single" data-content="hotel"><kbd>H</kbd>otel</span>
+				<span class="border outside single" data-content="action">Start the <kbd>a</kbd>ction</span>
+				<span class="border outside single" data-content="help">Help<kbd>?</kbd></span>
 			</section>
 
 			<section id="main">
@@ -66,20 +66,6 @@
 			</section>
 		</main>
 
-		<dialog id="d1" class="box">
-			Dialog 1 some text <br>
-			multi lines with intro <br>
-			lot of speaking
-			<button class="box">
-				OK
-			</button>
-		</dialog>
-
-		<button>
-			Press X</span>
-		</button>
-
 		<script src="index.js"></script>
-
 	</body>
 </html>

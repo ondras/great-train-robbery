@@ -64,6 +64,11 @@ export interface TrainPart {
 	pathIndex: number;
 }
 
+export interface Town {
+	width: number;
+	height: number;
+}
+
 interface Components {
 	position: Position;
 	visual: Visual;
@@ -73,6 +78,7 @@ interface Components {
 	person: Person;
 	building: Building;
 	track: Track;
+	town: Town;
 }
 
 export const world = new face.World<Components>();

@@ -45,7 +45,7 @@ export async function alert(content: Node | string): Promise<boolean> {
 
 export async function confirm(content: Node | string): Promise<boolean> {
 	let dialog = document.createElement("dialog");
-	dialog.classList.add("border-double");
+	dialog.classList.add("border", "double", "inside");
 
 	let footer = document.createElement("footer")
 

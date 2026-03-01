@@ -1,0 +1,23 @@
+x {
+color: #e4c388;
+color: #cb9651;
+color: #a06335;
+color: #663219;
+color: #250f0b;
+}
+
+:root {
+	--fg: #cb9651;
+	--bg: #663219;
+	--highlight: #e4c388;
+	--border-color: var(--highlight);
+}
+
+#game {
+	background-color: var(--bg);
+	color: var(--fg);
+}
+
+kbd {
+	color: var(--highlight);
+}

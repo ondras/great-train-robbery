@@ -23,18 +23,33 @@ export default class CharRenderer {
 	constructor(protected town: Town, protected options: RendererOptions) {
 		let g = gutter(options);
 		let fp = getFurthestPlot(town)!;
-		this.width = 2*g + (fp.x+1) * options.plotWidth + (fp.x) * options.roadWidth;
-		this.height = 2*g + (fp.y+1) * options.plotHeight + (fp.y) * options.roadWidth;
-		console.log("size", this.width, this.height);
+
+		let width = 2*g + (fp.x+1) * options.plotWidth + (fp.x) * options.roadWidth;
+		let height = 2*g + (fp.y+1) * options.plotHeight + (fp.y) * options.roadWidth;
+
+		let t = { width, height };
+		world.createEntity({town: t});
+
+		this.width = width;
+		this.height = height;
 	}
 
 	renderGround() {
-		const { width, height } = this;
+		const { width, height, options, } = this;
+		let offset = gutter(options) - Math.ceil(options.roadWidth / 2);
+
+		const roadSpacingHorizontal = options.plotWidth + options.roadWidth;
+		const roadSpacingVertical = options.plotHeight + options.roadWidth;
+
 		for (let i=0;i<width;i++) {
 			for (let j=0;j<height;j++) {
+				let isRoadX = ((i - offset) % roadSpacingHorizontal == 0);
+				let isRoadY = ((j - offset) % roadSpacingVertical == 0);
+				let isRoad = isRoadX || isRoadY;
+
 				display.draw(i, j, {
 					ch: ".",
-					fg: "#ed5"
+					fg: isRoad ? "#841" : "#ed5"
 				});
 			}
 		}
@@ -94,6 +109,12 @@ function renderPathSegment(crossing: Crossing, i: number, path: Path, options: R
 function renderBuilding(building: Building, options: RendererOptions) {
 	let bbox = computeBuildingBbox(building, options);
 	let { corners, edges } = BUILDING_DESIGNS.random();
+
+	let b = {
+		...bbox,
+		type: "test"
+	}
+	world.createEntity({building: b});
 
 	for (let i = 0; i < bbox.width; i++) {
 		for (let j = 0; j < bbox.height; j++) {
@@ -165,27 +186,12 @@ function computeBuildingBbox(building: Building, options: RendererOptions) {
 }
 
 function crossingToXY(crossing: Crossing, options: RendererOptions): [number, number] {
+	let offset = gutter(options) - Math.ceil(options.roadWidth / 2);
+
 	return [
-		crossing.x * (options.plotWidth + options.roadWidth),
-		crossing.y * (options.plotHeight + options.roadWidth)
+		offset + crossing.x * (options.plotWidth + options.roadWidth),
+		offset + crossing.y * (options.plotHeight + options.roadWidth)
 	];
-}
-
-function renderToConsole(rows: Cell[][]) {
-	function renderRow(row: Cell[]) {
-		let chars: string[] = [];
-		let styles: string[] = [];
-		row.forEach(cell => {
-			chars.push(`%c${cell.ch}`);
-			let style = "";
-			if (cell.fg) { style += `color: ${cell.fg};`; }
-			if (cell.bg) { style += `background-color: ${cell.bg};`; }
-			styles.push(style);
-		});
-		console.log(chars.join(""), ...styles);
-
-	}
-	rows.forEach(renderRow);
 }
 
 function gutter(options: RendererOptions): number {
