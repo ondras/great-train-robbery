@@ -7,12 +7,11 @@ interface KeyHandler {
 	code?: string;
 }
 
-export default class Pane extends keyboard.KeyboardHandler {
+export default class Pane {
 	protected node: HTMLElement;
 	protected activeKeyHandlers: KeyHandler[] = [];
 
 	constructor(id: string) {
-		super();
 		this.node = document.querySelector<HTMLElement>(`#${id}`)!;
 		this.node.hidden = true;
 	}

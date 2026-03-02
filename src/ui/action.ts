@@ -1,6 +1,6 @@
 import Pane from "./pane.ts";
 import { confirm } from "./dialog.ts";
-import * as ui from "./ui.ts";
+import * as game from "./game.ts";
 import * as util from "../util.ts";
 
 
@@ -38,6 +38,6 @@ export default class Action extends Pane {
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
-		ui.activate("map-action");
+		game.activate("map-action");
 	}
 }

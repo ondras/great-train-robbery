@@ -20,17 +20,15 @@ async function show<T>(dialog: HTMLDialogElement, handleKey: (e: KeyboardEvent) 
 		resolve(result);
 	}
 
-	let keyboardHandler = {
-		handleKey(e: KeyboardEvent) {
-			let result = handleKey(e);
-			if (result != undefined) { close(result); }
-			return true;
-		}
+	function handle(e: KeyboardEvent) {
+		let result = handleKey(e);
+		if (result != undefined) { close(result); }
+		return true;
 	}
 
 	document.querySelector("#game")!.append(dialog); // fixme
 	dialog.showModal();
-	keyboard.pushHandler(keyboardHandler);
+	keyboard.pushHandler(handle);
 
 	return promise;
 }

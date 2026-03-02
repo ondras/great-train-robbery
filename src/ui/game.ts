@@ -11,13 +11,13 @@ import Help from "./help.ts";
 
 
 const dom = {
+	game: document.querySelector<HTMLElement>("#game")!,
 	nav: document.querySelector("#nav")!,
 	main: document.querySelector<HTMLElement>("#main")!,
 	map: document.querySelector("#map")!,
 	tabs: [] as HTMLElement[],
 }
 dom.tabs = [...dom.nav.querySelectorAll<HTMLElement>("[data-content]")];
-
 
 const panes = {
 	map: new Map(),
@@ -74,29 +74,28 @@ export function activate(pane: PaneName | "map-action") {
 	}
 }
 
-let navHandler = {
-	handleKey(e: KeyboardEvent): boolean {
-		let tab = dom.tabs.find(tab => {
-			let kbd = tab.querySelector<HTMLElement>("kbd");
-			if (!kbd) { return false; }
-			return (kbd.textContent.toLowerCase() == e.key.toLowerCase());
-		});
-		if (!tab) { return false; }
+function navKeyboardHandler(e: KeyboardEvent): boolean {
+	let tab = dom.tabs.find(tab => {
+		let kbd = tab.querySelector<HTMLElement>("kbd");
+		if (!kbd) { return false; }
+		return (kbd.textContent.toLowerCase() == e.key.toLowerCase());
+	});
+	if (!tab) { return false; }
 
-		activate(tab.dataset.content as PaneName);
-		return true;
-	}
+	activate(tab.dataset.content as PaneName);
+	return true;
 }
 
 export async function init() {
-	dom.map.append(display);
+	dom.game.hidden = false;
 
+	dom.map.append(display);
 	await document.fonts.ready;
 	syncDisplaySize();
 	syncFontSize();
 	window.addEventListener("resize", syncFontSize);
 
-	keyboard.pushHandler(navHandler);
+	keyboard.pushHandler(navKeyboardHandler);
 	keyboard.on();
 
 //	activate("map");

@@ -1,3 +1,6 @@
+import * as keyboard from "./keyboard.ts";
+
+
 /*
 
 
@@ -11,3 +14,29 @@
 
 
   */
+
+
+
+export function init() {
+	let { resolve, promise } = Promise.withResolvers();
+
+	function done() {
+		keyboard.off();
+		keyboard.popHandler();
+		resolve(undefined);
+	}
+
+	function handleKey(e: KeyboardEvent) {
+		if (e.key == "Enter") {
+			done();
+			return true;
+		}
+		return false;
+	}
+
+	keyboard.pushHandler(handleKey);
+	keyboard.on();
+
+	return promise;
+}
+

@@ -4,7 +4,8 @@ import Renderer from "./town/renderer.ts";
 import display from "./display.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
-import * as ui from "./ui/ui.ts";
+import * as game from "./ui/game.ts";
+import * as intro from "./ui/intro.ts";
 
 
 declare global {
@@ -39,12 +40,13 @@ function createTown(W: number, H: number) {
 	renderer.renderBuildings();
 	renderer.renderPath(path);
 
-	npcGenerator.generatePeople(renderer);
+	npcGenerator.generatePeople();
 }
 
 async function init() {
+	await intro.init();
 	createTown(4, 4);
-	await ui.init();
+	await game.init();
 }
 
 init();

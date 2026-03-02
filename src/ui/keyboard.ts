@@ -1,6 +1,10 @@
-export abstract class KeyboardHandler {
-	abstract handleKey(e: KeyboardEvent): boolean;
+type KeyboardHandlerFunction = (e: KeyboardEvent) => boolean;
+
+interface KeyboardHandlerObject {
+	handleKey: KeyboardHandlerFunction;
 }
+
+type KeyboardHandler = KeyboardHandlerFunction | KeyboardHandlerObject;
 
 let handlerStack: KeyboardHandler[] = [];
 let enabled = false;
@@ -16,7 +20,8 @@ export function popHandler() {
 function handleEvent(e: KeyboardEvent) {
 	let index = handlerStack.length;
 	while (index --> 0) {
-		let handled = handlerStack[index].handleKey(e);
+		let handler = handlerStack[index];
+		let handled = (typeof(handler) == "function" ? handler(e) : handler.handleKey(e));
 		if (handled) { return; }
 	}
 }
