@@ -1,4 +1,4 @@
-index.js: src/*.ts
+index.js: $(shell find src -type f -name "*.ts")
 	deno bundle --minify src/index.ts -o $@
 
 watch:

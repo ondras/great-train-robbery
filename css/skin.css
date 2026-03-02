@@ -1,23 +1,28 @@
-x {
-color: #e4c388;
-color: #cb9651;
-color: #a06335;
-color: #663219;
-color: #250f0b;
-}
-
 :root {
+	xcolor: #e4c388;
+	xcolor: #cb9651;
+	xcolor: #a06335;
+	xcolor: #663219;
+	xcolor: #250f0b;
+
+
+
+	/* text */
 	--fg: #cb9651;
+
+	/* background */
 	--bg: #663219;
+
+	/* active links, currently selected markers */
 	--highlight: #e4c388;
+
+	/* ??? */
 	--border-color: var(--highlight);
-}
 
-#game {
-	background-color: var(--bg);
-	color: var(--fg);
-}
+	/* dialog backdrop */
+	--backdrop: rgba(0 0 0 / 0.5);
 
-kbd {
-	color: var(--highlight);
+
+	/* currently selected background */
+	--active-bg: rgba(0 0 0 / 0.2);
 }

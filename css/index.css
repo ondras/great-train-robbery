@@ -19,7 +19,20 @@ body {
 	margin: 0;
 }
 
+#intro {
+	font-size: 16px;
+
+	input {
+		text-transform: uppercase;
+		text-align: center;
+		width: 8ch;
+	}
+}
+
 #game {
+	background-color: var(--bg);
+	color: var(--fg);
+
 	#heading {
 		font-weight: bold;
 		display: flex;
