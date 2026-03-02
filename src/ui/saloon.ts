@@ -2,8 +2,7 @@ import Pane from "./pane.ts";
 import { world, Entity, Person, Visual } from "../world.ts";
 import { confirm } from "./dialog.ts";
 import ItemTable from "./item-table.ts";
-import * as util from "../util.ts";
-import { fillPerson } from "./util.ts";
+import { fillPerson, template } from "./util.ts";
 
 
 interface PersonItem {
@@ -41,7 +40,7 @@ export default class Saloon extends Pane {
 	protected async tryHire(entity: Entity) {
 		const { person } = world.requireComponents(entity, "person", "visual");
 
-		let content = util.template(".confirm-hire", {name: person.name, gold: String(person.price)});
+		let content = template(".confirm-hire", {name: person.name, gold: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
@@ -54,7 +53,7 @@ export default class Saloon extends Pane {
 	protected async tryFire(entity: Entity) {
 		const { person } = world.requireComponents(entity, "person", "visual");
 
-		let content = util.template(".confirm-fire", {name: person.name, gold: String(person.price)});
+		let content = template(".confirm-fire", {name: person.name, gold: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 

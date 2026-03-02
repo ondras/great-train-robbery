@@ -1,4 +1,5 @@
 import * as keyboard from "./keyboard.ts";
+import * as random from "../random.ts";
 import display from "../display.ts";
 import Pane from "./pane.ts";
 
@@ -8,6 +9,10 @@ import Hotel from "./hotel.ts";
 import Store from "./store.ts";
 import Action from "./action.ts";
 import Help from "./help.ts";
+
+import Renderer from "../town/renderer.ts";
+import * as townGenerator from "../town/generator.ts";
+import * as npcGenerator from "../npc/generator.ts";
 
 
 const dom = {
@@ -86,11 +91,41 @@ function navKeyboardHandler(e: KeyboardEvent): boolean {
 	return true;
 }
 
-export async function init() {
-	dom.game.hidden = false;
+function createTown(W: number, H: number) {
+	let t = townGenerator.emptyTown(W, H);
 
+	let options = {roadWidth: 3, plotWidth: 12, plotHeight: 6};
+	let renderer = new Renderer(t, options);
+	renderer.renderGround();
+
+	display.cols = renderer.width;
+	display.rows = renderer.height;
+
+	townGenerator.generateBuildings(t);
+	renderer.renderBuildings();
+
+	let paths = townGenerator.generateAllPaths(t)
+	paths = townGenerator.deduplicatePaths(paths);
+	paths = paths.toSorted((a, b) => a.length - b.length);
+	let q = Math.floor(paths.length / 4);
+	paths = paths.slice(2*q, 3*q);
+	let path = paths.random();
+
+	renderer.renderPath(path);
+
+	npcGenerator.generatePeople();
+}
+
+
+export async function init(seed: number) {
+	random.seed(seed);
+
+	createTown(4, 4);
+
+	dom.game.hidden = false;
 	dom.map.append(display);
 	await document.fonts.ready;
+
 	syncDisplaySize();
 	syncFontSize();
 	window.addEventListener("resize", syncFontSize);

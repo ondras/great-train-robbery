@@ -1,7 +1,7 @@
 import Pane from "./pane.ts";
 import { confirm } from "./dialog.ts";
 import * as game from "./game.ts";
-import * as util from "../util.ts";
+import { template } from "./util.ts";
 
 
 export default class Action extends Pane {
@@ -34,7 +34,7 @@ export default class Action extends Pane {
 	}
 
 	protected async tryStart() {
-		let content = util.template(".confirm-action");
+		let content = template(".confirm-action");
 		let ok = await confirm(content);
 		if (!ok) { return; }
 

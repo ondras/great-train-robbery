@@ -1,6 +1,3 @@
-import { generateCrossings } from "./generator.ts";
-
-
 export interface Plot {
 	x: number;
 	y: number;
@@ -26,20 +23,6 @@ export interface Town {
 	buildings: Building[];
 }
 
-export function emptyTown(width: number, height: number): Town {
-	let plots: Plot[] = [];
-	for (let x = 0; x < width; x++) {
-		for (let y = 0; y < height; y++) {
-			plots.push({ x, y });
-		}
-	}
-
-	return {
-		buildings: [],
-		plots,
-		crossings: generateCrossings(width, height)
-	};
-}
 
 export function addBuilding(town: Town, name: string, plot: Plot, secondaryPlot?: Plot) {
 	let plots = [plot];

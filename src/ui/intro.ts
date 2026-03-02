@@ -15,14 +15,17 @@ import * as keyboard from "./keyboard.ts";
 
   */
 
+const dom = {
+	intro: document.querySelector<HTMLElement>("#intro")!
+}
 
-
-export function init() {
-	let { resolve, promise } = Promise.withResolvers();
+export function init(seed: number): Promise<number> {
+	let { resolve, promise } = Promise.withResolvers<number>();
 
 	function done() {
 		keyboard.off();
 		keyboard.popHandler();
+		dom.intro.hidden = true;
 		resolve(undefined);
 	}
 
@@ -34,6 +37,7 @@ export function init() {
 		return false;
 	}
 
+	dom.intro.hidden = false;
 	keyboard.pushHandler(handleKey);
 	keyboard.on();
 

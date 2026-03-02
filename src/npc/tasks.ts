@@ -1,8 +1,9 @@
 import { spatialIndex, world, Entity } from "../world.ts";
 import display from "../display.ts";
-import * as util from "../util.ts";
+import { sleep } from "./util.ts";
 import * as train from "./train.ts";
 import * as conf from "../conf.ts";
+import * as util from "../util.ts";
 
 
 interface TrainTask {
@@ -65,7 +66,7 @@ export function run(entity: Entity) {
 	let { tasks } = world.requireComponent(entity, "actor");
 
 	let task = pickTask(tasks, entity);
-	if (!task) { console.log("!!!", entity); return util.sleep(100); }
+	if (!task) { console.log("!!!", entity); return sleep(100); }
 
 	return runTask(task, entity);
 }

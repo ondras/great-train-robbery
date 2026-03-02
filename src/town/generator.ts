@@ -1,5 +1,5 @@
 import { Town, Path, Plot, Crossing, addBuilding } from "./town.ts";
-import { DIRS_4, id } from "../util.ts";
+import { DIRS_4 } from "../util.ts";
 import * as random from "../random.ts"
 
 
@@ -13,6 +13,21 @@ const NAMES = [
 const EMPTY_PERCENTAGE = 0.26; // FIXME +- random
 const DOUBLE_CHANCE = 0.33; // FIXME +- random
 
+
+export function emptyTown(width: number, height: number): Town {
+	let plots: Plot[] = [];
+	for (let x = 0; x < width; x++) {
+		for (let y = 0; y < height; y++) {
+			plots.push({ x, y });
+		}
+	}
+
+	return {
+		buildings: [],
+		plots,
+		crossings: generateCrossings(width, height)
+	};
+}
 
 export function generateBuildings(town: Town) {
 	let totalPlots = town.plots.length;
@@ -61,7 +76,6 @@ export function generateAllPaths(town: Town): Path[] {
 
 	return initialCrossings.flatMap(crossing => generatePaths([crossing]));
 }
-
 
 export function generateCrossings(width: number, height: number): Crossing[]	{
 	let crossingsById = new Map<string, Crossing>();
@@ -121,3 +135,6 @@ function getNeighborPlots(plot: Plot, plots: Plot[]): Plot[] {
 		return plots.find(p => p.x == x && p.y == y);
 	}).filter(p => p) as Plot[];
 }
+
+interface HasXY { x: number, y: number }
+function id(what: HasXY): string { return`${what.x},${what.y}`; }

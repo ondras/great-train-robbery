@@ -1,7 +1,7 @@
 import { spatialIndex, world, Entity, Track } from "../world.ts";
 import display from "../display.ts";
-import * as util from "../util.ts";
 import * as conf from "../conf.ts";
+import { sleep } from "./util.ts";
 
 
 export interface Wagon {
@@ -105,5 +105,5 @@ export async function move(entity: Entity) {
 		});
 	});
 
-	return util.sleep(conf.MOVE_DELAY);
+	return sleep(conf.MOVE_DELAY);
 }
