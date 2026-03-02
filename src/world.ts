@@ -1,6 +1,5 @@
-import * as face from "https://cdn.jsdelivr.net/gh/ondras/face@main/face.ts"
-import { Wagon } from "./npc/train.ts"
-import { Task } from "./npc/tasks.ts"
+import * as face from "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/face.ts";
+import { Task } from "./npc/tasks.ts";
 
 
 export type Entity = face.Entity;
@@ -56,30 +55,43 @@ export interface Track {
 }
 
 export interface Train {
-	wagons: Wagon[];
-	track: Entity;
+	wagons: Entity[];
+	trackOffset: number;
+}
+
+export interface Wagon {
+	train: Entity;
+	parts: Entity[];
+	connected: boolean;
+	hp: number;
 }
 
 export interface TrainPart {
-	wagon: Wagon;
-	pathIndex: number;
+	wagon: Entity;
 }
 
 export interface Town {
 	width: number;
 	height: number;
+	track: {
+		x: number;
+		y: number;
+		nextDirection?: number;
+	}[];
 }
 
 interface Components {
 	position: Position;
 	visual: Visual;
 	actor: Actor;
-	train: Train;
-	trainPart: TrainPart;
 	person: Person;
-	building: Building;
-	track: Track;
+
 	town: Town;
+	building: Building;
+
+	train: Train;
+	wagon: Wagon;
+	trainPart: TrainPart;
 }
 
 export const world = new face.World<Components>();

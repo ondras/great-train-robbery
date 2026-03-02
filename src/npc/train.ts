@@ -1,109 +1,113 @@
-import { spatialIndex, world, Entity, Track } from "../world.ts";
+import { spatialIndex, world, Entity, Train, Wagon } from "../world.ts";
 import display from "../display.ts";
 import * as conf from "../conf.ts";
 import { sleep } from "./util.ts";
+import { TrainTask } from "./tasks.ts";
 
-
-export interface Wagon {
-	parts: Entity[];
-}
 
 const WAGONS = 3;
-const WAGON = {
-	size: 3,
-	horizontal: "o=o",
-	vertical: "o|o"
-};
+const WAGON_LENGTH = 3;
+const WAGON = ["|oo", "-oo", "|oo", "-oo"];
+const LOCOMOTIVE = ["^■O", ">■O", "v■O", "<■O"];
 
-export function create() {
-	const LENGTH = WAGONS * WAGON.size;
-	let [trackEntity, { track }] = world.findEntities("track").entries().next().value!
+export function create(trackOffset: number) {
+	let actor = {
+		wait: 0,
+		tasks: [{type:"train"} as TrainTask]
+	};
+	let train = world.createEntity({ actor });
 
-	let wagons: Wagon[] = [];
-	let pathIndex = LENGTH-1;
+	let wagons: Entity[] = [];
 
-	for (let i=0;i<WAGONS;i++) {
-		let wagon: Wagon = {parts: []};
-		wagons.push(wagon);
+	for (let i=0;i<WAGONS+1;i++) {
+		let parts: Entity[] = [];
+		let wagon = { train, parts, connected: true, hp: 10 };
+		let wagonEntity = world.createEntity({ wagon });
+		wagons.push(wagonEntity);
 
-		for (let j=0;j<WAGON.size;j++) {
-			let trainPart = { wagon, pathIndex };
-
-			let {x, y, nextDirection} = track.positions[pathIndex];
-			let position = {x, y, blocks: {sight: false, movement: true}};
-
-			let wagonPart = world.createEntity({trainPart, position});
-			wagon.parts.push(wagonPart);
-
-			let visual = createWagonPartVisual(j, nextDirection!); // FIXME undefined
-
-			spatialIndex.update(wagonPart);
-			display.draw(position.x, position.y, visual, {id:wagonPart, zIndex:1});
-
-			pathIndex--;
+		for (let j=0;j<WAGON_LENGTH;j++) {
+			let trainPart = { wagon: wagonEntity };
+			let trainPartEntity = world.createEntity({ trainPart });
+			parts.push(trainPartEntity);
 		}
 	}
 
-	let train = { wagons, track: trackEntity };
-	let actor = {
-		wait: 0,
-		tasks: [{type:"train"} as const]
-	};
-	world.createEntity({ train, actor });
+	let trainComponent = { wagons, trackOffset };
+	world.addComponent(train, "train", trainComponent);
+
+	updateTrainPositions(trainComponent);
+}
+
+function updateTrainPositions(train: Train) {
+	const { town } = world.findEntities("town").values().next().value!;
+
+	let index = train.trackOffset;
+
+	train.wagons.forEach((wagonEntity, i) => {
+		let wagon = world.requireComponent(wagonEntity, "wagon");
+		if (!wagon.connected) { return; }
+
+		wagon.parts.forEach((partEntity, j) => {
+			let position = world.getComponent(partEntity, "position");
+			if (index < 0 || index >= town.track.length) { // not visible
+				if (position) { // remove
+					world.removeComponents(partEntity, "position");
+					spatialIndex.update(partEntity);
+					display.delete(partEntity);
+				}
+				index--;
+				return;
+			}
+
+			let {x, y, nextDirection} = town.track[index];
+			if (position) { // update
+				position.x = x;
+				position.y = y;
+			} else { // create
+				let position = {x, y, blocks: {sight: false, movement: true}};
+				world.addComponent(partEntity, "position", position);
+			}
+
+			let visual = createWagonPartVisual(i, j, nextDirection!); // FIXME undefined
+			display.draw(x, y, visual, {id: partEntity, zIndex:1});
+			spatialIndex.update(partEntity);
+
+			index--;
+		});
+	});
+
 }
 
 
-function createWagonPartVisual(wagonIndex: number, nextDirection: number) {
-	let template = (nextDirection % 2 ? WAGON.horizontal : WAGON.vertical);
+function createWagonPartVisual(wagonIndex: number, partIndex: number,nextDirection: number) {
+	let templates = (wagonIndex == 0 ? LOCOMOTIVE : WAGON);
 	return {
-		ch: template[wagonIndex],
+		ch: templates[nextDirection][partIndex]
 	}
-}
-
-function movePart(entity: Entity, wagonIndex: number, positions: Track["positions"]) {
-	let { position, trainPart } = world.requireComponents(entity, "position", "trainPart");
-
-	trainPart.pathIndex++;
-	if (trainPart.pathIndex >= positions.length) {
-		display.delete(entity);
-		return;
-	}
-
-	let {x, y, nextDirection} = positions[trainPart.pathIndex];
-
-	let visual = createWagonPartVisual(wagonIndex, nextDirection!); // FIXME undefined
-
-	position.x = x;
-	position.y = y;
-	display.draw(x, y, visual, {id: entity, zIndex:1});
-	spatialIndex.update(entity);
 }
 
 export function isInTown() {
-	let { train } = world.findEntities("train").values().next().value!;
-	let { positions } = world.requireComponent(train.track, "track");
-
 	function isPartInTown(part: Entity) {
-		let { pathIndex } = world.requireComponent(part, "trainPart");
-		return (pathIndex < positions.length);
+		return world.hasComponents(part, "position");
 	}
 
 	function isWagonInTown(wagon: Wagon) {
 		return wagon.parts.some(isPartInTown);
 	}
 
-	return train.wagons.some(isWagonInTown);
+	let { train } = world.findEntities("train").values().next().value!;
+
+	let connectedWagons = train.wagons.map(wagonEntity => {
+		return world.requireComponent(wagonEntity, "wagon");
+	}).filter(wagon => wagon.connected);
+
+	return connectedWagons.some(isWagonInTown);
 }
 
 export async function move(entity: Entity) {
-	let { track, wagons } = world.requireComponent(entity, "train");
-	let { positions } = world.requireComponent(track, "track");
+	let train = world.requireComponent(entity, "train");
+	train.trackOffset++;
 
-	wagons.forEach(wagon => {
-		wagon.parts.forEach((entity, j) => {
-			movePart(entity, j, positions);
-		});
-	});
-
+	updateTrainPositions(train);
 	return sleep(conf.MOVE_DELAY);
 }

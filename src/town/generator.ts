@@ -1,5 +1,5 @@
 import { Town, Path, Plot, Crossing, addBuilding } from "./town.ts";
-import { DIRS_4 } from "../util.ts";
+import { DIRS_4 } from "../dirs.ts";
 import * as random from "../random.ts"
 
 

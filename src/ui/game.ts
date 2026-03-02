@@ -1,40 +1,27 @@
 import * as keyboard from "./keyboard.ts";
 import * as random from "../random.ts";
 import display from "../display.ts";
-import Pane from "./pane.ts";
 
-import Map from "./map.ts";
-import Saloon from "./saloon.ts";
-import Hotel from "./hotel.ts";
-import Store from "./store.ts";
-import Action from "./action.ts";
-import Help from "./help.ts";
-
-import Renderer from "../town/renderer.ts";
+import { rasterize } from "../town/rasterizer.ts";
 import * as townGenerator from "../town/generator.ts";
 import * as npcGenerator from "../npc/generator.ts";
+
+import { Entity, scheduler, world } from "../world.ts";
+import * as tasks from "../npc/tasks.ts";
+import * as train from "../npc/train.ts";
+import { gameOver } from "./dialog.ts";
+import { sleep } from "../npc/util.ts";
+
+import * as panes from "./panes.ts";
 
 
 const dom = {
 	game: document.querySelector<HTMLElement>("#game")!,
-	nav: document.querySelector("#nav")!,
 	main: document.querySelector<HTMLElement>("#main")!,
-	map: document.querySelector("#map")!,
-	tabs: [] as HTMLElement[],
+	map: document.querySelector("#map")!
 }
-dom.tabs = [...dom.nav.querySelectorAll<HTMLElement>("[data-content]")];
 
-const panes = {
-	map: new Map(),
-	saloon: new Saloon(),
-	hotel: new Hotel(),
-	store: new Store(),
-	action: new Action(),
-	help: new Help()
-}
-type PaneName = keyof typeof panes;
-let activePane: Pane | undefined;
-
+let actionPaused = false;
 
 function syncFontSize() {
 	let game = document.querySelector<HTMLElement>("#game")!;
@@ -61,61 +48,85 @@ function syncDisplaySize() {
 	dom.main.style.height = `calc(${display.rows + 1} * ${tileHeight})`;
 }
 
-function showNav(id: PaneName) {
-	dom.tabs.forEach(tab => tab.classList.toggle("active", tab.dataset.content == id));
-}
 
-export function activate(pane: PaneName | "map-action") {
-	if (activePane) { activePane.deactivate(); }
+export function activate(pane: panes.PaneName | "map-action") {
+	panes.deactivate();
 
 	if (pane == "map-action") {
 		keyboard.popHandler(); // FIXME disable tabs visually?
-		showNav("map");
-		panes.map.activate(true);
+		keyboard.pushHandler(actionKeyboardHandler);
+
+		train.create(15);
+		panes.activate("map")
+
+		runAction();
+
 	} else {
-		showNav(pane);
-		activePane = panes[pane];
-		activePane.activate();
+		panes.activate(pane);
+		if (pane == "map") { panes.map.runDemo(); }
 	}
 }
 
-function navKeyboardHandler(e: KeyboardEvent): boolean {
-	let tab = dom.tabs.find(tab => {
-		let kbd = tab.querySelector<HTMLElement>("kbd");
-		if (!kbd) { return false; }
-		return (kbd.textContent.toLowerCase() == e.key.toLowerCase());
-	});
-	if (!tab) { return false; }
-
-	activate(tab.dataset.content as PaneName);
+function actionKeyboardHandler(e: KeyboardEvent): boolean {
+	if (e.code == "Space") { actionPaused = !actionPaused; }
 	return true;
 }
 
 function createTown(W: number, H: number) {
-	let t = townGenerator.emptyTown(W, H);
+	let town = townGenerator.emptyTown(W, H);
+	townGenerator.generateBuildings(town);
 
-	let options = {roadWidth: 3, plotWidth: 12, plotHeight: 6};
-	let renderer = new Renderer(t, options);
-	renderer.renderGround();
-
-	display.cols = renderer.width;
-	display.rows = renderer.height;
-
-	townGenerator.generateBuildings(t);
-	renderer.renderBuildings();
-
-	let paths = townGenerator.generateAllPaths(t)
+	let paths = townGenerator.generateAllPaths(town)
 	paths = townGenerator.deduplicatePaths(paths);
 	paths = paths.toSorted((a, b) => a.length - b.length);
 	let q = Math.floor(paths.length / 4);
 	paths = paths.slice(2*q, 3*q);
 	let path = paths.random();
 
-	renderer.renderPath(path);
+	let options = {roadWidth: 3, plotWidth: 12, plotHeight: 6};
+	let townEntity = rasterize(town, path, options);
+
+	let { width, height } = world.requireComponent(townEntity, "town");
+	display.cols = width;
+	display.rows = height;
 
 	npcGenerator.generatePeople();
 }
 
+export async function runAction() {
+	while (true) {
+		if (actionPaused) {
+			await sleep(50);
+			continue;
+		}
+
+		let finished = isGameFinished();
+		if (finished) {
+			gameOver(finished);
+			return;
+		}
+
+		let entity = scheduler.next();
+		if (!entity) { break; }
+		await tasks.run(entity);
+	}
+}
+
+const personQuery = world.query("person");
+
+function arePersonsDead(entities: Set<Entity>) {
+	for (let entity of entities) {
+		if (world.requireComponent(entity, "person").hp > 0) { return false; }
+	}
+	return false;
+}
+
+function isGameFinished() {
+	if (arePersonsDead(personQuery.entities)) { return "dead"; }
+	if (!train.isInTown()) { return "gone"; }
+
+	return false;
+}
 
 export async function init(seed: number) {
 	random.seed(seed);
@@ -129,9 +140,9 @@ export async function init(seed: number) {
 	syncFontSize();
 	window.addEventListener("resize", syncFontSize);
 
-	keyboard.pushHandler(navKeyboardHandler);
+	keyboard.pushHandler(panes.navKeyboardHandler);
 	keyboard.on();
 
-//	activate("map");
-	activate("hotel");
+	activate("saloon");
 }
+

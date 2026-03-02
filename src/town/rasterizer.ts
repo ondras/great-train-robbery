@@ -1,112 +1,55 @@
 import { Town, Crossing, Plot, Building, Path } from "./town.ts";
 import display from "../display.ts";
 import { spatialIndex, world, Track } from "../world.ts";
-import * as util from "../util.ts";
+import { DIRS_4 } from "../dirs.ts";
 
 
-interface RendererOptions {
+interface RasterizerOptions {
 	roadWidth: number;
 	plotWidth: number;
 	plotHeight: number;
 }
 
-interface Cell {
-	ch: string;
-	fg?: string;
-	bg?: string;
+export function rasterize(town: Town, path: Path, options: RasterizerOptions) {
+	let g = gutter(options);
+	let fp = getFurthestPlot(town)!;
+
+	let width = 2*g + (fp.x+1) * options.plotWidth + (fp.x) * options.roadWidth;
+	let height = 2*g + (fp.y+1) * options.plotHeight + (fp.y) * options.roadWidth;
+
+	rasterizeGround(width, height, options);
+	rasterizeBuildings(town, options);
+	let track = rasterizePath(path, options);
+
+	let t = { width, height, track };
+	return world.createEntity({town: t});
 }
 
-export default class CharRenderer {
-	readonly width: number;
-	readonly height: number;
+function rasterizeGround(width: number, height: number, options: RasterizerOptions) {
+	let offset = gutter(options) - Math.ceil(options.roadWidth / 2);
 
-	constructor(protected town: Town, protected options: RendererOptions) {
-		let g = gutter(options);
-		let fp = getFurthestPlot(town)!;
+	const roadSpacingHorizontal = options.plotWidth + options.roadWidth;
+	const roadSpacingVertical = options.plotHeight + options.roadWidth;
 
-		let width = 2*g + (fp.x+1) * options.plotWidth + (fp.x) * options.roadWidth;
-		let height = 2*g + (fp.y+1) * options.plotHeight + (fp.y) * options.roadWidth;
+	for (let i=0;i<width;i++) {
+		for (let j=0;j<height;j++) {
+			let isRoadX = ((i - offset) % roadSpacingHorizontal == 0);
+			let isRoadY = ((j - offset) % roadSpacingVertical == 0);
+			let isRoad = isRoadX || isRoadY;
 
-		let t = { width, height };
-		world.createEntity({town: t});
-
-		this.width = width;
-		this.height = height;
-	}
-
-	renderGround() {
-		const { width, height, options, } = this;
-		let offset = gutter(options) - Math.ceil(options.roadWidth / 2);
-
-		const roadSpacingHorizontal = options.plotWidth + options.roadWidth;
-		const roadSpacingVertical = options.plotHeight + options.roadWidth;
-
-		for (let i=0;i<width;i++) {
-			for (let j=0;j<height;j++) {
-				let isRoadX = ((i - offset) % roadSpacingHorizontal == 0);
-				let isRoadY = ((j - offset) % roadSpacingVertical == 0);
-				let isRoad = isRoadX || isRoadY;
-
-				display.draw(i, j, {
-					ch: ".",
-					fg: isRoad ? "#841" : "#ed5"
-				});
-			}
+			display.draw(i, j, {
+				ch: ".",
+				fg: isRoad ? "#841" : "#ed5"
+			});
 		}
 	}
-
-	renderBuildings() {
-		const { town, options } = this;
-		town.buildings.forEach(building => renderBuilding(building, options));
-	}
-
-	renderPath(path: Path) {
-		const { options } = this;
-
-		let positions: Track["positions"] = [];
-
-		path.forEach((crossing, i) => {
-			let segment = renderPathSegment(crossing, i, path, options);
-			positions = positions.concat(segment);
-		});
-
-		let track = { positions };
-		world.createEntity({track});
-	}
 }
 
-function renderPathSegment(crossing: Crossing, i: number, path: Path, options: RendererOptions) {
-	let positions: Track["positions"] = [];
-	if (i == 0) { return positions; }
-
-	let current = crossingToXY(crossing, options);
-	let prev = crossingToXY(path[i-1], options);
-
-	let dx = Math.sign(current[0] - prev[0]);
-	let dy = Math.sign(current[1] - prev[1]);
-	let dist = Math.abs(current[0] - prev[0]) + Math.abs(current[1] - prev[1]);
-	if (i+1 == path.length) { dist += 1; } // last explicit step
-
-	let direction = util.DIRS_4.findIndex(d => d[0] == dx && d[1] == dy)!;
-
-	for (let j=0; j<dist; j++) {
-		let x = prev[0] + dx*j;
-		let y = prev[1] + dy*j;
-
-		let position = { x, y, nextDirection: direction };
-		positions.push(position);
-
-		display.draw(x, y, {
-			ch: "#",
-			fg: "#777",
-			bg: "#630"
-		}, {part:"track"});
-	}
-
-	return positions;
+function rasterizeBuildings(town: Town, options: RasterizerOptions) {
+	town.buildings.forEach(building => rasterizeBuilding(building, options));
 }
 
-function renderBuilding(building: Building, options: RendererOptions) {
+function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 	let bbox = computeBuildingBbox(building, options);
 	let { corners, edges } = BUILDING_DESIGNS.random();
 
@@ -162,7 +105,49 @@ function renderBuilding(building: Building, options: RendererOptions) {
 	});
 }
 
-function computeBuildingBbox(building: Building, options: RendererOptions) {
+function rasterizePath(path: Path, options: RasterizerOptions) {
+	let track: Track["positions"] = [];
+
+	path.forEach((crossing, i) => {
+		let segment = rasterizePathSegment(crossing, i, path, options);
+		track = track.concat(segment);
+	});
+
+	return track;
+}
+
+function rasterizePathSegment(crossing: Crossing, i: number, path: Path, options: RasterizerOptions) {
+	let positions: Track["positions"] = [];
+	if (i == 0) { return positions; }
+
+	let current = crossingToXY(crossing, options);
+	let prev = crossingToXY(path[i-1], options);
+
+	let dx = Math.sign(current[0] - prev[0]);
+	let dy = Math.sign(current[1] - prev[1]);
+	let dist = Math.abs(current[0] - prev[0]) + Math.abs(current[1] - prev[1]);
+	if (i+1 == path.length) { dist += 1; } // last explicit step
+
+	let direction = DIRS_4.findIndex(d => d[0] == dx && d[1] == dy)!;
+
+	for (let j=0; j<dist; j++) {
+		let x = prev[0] + dx*j;
+		let y = prev[1] + dy*j;
+
+		let position = { x, y, nextDirection: direction };
+		positions.push(position);
+
+		display.draw(x, y, {
+			ch: "#",
+			fg: "#777",
+			bg: "#630"
+		}, {part:"track"});
+	}
+
+	return positions;
+}
+
+function computeBuildingBbox(building: Building, options: RasterizerOptions) {
 	let g = gutter(options);
 
 	let plotX = [Infinity, -Infinity];
@@ -185,7 +170,7 @@ function computeBuildingBbox(building: Building, options: RendererOptions) {
 	}
 }
 
-function crossingToXY(crossing: Crossing, options: RendererOptions): [number, number] {
+function crossingToXY(crossing: Crossing, options: RasterizerOptions): [number, number] {
 	let offset = gutter(options) - Math.ceil(options.roadWidth / 2);
 
 	return [
@@ -194,7 +179,7 @@ function crossingToXY(crossing: Crossing, options: RendererOptions): [number, nu
 	];
 }
 
-function gutter(options: RendererOptions): number {
+function gutter(options: RasterizerOptions): number {
 	return Math.ceil(options.roadWidth / 2);
 }
 

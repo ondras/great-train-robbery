@@ -7,7 +7,7 @@ import { Task } from "./tasks.ts";
 function createPerson(x: number, y: number) {
 	let position = {x, y, blocks: {sight: false, movement: true}};
 	let visual = {ch: "@", fg: color()};
-	let actor = {wait: 0, tasks: [{type:"wander"}, {type:"a"}, {type:"b"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}] as Task[]};
+	let actor = {wait: 0, tasks: [{type:"attack", target:"wagon"}, {type:"wander"}] as Task[]};
 	let person = {
 		name: name(),
 		items: [],
@@ -49,7 +49,9 @@ function color() {
 }
 
 function name() {
-	return ["John", "Jane", "Jack", "Jill", "James", "Jenny", "Joe", "Jessica"].random();
+	return ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Flint","Gideon","Harlan",
+		    "Jasper","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
+			"Stetson","Trace","Tucker","Virgil","Wade","Wyatt"].random();
 }
 
 function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean {
