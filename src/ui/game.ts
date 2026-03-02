@@ -57,8 +57,8 @@ function syncDisplaySize() {
 	let cs = getComputedStyle(display);
 	let tileWidth = cs.getPropertyValue("--tile-width");
 	let tileHeight = cs.getPropertyValue("--tile-height");
-	dom.main.style.width = `calc(${display.cols + 2} * ${tileWidth})`;
-	dom.main.style.height = `calc(${display.rows + 2} * ${tileHeight})`;
+	dom.main.style.width = `calc(${display.cols + 1} * ${tileWidth})`;
+	dom.main.style.height = `calc(${display.rows + 1} * ${tileHeight})`;
 }
 
 function showNav(id: PaneName) {
@@ -119,13 +119,12 @@ function createTown(W: number, H: number) {
 
 export async function init(seed: number) {
 	random.seed(seed);
-
 	createTown(4, 4);
 
-	dom.game.hidden = false;
 	dom.map.append(display);
 	await document.fonts.ready;
 
+	dom.game.hidden = false;
 	syncDisplaySize();
 	syncFontSize();
 	window.addEventListener("resize", syncFontSize);
@@ -134,5 +133,5 @@ export async function init(seed: number) {
 	keyboard.on();
 
 //	activate("map");
-	activate("saloon");
+	activate("hotel");
 }

@@ -14,12 +14,20 @@ interface WanderTask {
 	type: "wander";
 }
 
+interface ATask {
+	type: "a";
+}
+
+interface BTask {
+	type: "b";
+}
+
 interface TestTask {
 	type: "test";
 	condition: "aaa";
 }
 
-export type Task = TrainTask | WanderTask | TestTask;
+export type Task = TrainTask | WanderTask | TestTask | ATask | BTask;
 
 type Condition = string;
 

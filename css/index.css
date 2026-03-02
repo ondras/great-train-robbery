@@ -7,19 +7,13 @@
 	line-height: 1.2;
 }
 
-rl-display {
-	font-family: inherit;
-	--tile-height: 1rem;
-	--tile-width: 0.75rem;
-
-	&::part(track) { font-weight: bold; }
-}
-
 body {
 	margin: 0;
+	background-color: #000; /* fixme */
 }
 
 #intro {
+	color: gray;
 	font-size: 16px;
 
 	input {
@@ -46,13 +40,20 @@ body {
 		justify-content: center;
 	}
 
-
 	#log {
 		background-color: gray;
 	}
 
-	#saloon {
+	#saloon, #hotel {
 		padding: 0 1ch;
+	}
+
+	rl-display {
+		font-family: inherit;
+		--tile-height: 1rem;
+		--tile-width: 0.75rem;
+
+		&::part(track) { font-weight: bold; }
 	}
 }
 

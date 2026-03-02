@@ -41,6 +41,8 @@
 }
 
 :root {
+	--radius: 4px;
+
 	&[data-font=monospace] { font-family: monospace; }
 	&[data-font=cascadiacode] { font-family: cascadia code; }
 	&[data-font=cascadiamono] { font-family: cascadia mono; }
@@ -131,11 +133,11 @@ table.item-table {
 	td {
 		padding: 0.5lh 1ch;
 		&:first-child {
-			padding-left: 2ch;
+			padding-left: 3ch;
 		}
 
 		&:last-child {
-			padding-right: 2ch;
+			padding-right: 3ch;
 		}
 	}
 
@@ -145,11 +147,13 @@ table.item-table {
 		td:first-child::before, td:last-child::after { color: var(--highlight); }
 
 		td:first-child {
-			padding-left: 0;
+			border-radius: var(--radius) 0 0 var(--radius);
+			padding-left: 1ch;
 			&::before { content: "» "; }
 		}
 		td:last-child {
-			padding-right: 0;
+			border-radius: 0 var(--radius) var(--radius) 0;
+			padding-right: 1ch;
 			&::after { content: " «"; }
 		}
 	}
@@ -174,7 +178,7 @@ table.item-table {
 		&::before, &::after { color: var(--highlight); }
 
 		&.active {
-			border-radius: 2px;
+			border-radius: var(--radius);
 			background-color: var(--active-bg);
 			font-weight: bold;
 

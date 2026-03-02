@@ -1,5 +1,5 @@
 interface Options<T> {
-	rowBuilder: (row: HTMLTableRowElement, item: T, isActive: boolean) => void;
+	rowBuilder: (row: HTMLTableRowElement, item: T, isActive: boolean, items: T[]) => void;
 	activeId?: number;
 }
 
@@ -26,7 +26,7 @@ export default class ItemTable<T extends {id:number}> {
 
 			row.insertCell().innerHTML = `[<kbd>${number}</kbd>]`;
 
-			options.rowBuilder(row, item, isActive);
+			options.rowBuilder(row, item, isActive, data);
 		});
 
 		this.offset += data.length;

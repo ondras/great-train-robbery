@@ -1,12 +1,13 @@
 import { spatialIndex, world, Building } from "../world.ts";
 import display from "../display.ts";
 import * as random from "../random.ts";
+import { Task } from "./tasks.ts";
 
 
 function createPerson(x: number, y: number) {
 	let position = {x, y, blocks: {sight: false, movement: true}};
 	let visual = {ch: "@", fg: color()};
-	let actor = {wait: 0, tasks: [{type:"wander"} as const]};
+	let actor = {wait: 0, tasks: [{type:"wander"}, {type:"a"}, {type:"b"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}, {type:"a"}] as Task[]};
 	let person = {
 		name: name(),
 		items: [],

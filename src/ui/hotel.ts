@@ -2,8 +2,10 @@ import Pane from "./pane.ts";
 import { world, Entity, Person, Visual } from "../world.ts";
 import ItemTable from "./item-table.ts";
 import { Task } from "../npc/tasks.ts";
-import { pickLocation } from "./dialog.ts";
-import { fillPerson } from "./util.ts";
+import { confirm } from "./dialog.ts";
+import { pickLocation } from "./dialog-location.ts";
+import { pickTask } from "./dialog-task.ts";
+import { fillPerson, template } from "./util.ts";
 
 
 interface PersonItem {
@@ -59,12 +61,51 @@ export default class Hotel extends Pane {
 		return super.handleKey(e);
 	}
 
-	protected async tryLocation(activePerson: Entity) {
+	protected async editLocation(activePerson: Entity) {
 		let entity = await pickLocation(activePerson);
 		if (entity) {
 			let { person } = world.requireComponents(activePerson, "person");
 			person.location = entity;
 		}
+		this.renderPerson(activePerson);
+	}
+
+	protected async editTask(activePerson: Entity, taskIndex?: number) {
+		let { tasks } = world.requireComponents(activePerson, "actor").actor;
+		let currentTask = (taskIndex != undefined) ? tasks[taskIndex] : undefined;
+
+		let result = await pickTask(currentTask);
+		if (!result) { return; }
+
+		if (taskIndex != undefined) {
+			tasks[taskIndex] = result;
+		} else {
+			tasks.push(result);
+		}
+		this.renderPerson(activePerson, taskIndex);
+	}
+
+	protected moveTask(activePerson: Entity, taskIndex: number, offset: number) {
+		let { tasks } = world.requireComponents(activePerson, "actor").actor;
+
+		let task = tasks[taskIndex];
+		let newIndex = taskIndex + offset;
+
+		tasks.splice(taskIndex, 1);
+		tasks.splice(newIndex, 0, task);
+
+		this.renderPerson(activePerson, newIndex);
+	}
+
+	protected async removeTask(activePerson: Entity, taskIndex: number) {
+		let { tasks } = world.requireComponents(activePerson, "actor").actor;
+		let task = tasks[taskIndex];
+
+		let content = template(".confirm-remove-task", {task:task.type});
+		let ok = await confirm(content);
+		if (!ok) { return; }
+
+		tasks.splice(taskIndex, 1);
 		this.renderPerson(activePerson);
 	}
 
@@ -122,9 +163,7 @@ export default class Hotel extends Pane {
 		let p2 = document.createElement("p");
 		p2.innerHTML = `<kbd>L</kbd>ocation: ${location}`;
 		node.append(p2);
-		activeKeyHandlers.push({key:"l", cb: () => this.tryLocation(activePerson)});
-
-		this.activeKeyHandlers = activeKeyHandlers;
+		activeKeyHandlers.push({key:"l", cb: () => this.editLocation(activePerson)});
 
 		let p3 = document.createElement("p");
 		p3.innerHTML = `Tasks:`;
@@ -142,7 +181,31 @@ export default class Hotel extends Pane {
 			}
 		});
 
+		if (taskIndex != undefined) {
+			activeKeyHandlers.push(
+				{key:"e", cb: () => this.editTask(activePerson, taskIndex)},
+				{key:"r", cb: () => this.removeTask(activePerson, taskIndex)}
+			);
+
+			if (taskIndex > 0) {
+				activeKeyHandlers.push({code:"ArrowUp", cb: () => this.moveTask(activePerson, taskIndex, -1)});
+			}
+
+			if (taskIndex < items.length - 1) {
+				activeKeyHandlers.push({code:"ArrowDown", cb: () => this.moveTask(activePerson, taskIndex, 1)});
+			}
+		}
+
 		node.append(taskTable.build(items));
+
+		if (actor.tasks.length < 10) {
+			let p = document.createElement("p");
+			p.innerHTML = `<kbd>A</kbd>dd new task`;
+			node.append(p);
+			activeKeyHandlers.push({key:"a", cb: () => this.editTask(activePerson)});
+		}
+
+		this.activeKeyHandlers = activeKeyHandlers;
 	}
 }
 
@@ -156,6 +219,17 @@ function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: bo
 	row.insertCell().append(ch, " ", person.name);
 }
 
-function buildTaskRow(row: HTMLTableRowElement, item: TaskItem, isActive: boolean) {
+function buildTaskRow(row: HTMLTableRowElement, item: TaskItem, isActive: boolean, items: TaskItem[]) {
 	row.insertCell().textContent = item.task.type;
+
+	if (isActive) {
+		row.insertCell().innerHTML = `<kbd>E</kbd>dit`;
+		row.insertCell().innerHTML = `<kbd>R</kbd>emove`;
+		let movements: string[] = [];
+		if (items.indexOf(item) > 0) { movements.push(`<kbd>↑</kbd>`); }
+		if (items.indexOf(item) < items.length - 1) { movements.push(`<kbd>↓</kbd>`); }
+		if (movements.length > 0) {
+			row.insertCell().innerHTML = `[${movements.join("")}]`;
+		}
+	}
 }
