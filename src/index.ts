@@ -16,3 +16,6 @@ async function init() {
 }
 
 init();
+
+
+// minimalni rozmery: 860 x 600 ?
