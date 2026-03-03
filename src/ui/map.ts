@@ -1,7 +1,7 @@
 import Pane from "./pane.ts";
-import * as game from "./game.ts";
 import { scheduler } from "../world.ts";
 import * as tasks from "../npc/tasks.ts";
+import * as log from "./log.ts";
 
 
 export default class Map extends Pane {
@@ -16,6 +16,12 @@ export default class Map extends Pane {
 		this.ac = ac;
 
 		runDemo(ac.signal);
+	}
+
+	activate() {
+		super.activate();
+		log.clear();
+		log.add("Welcome! As you can see, the townsfolk are busy running their daily errands. Feel free to look around.");
 	}
 
 	deactivate() {

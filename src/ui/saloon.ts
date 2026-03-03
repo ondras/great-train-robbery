@@ -3,6 +3,8 @@ import { world, Entity, Person, Visual } from "../world.ts";
 import { confirm } from "./dialog.ts";
 import ItemTable from "./item-table.ts";
 import { fillPerson, template } from "./util.ts";
+import * as status from "./status.ts";
+import * as log from "./log.ts";
 
 
 interface PersonItem {
@@ -21,6 +23,8 @@ export default class Saloon extends Pane {
 	activate() {
 		super.activate();
 		this.render();
+		log.clear();
+		log.add("Welcome to the saloon! Here you can hire people for your heist, or fire them if you change your mind.");
 	}
 
 	handleKey(e: KeyboardEvent): boolean {
@@ -45,7 +49,9 @@ export default class Saloon extends Pane {
 		if (!ok) { return; }
 
 		person.active = true;
-		// FIXME update status
+		status.update();
+		log.newline();
+		log.add(`You hired ${person.name} for ${person.price}$.`);
 
 		this.render(entity);
 	}
@@ -58,9 +64,11 @@ export default class Saloon extends Pane {
 		if (!ok) { return; }
 
 		person.active = false;
+		status.update();
+		log.newline();
+		log.add(`You fired ${person.name} and got your ${person.price}$ back.`);
 		// FIXME zahodit tasky
 		// FIXME zahodit predmety
-		// FIXME update status
 		// FIXME zahodit location
 
 		this.render(entity);
@@ -115,8 +123,7 @@ function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: bo
 	fillPerson(row.insertCell(), person, visual);
 
 	let price = row.insertCell();
-	price.classList.add("price");
-	price.textContent = `price: ${person.price}$`;
+	price.innerHTML = `price: ${person.price}<span class="gold">$</span>`;
 
 	let action = row.insertCell();
 

@@ -25,4 +25,9 @@
 
 	/* currently selected background */
 	--active-bg: rgba(0 0 0 / 0.2);
+
+	--gold: gold;
+
+	/* status label */
+	--label: #888;
 }

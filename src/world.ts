@@ -46,14 +46,6 @@ export interface Building {
 	type: string; // FIXME
 }
 
-export interface Track {
-	positions: {
-		x: number;
-		y: number;
-		nextDirection?: number;
-	}[];
-}
-
 export interface Train {
 	wagons: Entity[];
 	trackOffset: number;
@@ -62,6 +54,7 @@ export interface Train {
 export interface Wagon {
 	train: Entity;
 	parts: Entity[];
+	locomotive: boolean;
 	connected: boolean;
 	hp: number;
 }

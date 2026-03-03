@@ -1,3 +1,4 @@
+/*
 @import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&display=swap');
 @import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-neon@5.2.5/index.min.css");
 @import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-argon@5.2.5/index.min.css");
@@ -35,6 +36,12 @@
 	font-family: "mononoki";
 	src: url("fonts/mononoki-Regular.otf") format("opentype");
 }
+*/
+
+@font-face {
+	font-family: "cascadia mono";
+	src: url("CascadiaMono.woff2") format("woff2");
+}
 
 * {
 	box-sizing: border-box;
@@ -42,7 +49,7 @@
 
 :root {
 	--radius: 4px;
-
+/*
 	&[data-font=monospace] { font-family: monospace; }
 	&[data-font=cascadiacode] { font-family: cascadia code; }
 	&[data-font=cascadiamono] { font-family: cascadia mono; }
@@ -52,9 +59,11 @@
 	&[data-font=metrickal] { font-family: "metrickal"; }
 	&[data-font=mononoki] { font-family: "mononoki"; }
 	&[data-font=inconsolata] { font-family: "inconsolata"; }
+*/
+	font-family: cascadia mono;
 }
 
-button, input, select, option, kbd {
+button, input, select, option, kbd, pre {
 	font: inherit;
 }
 
@@ -173,7 +182,7 @@ table.item-table {
 	span {
 		--spacing: 0.5lh 0.5ch;
 		padding: var(--spacing);
-		margin: var(--spacing);
+		margin: 0.5lh 1ch;
 
 		&::before, &::after { color: var(--highlight); }
 

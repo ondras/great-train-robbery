@@ -1,19 +1,5 @@
-import * as keyboard from "./keyboard.ts";
+import * as keyboard from "./ui/keyboard.ts";
 
-
-/*
-
-
-
-
- ▁▁▁┬──┬▁▁   ▁▁▁▁▁▁            ▁   ∙
- `|╓┐╓┐╓┐|  |\|▔▔|/|   ,:;.   |o| ▁|
- ||╙┘╙┘╙┘|╌╌|/|∙∙|\|╌╌|▔▔▔▔|╌╌|───∙()
- ▔'oo▔▔oo'  'oo▔▔oo'  'o▔▔o'  'o▔oo'\\
-
-
-
-  */
 
 const intro = document.querySelector<HTMLElement>("#intro")!;
 const dom = {

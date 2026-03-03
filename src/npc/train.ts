@@ -1,14 +1,15 @@
 import { spatialIndex, world, Entity, Train, Wagon } from "../world.ts";
 import display from "../display.ts";
 import * as conf from "../conf.ts";
-import { sleep } from "./util.ts";
+import { sleep, Position } from "./util.ts";
 import { TrainTask } from "./tasks.ts";
 
 
 const WAGONS = 3;
 const WAGON_LENGTH = 3;
 const WAGON = ["|oo", "-oo", "|oo", "-oo"];
-const LOCOMOTIVE = ["^■O", ">■O", "v■O", "<■O"];
+//const LOCOMOTIVE = ["▲■O", "▶■O", "▼■O", "◀🠈◂■O"];
+const LOCOMOTIVE = [["🠉", "◼", "O"], ["🠊", "◼", "O"], ["🠋", "◼", "O"], ["🠈", "◼", "O"]];
 
 export function create(trackOffset: number) {
 	let actor = {
@@ -21,7 +22,7 @@ export function create(trackOffset: number) {
 
 	for (let i=0;i<WAGONS+1;i++) {
 		let parts: Entity[] = [];
-		let wagon = { train, parts, connected: true, hp: 10 };
+		let wagon = { train, parts, connected: true, hp: 10, locomotive: (i==0) };
 		let wagonEntity = world.createEntity({ wagon });
 		wagons.push(wagonEntity);
 
@@ -75,9 +76,7 @@ function updateTrainPositions(train: Train) {
 			index--;
 		});
 	});
-
 }
-
 
 function createWagonPartVisual(wagonIndex: number, partIndex: number,nextDirection: number) {
 	let templates = (wagonIndex == 0 ? LOCOMOTIVE : WAGON);
@@ -110,4 +109,17 @@ export async function move(entity: Entity) {
 
 	updateTrainPositions(train);
 	return sleep(conf.MOVE_DELAY);
+}
+
+export function getAllPositions(isLocomotive: boolean): Position[] {
+	let results = world.findEntities("trainPart", "position");
+	let positions: Position[] = [];
+
+	for (let result of results.values()) {
+		let wagon = world.requireComponent(result.trainPart.wagon, "wagon");
+		if (wagon.connected && (wagon.locomotive == isLocomotive)) {
+			positions.push([result.position.x, result.position.y]);
+		}
+	}
+	return positions;
 }

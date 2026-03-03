@@ -1,5 +1,6 @@
-import * as game from "./ui/game.ts";
-import * as intro from "./ui/intro.ts";
+import * as game from "./game.ts";
+import * as intro from "./intro.ts";
+
 
 declare global {
     interface Array<T> {
@@ -18,4 +19,4 @@ async function init() {
 init();
 
 
-// minimalni rozmery: 860 x 600 ?
+// minimalni rozmery: 1000 x 600 ?

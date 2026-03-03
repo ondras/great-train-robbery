@@ -1,6 +1,6 @@
 import Pane from "./pane.ts";
 import { confirm } from "./dialog.ts";
-import * as game from "./game.ts";
+import * as game from "../game.ts";
 import { template } from "./util.ts";
 
 
@@ -16,7 +16,6 @@ export default class Action extends Pane {
 
 		// FIXME preflight check
 		this.ready = true;
-
 
 	}
 
@@ -38,6 +37,6 @@ export default class Action extends Pane {
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
-		game.activate("map-action");
+		game.startAction();
 	}
 }

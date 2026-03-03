@@ -10,10 +10,10 @@
 body {
 	margin: 0;
 	background-color: #000; /* fixme */
+	color: gray;
 }
 
 #intro {
-	color: gray;
 	font-size: 16px;
 
 	input {
@@ -55,5 +55,37 @@ body {
 
 		&::part(track) { font-weight: bold; }
 	}
+
+	#status {
+		display: flex;
+		justify-content: space-between;
+		padding: 0 1ch;
+
+		.col {
+			display: flex;
+			flex-direction: column;
+		}
+
+		::before { color: var(--label); }
+
+		.status::before { content: "Status: "; }
+		.money::before { content: "Money: "; margin-right: 1ch; }
+		.party::before { content: "Party members: "; }
+		.hp::before { content: "Health: "; }
+
+		.party, .hp { text-align: right; }
+	}
+
+	.gold { color: var(--gold); }
 }
 
+@media (max-width: 999px), (max-height: 599px) {
+	body {
+		> * { display: none !important; }
+		&::before {
+			padding: 1lh 2ch;
+			content: "Sorry, this game is designed for devices with at least 1000⨯600 resolution.";
+			font-size: 150%;
+		}
+	}
+}

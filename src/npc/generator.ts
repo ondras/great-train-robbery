@@ -1,21 +1,25 @@
-import { spatialIndex, world, Building } from "../world.ts";
+import { spatialIndex, world, Building, Person } from "../world.ts";
 import display from "../display.ts";
 import * as random from "../random.ts";
+import * as rules from "../rules.ts";
 import { Task } from "./tasks.ts";
 
 
 function createPerson(x: number, y: number) {
 	let position = {x, y, blocks: {sight: false, movement: true}};
 	let visual = {ch: "@", fg: color()};
-	let actor = {wait: 0, tasks: [{type:"attack", target:"wagon"}, {type:"wander"}] as Task[]};
+	let actor = {wait: 0, tasks: [{type:"attack", target:"locomotive"}, {type:"wander"}] as Task[]};
+
 	let person = {
-		name: name(),
+		name: NAMES.random(),
 		items: [],
-		price: 100,
+		price: rules.personPrice,
 		active: random.float() > 0.5,
 		location: undefined,
-		hp: 10
+		hp: rules.personHp
 	}
+
+	if (random.float() < rules.personBonusChance) { applyBonus(person); }
 
 	let components = {
 		position,
@@ -31,6 +35,42 @@ function createPerson(x: number, y: number) {
 
 
 const COUNT = 10;
+const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Flint","Gideon","Harlan",
+		    "Jasper","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
+			"Stetson","Trace","Tucker","Virgil","Wade","Wyatt"];
+
+interface Bonus {
+	names: string[];
+	values: {
+		hp?: number;
+		price?: number;
+	}
+}
+
+const BONUSES: Bonus[] = [
+	{
+		names: ["Healthy %s", "%s the Healthy", "Big %s", "%s the Big"],
+		values: {
+			hp: Math.floor(rules.personHp * 0.5)
+		}
+	},	{
+		names: ["Cheap %s", "%s the Cheap"],
+		values: {
+			price: -Math.floor(rules.personPrice * 0.4)
+		}
+	}
+];
+
+
+function applyBonus(person: Person) {
+	let bonus = BONUSES.random();
+	Object.entries(bonus.values).forEach(([key, value]) => {
+		(person[key as keyof typeof person] as number) += value;
+	});
+
+	let template = bonus.names.random();
+	person.name = template.replace("%s", person.name);
+}
 
 export function generatePeople() {
 	let freePositions = computeFreePositions();
@@ -43,15 +83,9 @@ export function generatePeople() {
 }
 
 function color() {
-	let h = random.float() * 360;
+	let h = Math.round(random.float() * 360);
 	let l = random.float() * 0.5 + 0.25;
 	return `hsl(${h} 100% ${l * 100}%)`;
-}
-
-function name() {
-	return ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Flint","Gideon","Harlan",
-		    "Jasper","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
-			"Stetson","Trace","Tucker","Virgil","Wade","Wyatt"].random();
 }
 
 function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean {
@@ -60,10 +94,10 @@ function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean 
 	});
 }
 
+// fixme volne pozice spis jako atribut komponenty "town"
 function computeFreePositions(): number[][] {
 	const { town } = world.findEntities("town").values().next().value!;
 
-	// FIXME building asi nemusi byt komponenta, staci pridat k town?
 	let buildings = [...world.findEntities("building").values()].map(e => e.building);
 	let positions: number[][] = [];
 

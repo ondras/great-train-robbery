@@ -13,7 +13,7 @@ body {
 		"main log"
 		"status status";
 
-	grid-template-columns: auto 40ch;
+	grid-template-columns: auto 50ch;
 	grid-template-rows: auto auto auto;
 
 	width: fit-content;

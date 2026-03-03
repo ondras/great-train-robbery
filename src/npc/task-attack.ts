@@ -1,9 +1,11 @@
 import { world, Entity, spatialIndex } from "../world.ts";
 import display from "../display.ts";
 import { AttackTask } from "./tasks.ts";
-import { dist8, sleep, Position, computePath, getFreeNeighbors } from "./util.ts";
+import { dist8, distEuclidean, sleep, Position, computePath, getFreeNeighbors } from "./util.ts";
 import * as conf from "../conf.ts";
 import { damage } from "./damage.ts";
+import * as train from "./train.ts";
+
 
 
 function getTargetPositions(task: AttackTask): Position[] {
@@ -12,23 +14,8 @@ function getTargetPositions(task: AttackTask): Position[] {
 
 		case "guard": return [];
 
-		case "locomotive": return [];
-
-		case "wagon": {
-			// FIXME mozna radeji pres trainPart+position
-			let result = world.findEntities("wagon");
-			let wagons = [...result.values()]
-							.map(({ wagon }) => wagon)
-							.filter((wagon, i) => (i > 0 && wagon.connected));
-			let positions: Position[] = [];
-			wagons.forEach(wagon => {
-				wagon.parts.forEach(part => {
-					let position = world.getComponent(part, "position");
-					if (position) { positions.push([position.x, position.y]); }
-				});
-			});
-			return positions;
-		}
+		case "locomotive": return train.getAllPositions(true);
+		case "wagon": return train.getAllPositions(false);
 
 		case "enemy": return [];
 	}
@@ -49,13 +36,18 @@ async function doAttack(entity: Entity, target: Position) {
 	let currentPosition = [position.x, position.y];
 
 	let path = computePath(currentPosition, target);
+	// FIXME detect first obstacle
 
 	let visual = {
 		ch: "*"
 	}
 	let id = "shot";
+	display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:2});
+	let dist = distEuclidean(currentPosition, target);
+	await display.move(id, target[0], target[1], 10*dist);
 
-	for (let i=0;i<path.length;i++) { // fixme perhaps straight line?
+/*
+	for (let i=0;i<path.length;i++) {
 		let pos = path[i];
 		if (i) {
 			display.move(id, pos[0], pos[1], 0);
@@ -64,7 +56,7 @@ async function doAttack(entity: Entity, target: Position) {
 		}
 		await sleep(2);
 	}
-
+*/
 	display.delete(id);
 	return damage(target);
 }

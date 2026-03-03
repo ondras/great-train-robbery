@@ -6,12 +6,13 @@
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body>
+		<!--
 		<select id="font" style="position:fixed;top:0;right:0;">
 			<option value="inconsolata">inconsolata</option>
-			<option value="monospace" selected>monospace (has box drawing)</option>
+			<option value="monospace">monospace (has box drawing)</option>
 			<option value="mononoki">mononoki (has box drawing)</option>
 			<option value="cascadiacode">cascadia code (has box drawing)</option>
-			<option value="cascadiamono">cascadia mono (has box drawing)</option>
+			<option value="cascadiamono" selected>cascadia mono (has box drawing)</option>
 			<option value="xenon3">xenon 3 (old, no box drawing)</option>
 			<option value="xenon2">xenon 2 (new variable, has box drawing)</option>
 			<option value="metrickal">metrickal (no box drawing)</option>
@@ -24,17 +25,23 @@
 			fselect.addEventListener("change", sync);
 			sync();
 		</script>
+-->
 
 		<main id="intro" hidden>
 			<section>
-				VLACEK VLACEK
+<h1>The Great Train Robbery</h1>
+
+<pre>
+▁▁▁┬──┬▁▁   ▁▁▁▁▁▁            ▁   ∙
+`|╓┐╓┐╓┐|  |\|▔▔|/|   ,:;.   |o| ▁|
+||╙┘╙┘╙┘|╌╌|/|∙∙|\|╌╌|▔▔▔▔|╌╌|───∙()
+▔'oo▔▔oo'  'oo▔▔oo'  'o▔▔o'  'o▔oo'\\
+</pre>
 
 				<blockquote>
-					“Well now, listen up, boys. Word is there’s a train fixin’ to roll through our humble little town. But this ain’t no ordinary iron horse, no sir. This one’s belly’s stuffed to the brim with glitterin’ gold.
-					<br/>
-					Now I reckon a gift like that don’t just come knockin’ polite on a man’s door twice in his lifetime. So here’s what I’m thinkin’: we saddle up, lay in wait along the tracks, and relieve that train of its shiny burden for our own considerable trouble.
-					<br/>
-					Why let all that glitter roll on by, fat and happy, when it could be jinglin’ sweet in our own pockets? I say we stop that train, help ourselves to its treasure, and ride off richer than kings at high noon.”
+					<p>“Well now, listen up, boys. Word is there’s a train fixin’ to roll through our humble little town. But this ain’t no ordinary iron horse, no sir. This one’s belly’s stuffed to the brim with glitterin’ gold.</p>
+					<p>Now I reckon a gift like that don’t just come knockin’ polite on a man’s door twice in his lifetime. So here’s what I’m thinkin’: we saddle up, lay in wait along the tracks, and relieve that train of its shiny burden for our own considerable trouble.</p>
+					<p>Why let all that glitter roll on by, fat and happy, when it could be jinglin’ sweet in our own pockets? I say we stop that train, help ourselves to its treasure, and ride off richer than kings at high noon.”</p>
 				</blockquote>
 
 				<p>
@@ -56,7 +63,7 @@
 				<span data-content="store"><kbd>G</kbd>eneral store</span>
 				<span data-content="hotel"><kbd>H</kbd>otel</span>
 				<span data-content="action">Start the <kbd>a</kbd>ction</span>
-				<span data-content="help">Help<kbd>?</kbd></span>
+				<span data-content="help">[<kbd>?</kbd>] Help</span>
 			</section>
 
 			<section id="heading">The Great Train Robbery</section>
@@ -74,10 +81,17 @@
 				<section id="help">???</section>
 			</section>
 
-			<section id="log">log</section>
+			<section id="log"></section>
 
 			<section id="status">
-				status
+				<div class="col">
+					<span class="status"></span>
+					<span class="money"></span>
+				</div>
+				<span class="col">
+					<span class="party"></span>
+					<span class="hp"></span>
+				</span>
 			</section>
 
 			<template class="confirm-hire">Really hire <span class="name"></span>? It will cost you <span class="gold"></span>.</template>
