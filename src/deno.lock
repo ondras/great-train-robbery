@@ -1,0 +1,14 @@
+{
+  "version": "5",
+  "remote": {
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/face.ts": "c971ff691dfa75282f32b8f9c0976ba48b9c8533df94aba2ca696f29ba94a811",
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/pubsub.ts": "a0c8d73b8b944c7e50e11f4b2a7f689ff8022c773dc7b469f8e7fb0d32ca6f57",
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/query.ts": "e4b3f19e2583f7430e02fb3f22a73403781eae407b4ce6ea17f8700c75b770d8",
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/scheduler.ts": "3b325df7e9b8a53803204e2607cb95ecacd844a72c80ad11fcfddd1ca8eda955",
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/spatial-index.ts": "c6d131720c4f540319468d70006ed3ea9ae61f49f32bfd5942f9cd5aadb096eb",
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/typed-event-target.ts": "873cdb229a1d8433bb7b064639545ac5e528c6e291bf9c1813b08ffeb5c701de",
+    "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/world.ts": "4a956e5967d74d8d3d204bebeb05affb4a4509a15c9d87b2a1e319c5f378490a",
+    "https://cdn.jsdelivr.net/gh/ondras/rl-display@12857ba/src/rl-display.ts": "45eb50d85ba52e6d523a27a6b87e640758565bda7e9347b550c0be32363f8109",
+    "https://cdn.jsdelivr.net/gh/ondras/rl-display@12857ba/src/storage.ts": "2eabe3e987d6c75c5cbc68977151d350296f22dfbf48949d1c4130a913b4a60c"
+  }
+}

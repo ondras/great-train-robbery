@@ -11,6 +11,7 @@ interface BuildingItem {
 }
 
 export async function pickTask(task?: Task): Promise<Task | false> {
+	/*
 	const { person, visual } = world.requireComponents(entity, "person", "visual");
 
 	let dialog = createDialog();
@@ -40,6 +41,8 @@ export async function pickTask(task?: Task): Promise<Task | false> {
 	dialog.append(p, itemTable.build(items));
 
 	return show(dialog, handleKey);
+	*/
+	return false
 }
 
 function buildBuildingRow(row: HTMLTableRowElement, item: BuildingItem) {

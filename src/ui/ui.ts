@@ -49,8 +49,6 @@ function navKeyboardHandler(e: KeyboardEvent): boolean {
 }
 
 export function activate(pane: PaneName) {
-	console.log("activePane", activePane);
-	console.log("pane", pane);
 	if (activePane) { activePane.deactivate(); }
 
 	activePane = panes[pane];

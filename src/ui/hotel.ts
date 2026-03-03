@@ -115,7 +115,7 @@ export default class Hotel extends Pane {
 		node.replaceChildren();
 
 		let results = world.findEntities("person", "visual");
-		let entries = [...results.entries()].filter(entry => entry[1].person.active);
+		let entries = [...results.entries()].filter(entry => entry[1].person.relation == "party");
 		let items = entries.map(entry => {
 			return {
 				id: entry[0],

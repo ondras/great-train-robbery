@@ -61,27 +61,23 @@ export async function confirm(content: Node | string): Promise<boolean> {
 	let ko = document.createElement("span");
 	ko.classList.add("button");
 	ko.innerHTML = `[<kbd>Esc</kbd>] No`;
-	function handleKey(e: KeyboardEvent) {
-		if (e.key == "Enter") { return true; }
-		if (e.key == "Escape") { return false; }
-	}
 
 	footer.append(ko, ok);
 	dialog.append(content, footer);
 
+	function handleKey(e: KeyboardEvent) {
+		if (e.key == "Enter") { return true; }
+		if (e.key == "Escape") { return false; }
+	}
 	return show(dialog, handleKey);
 }
 
-export async function gameOver(reason: string) {
-	if (reason == "win") {
+export async function gameOver() {
+	let content = document.createDocumentFragment();
 
-	} else {
-		let content = document.createDocumentFragment();
-
-		let strong = document.createElement("strong");
-		strong.textContent = "💀 GAME OVER";
-		content.append(strong);
-		alert(content);
-	}
+	let strong = document.createElement("strong");
+	strong.textContent = "💀 GAME OVER";
+	content.append(strong);
+	alert(content);
 }
 

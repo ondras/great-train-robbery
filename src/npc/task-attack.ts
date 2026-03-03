@@ -1,11 +1,9 @@
-import { world, Entity, spatialIndex } from "../world.ts";
+import { world, Entity } from "../world.ts";
 import display from "../display.ts";
-import { AttackTask } from "./tasks.ts";
-import { dist8, distEuclidean, sleep, Position, computePath, getFreeNeighbors } from "./util.ts";
-import * as conf from "../conf.ts";
+import { AttackTask, moveCloser } from "./tasks.ts";
+import { dist8, distEuclidean, Position, computePath } from "./util.ts";
 import { damage } from "./damage.ts";
 import * as train from "./train.ts";
-
 
 
 function getTargetPositions(task: AttackTask): Position[] {
@@ -42,7 +40,7 @@ async function doAttack(entity: Entity, target: Position) {
 		ch: "*"
 	}
 	let id = "shot";
-	display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:2});
+	display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:3});
 	let dist = distEuclidean(currentPosition, target);
 	await display.move(id, target[0], target[1], 10*dist);
 
@@ -52,34 +50,13 @@ async function doAttack(entity: Entity, target: Position) {
 		if (i) {
 			display.move(id, pos[0], pos[1], 0);
 		} else {
-			display.draw(pos[0], pos[1], visual, {id, zIndex:2});
+			display.draw(pos[0], pos[1], visual, {id, zIndex:3});
 		}
 		await sleep(2);
 	}
 */
 	display.delete(id);
 	return damage(target);
-}
-
-async function moveCloser(entity: Entity, target: Position) {
-	let { position } = world.requireComponents(entity, "position");
-	let neighbors = getFreeNeighbors([position.x, position.y]);
-	if (neighbors.length == 0) { return; }
-
-	function CMP_DIST(a: Position, b: Position) {
-		let da = dist8(a, target);
-		let db = dist8(b, target);
-		return da - db;
-	}
-	neighbors.sort(CMP_DIST);
-	let neighbor = neighbors[0];
-
-	position.x = neighbor[0];
-	position.y = neighbor[1];
-	spatialIndex.update(entity);
-	display.move(entity, position.x, position.y, 0);
-
-	await sleep(conf.MOVE_DELAY);
 }
 
 function canBeAttacked(target: Position, current: Position): boolean {
@@ -91,7 +68,7 @@ function canBeReached(target: Position, current: Position): boolean {
 	return true;
 }
 
-export async function attack(entity: Entity, task: AttackTask) {
+export async function attack(entity: Entity, task: AttackTask): Promise<boolean> {
 	// FIXME pick a gun
 
 
@@ -113,7 +90,8 @@ export async function attack(entity: Entity, task: AttackTask) {
 	// these can be attacked immediately -> attack
 	if (attackablePositions.length > 0) {
 		let target = attackablePositions[0];
-		return doAttack(entity, target);
+		await doAttack(entity, target);
+		return true;
 	}
 
 	// these can be reached eventually -> move closer
@@ -121,4 +99,6 @@ export async function attack(entity: Entity, task: AttackTask) {
 		let target = reachablePositions[0];
 		return moveCloser(entity, target);
 	}
+
+	return false;
 }

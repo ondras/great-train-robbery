@@ -1,6 +1,6 @@
 import { Town, Crossing, Plot, Building, Path } from "./town.ts";
 import display from "../display.ts";
-import { spatialIndex, world, Track } from "../world.ts";
+import { spatialIndex, world } from "../world.ts";
 import { DIRS_4 } from "../dirs.ts";
 
 
@@ -66,7 +66,6 @@ function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 			let top = (j == 0);
 			let bottom = (j == bbox.height-1);
 			let ch = " ";
-			let zIndex = 0;
 			let x = bbox.x + i;
 			let y = bbox.y + j;
 
@@ -82,13 +81,12 @@ function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 					case left: ch = edges[3]; break;
 				}
 
-				zIndex = 1;
 				let position = {x, y, blocks: {sight: false, movement: true}};
 				let entity = world.createEntity({position});
 				spatialIndex.update(entity);
 			}
 
-			display.draw(x, y, { ch }, {zIndex});
+			display.draw(x, y, { ch });
 		}
 	}
 
@@ -105,8 +103,14 @@ function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 	});
 }
 
+interface Position {
+	x: number;
+	y: number;
+	nextDirection?: number;
+}
+
 function rasterizePath(path: Path, options: RasterizerOptions) {
-	let track: Track["positions"] = [];
+	let track: Position[] = [];
 
 	path.forEach((crossing, i) => {
 		let segment = rasterizePathSegment(crossing, i, path, options);
@@ -117,7 +121,7 @@ function rasterizePath(path: Path, options: RasterizerOptions) {
 }
 
 function rasterizePathSegment(crossing: Crossing, i: number, path: Path, options: RasterizerOptions) {
-	let positions: Track["positions"] = [];
+	let positions: Position[] = [];
 	if (i == 0) { return positions; }
 
 	let current = crossingToXY(crossing, options);
@@ -213,7 +217,7 @@ const BUILDING_DESIGNS: BuildingDesign[] = [
 	},
 
 	{
-		corners: ["┌", "┐", "┘", "└"],
-		edges: ["-", "|", "-", "|"]
+		corners: ["┏", "┓", "┛", "┗"],
+		edges: ["━", "┃", "━", "┃"]
 	}
 ];

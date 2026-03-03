@@ -3,12 +3,12 @@ import display from "../display.ts";
 import * as conf from "../conf.ts";
 import { sleep, Position } from "./util.ts";
 import { TrainTask } from "./tasks.ts";
+import * as rules from "../rules.ts";
 
 
 const WAGONS = 3;
 const WAGON_LENGTH = 3;
 const WAGON = ["|oo", "-oo", "|oo", "-oo"];
-//const LOCOMOTIVE = ["▲■O", "▶■O", "▼■O", "◀🠈◂■O"];
 const LOCOMOTIVE = [["🠉", "◼", "O"], ["🠊", "◼", "O"], ["🠋", "◼", "O"], ["🠈", "◼", "O"]];
 
 export function create(trackOffset: number) {
@@ -22,7 +22,7 @@ export function create(trackOffset: number) {
 
 	for (let i=0;i<WAGONS+1;i++) {
 		let parts: Entity[] = [];
-		let wagon = { train, parts, connected: true, hp: 10, locomotive: (i==0) };
+		let wagon = { train, parts, connected: true, hp: rules.wagonHp, locomotive: (i==0) };
 		let wagonEntity = world.createEntity({ wagon });
 		wagons.push(wagonEntity);
 
@@ -45,10 +45,9 @@ function updateTrainPositions(train: Train) {
 	let index = train.trackOffset;
 
 	train.wagons.forEach((wagonEntity, i) => {
-		let wagon = world.requireComponent(wagonEntity, "wagon");
-		if (!wagon.connected) { return; }
+		let { parts } = world.requireComponent(wagonEntity, "wagon");
 
-		wagon.parts.forEach((partEntity, j) => {
+		parts.forEach((partEntity, j) => {
 			let position = world.getComponent(partEntity, "position");
 			if (index < 0 || index >= town.track.length) { // not visible
 				if (position) { // remove
@@ -70,7 +69,7 @@ function updateTrainPositions(train: Train) {
 			}
 
 			let visual = createWagonPartVisual(i, j, nextDirection!); // FIXME undefined
-			display.draw(x, y, visual, {id: partEntity, zIndex:1});
+			display.draw(x, y, visual, {id: partEntity, zIndex:2});
 			spatialIndex.update(partEntity);
 
 			index--;
@@ -83,24 +82,6 @@ function createWagonPartVisual(wagonIndex: number, partIndex: number,nextDirecti
 	return {
 		ch: templates[nextDirection][partIndex]
 	}
-}
-
-export function isInTown() {
-	function isPartInTown(part: Entity) {
-		return world.hasComponents(part, "position");
-	}
-
-	function isWagonInTown(wagon: Wagon) {
-		return wagon.parts.some(isPartInTown);
-	}
-
-	let { train } = world.findEntities("train").values().next().value!;
-
-	let connectedWagons = train.wagons.map(wagonEntity => {
-		return world.requireComponent(wagonEntity, "wagon");
-	}).filter(wagon => wagon.connected);
-
-	return connectedWagons.some(isWagonInTown);
 }
 
 export async function move(entity: Entity) {
@@ -117,9 +98,18 @@ export function getAllPositions(isLocomotive: boolean): Position[] {
 
 	for (let result of results.values()) {
 		let wagon = world.requireComponent(result.trainPart.wagon, "wagon");
-		if (wagon.connected && (wagon.locomotive == isLocomotive)) {
-			positions.push([result.position.x, result.position.y]);
-		}
+		if (wagon.locomotive != isLocomotive) { continue; }
+		positions.push([result.position.x, result.position.y]);
 	}
 	return positions;
+}
+
+export function disconnectLastWagon(train: Train) {
+	let wagonEntity = train.wagons.at(-1)!;
+
+	// no longer a train part
+	let { parts } = world.requireComponent(wagonEntity, "wagon");
+	parts.forEach(partEntity => world.removeComponents(partEntity, "trainPart"));
+
+	train.wagons.pop();
 }

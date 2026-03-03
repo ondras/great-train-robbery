@@ -1,4 +1,5 @@
 import * as keyboard from "./ui/keyboard.ts";
+import * as ui from "./ui/ui.ts";
 import * as random from "./random.ts";
 import * as rules from "./rules.ts";
 import display from "./display.ts";
@@ -7,13 +8,11 @@ import { rasterize } from "./town/rasterizer.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
 
-import { Entity, scheduler, world } from "./world.ts";
+import { scheduler, spatialIndex, world } from "./world.ts";
 import * as tasks from "./npc/tasks.ts";
 import * as train from "./npc/train.ts";
 import { gameOver } from "./ui/dialog.ts";
 import { sleep } from "./npc/util.ts";
-
-import * as ui from "./ui/ui.ts";
 
 
 let actionPaused = false;
@@ -42,6 +41,13 @@ function createTown(W: number, H: number) {
 	display.rows = height;
 
 	npcGenerator.generatePeople();
+
+	let gold = world.createEntity({
+		position: {x: 1, y: 1, blocks: {sight: false, movement: false}},
+		item: {type: "gold", label: "Gold"}
+	});
+	spatialIndex.update(gold);
+	display.draw(1, 1, {ch: "$", fg: "gold"}, {zIndex: 1});
 }
 
 export async function runAction() {
@@ -53,7 +59,7 @@ export async function runAction() {
 
 		let finished = isGameFinished();
 		if (finished) {
-			gameOver(finished);
+			gameOver();
 			return;
 		}
 
@@ -65,18 +71,36 @@ export async function runAction() {
 
 export const personQuery = world.query("person");
 
-function arePersonsDead(entities: Set<Entity>) {
-	for (let entity of entities) {
-		if (world.requireComponent(entity, "person").hp > 0) { return false; }
+
+function isGameFinished(): boolean {
+	let activePartyMembers = 0;
+	let enemies = 0;
+
+	for (let entity of personQuery.entities) {
+		let person = world.requireComponent(entity, "person");
+		switch (person.relation) {
+			case "enemy": enemies++; break;
+			case "party":
+				let actor = world.getComponent(entity, "actor");
+				if (actor) { activePartyMembers++; }
+			break;
+		}
 	}
-	return false;
-}
 
-function isGameFinished() {
-	if (arePersonsDead(personQuery.entities)) { return "dead"; }
-	if (!train.isInTown()) { return "gone"; }
+	// all party members inactive (dead or away)
+	if (activePartyMembers == 0) { return true; }
 
-	return false;
+	// train away (all connected wagons gone) + all enemies dead + nothing to pick
+
+	let trainParts = world.findEntities("trainPart", "position");
+	if (trainParts.size > 0) { return false; }
+
+	if (enemies > 0) { return false; } // FIXME nemuze nastat nekonecna honicka?
+
+	let items = world.findEntities("item", "position");
+	if (items.size > 0) { return false; } // FIXME splnuje tohle pouze zlato?
+
+	return true;
 }
 
 export function currentMoney() {
@@ -85,7 +109,7 @@ export function currentMoney() {
 	let entities = personQuery.entities;
 	for (let entity of entities) {
 		let person = world.requireComponent(entity, "person");
-		if (!person.active) { continue; }
+		if (person.relation != "party") { continue; }
 		money -= person.price;
 	}
 
@@ -110,5 +134,5 @@ export async function init(seed: number) {
 	await ui.init();
 
 	ui.activate("saloon");
-//	startAction();
+	startAction();
 }

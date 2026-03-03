@@ -48,7 +48,7 @@ export default class Saloon extends Pane {
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
-		person.active = true;
+		person.relation = "party";
 		status.update();
 		log.newline();
 		log.add(`You hired ${person.name} for ${person.price}$.`);
@@ -63,7 +63,7 @@ export default class Saloon extends Pane {
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
-		person.active = false;
+		person.relation = "npc";
 		status.update();
 		log.newline();
 		log.add(`You fired ${person.name} and got your ${person.price}$ back.`);
@@ -89,8 +89,8 @@ export default class Saloon extends Pane {
 			};
 		});
 
-		let activeItems = allItems.filter(item => item.person.active);
-		let inactiveItems = allItems.filter(item => !item.person.active);
+		let activeItems = allItems.filter(item => item.person.relation == "party");
+		let inactiveItems = allItems.filter(item => item.person.relation == "npc");
 
 		let options = { rowBuilder: buildPersonRow, activeId: activePerson };
 		let personTable = new ItemTable<PersonItem>(options);
@@ -108,7 +108,7 @@ export default class Saloon extends Pane {
 
 		if (activePerson) {
 			const person = world.requireComponent(activePerson, "person");
-			if (person.active) {
+			if (person.relation) {
 				this.activeKeyHandlers = [{key: "f", cb: () => this.tryFire(activePerson)}];
 			} else {
 				this.activeKeyHandlers = [{key: "h", cb: () => this.tryHire(activePerson)}];
@@ -128,7 +128,7 @@ function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: bo
 	let action = row.insertCell();
 
 	if (isActive) {
-		if (person.active) {
+		if (person.relation == "party") {
 			action.innerHTML = "<kbd>F</kbd>ire";
 		} else {
 			action.innerHTML = "<kbd>H</kbd>ire";

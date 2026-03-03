@@ -20,6 +20,13 @@ export interface Visual {
 	zIndex?: number;
 }
 
+/* z-indexes:
+  0: regular ground, walls
+  1: items
+  2: people, train parts
+  3: projectiles, fx
+*/
+
 export interface Actor {
 	wait: number;
 	tasks: Task[];
@@ -29,13 +36,9 @@ export interface Person {
 	name: string;
 	items: Entity[];
 	price: number;
-	active: boolean;
+	relation: "npc" | "party" | "enemy";
 	location?: Entity; // FIXME
 	hp: number;
-}
-
-export interface Inventory {
-	items: Entity[];
 }
 
 export interface Building {
@@ -55,7 +58,6 @@ export interface Wagon {
 	train: Entity;
 	parts: Entity[];
 	locomotive: boolean;
-	connected: boolean;
 	hp: number;
 }
 
@@ -73,6 +75,11 @@ export interface Town {
 	}[];
 }
 
+export interface Item {
+	label: string;
+	type: "gold" | "horse" | "weapon";
+}
+
 interface Components {
 	position: Position;
 	visual: Visual;
@@ -85,8 +92,12 @@ interface Components {
 	train: Train;
 	wagon: Wagon;
 	trainPart: TrainPart;
+
+	item: Item;
 }
 
 export const world = new face.World<Components>();
 export const spatialIndex = new face.SpatialIndex(world);
 export const scheduler = new face.FairActorScheduler(world);
+
+window.world = world;

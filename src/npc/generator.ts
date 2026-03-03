@@ -8,13 +8,13 @@ import { Task } from "./tasks.ts";
 function createPerson(x: number, y: number) {
 	let position = {x, y, blocks: {sight: false, movement: true}};
 	let visual = {ch: "@", fg: color()};
-	let actor = {wait: 0, tasks: [{type:"attack", target:"locomotive"}, {type:"wander"}] as Task[]};
+	let actor = {wait: 0, tasks: [{type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[]};
 
-	let person = {
+	let person: Person = {
 		name: NAMES.random(),
 		items: [],
 		price: rules.personPrice,
-		active: random.float() > 0.5,
+		relation: random.float() > 0.5 ? "npc" : "party",
 		location: undefined,
 		hp: rules.personHp
 	}
@@ -29,13 +29,13 @@ function createPerson(x: number, y: number) {
 	}
 
 	let entity = world.createEntity(components);
-	display.draw(position.x, position.y, visual, {id:entity, zIndex:1});
+	display.draw(position.x, position.y, visual, {id:entity, zIndex:2});
 	spatialIndex.update(entity);
 }
 
 
 const COUNT = 10;
-const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Flint","Gideon","Harlan",
+const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Emily","Flint","Gideon","Harlan",
 		    "Jasper","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
 			"Stetson","Trace","Tucker","Virgil","Wade","Wyatt"];
 
@@ -85,7 +85,7 @@ export function generatePeople() {
 function color() {
 	let h = Math.round(random.float() * 360);
 	let l = random.float() * 0.5 + 0.25;
-	return `hsl(${h} 100% ${l * 100}%)`;
+	return `hsl(${h | 0} 100% ${(l*100) | 0}%)`;
 }
 
 function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean {
