@@ -44,7 +44,7 @@ export default class Saloon extends Pane {
 	protected async tryHire(entity: Entity) {
 		const { person } = world.requireComponents(entity, "person", "visual");
 
-		let content = template(".confirm-hire", {name: person.name, gold: String(person.price)});
+		let content = template(".confirm-hire", {name: person.name, price: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
@@ -59,7 +59,7 @@ export default class Saloon extends Pane {
 	protected async tryFire(entity: Entity) {
 		const { person } = world.requireComponents(entity, "person", "visual");
 
-		let content = template(".confirm-fire", {name: person.name, gold: String(person.price)});
+		let content = template(".confirm-fire", {name: person.name, price: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 

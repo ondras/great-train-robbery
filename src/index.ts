@@ -9,9 +9,16 @@ declare global {
 }
 
 async function init() {
-//	let seed = (Math.random() * 0x1000000) | 0;
-	let seed = 454036;
-//	seed = await intro.init(seed);
+	let seed = (Math.random() * 0x1000000) | 0; // backup/random seed
+
+    let sp = new URL(location.href).searchParams; // override with url, if usable
+    if (sp.has("seed")) {
+        let parsed = parseInt(sp.get("seed")!, 16);
+        if (parsed) { seed = parsed; }
+    }
+
+//    seed = 454036; // override with debug
+//	seed = await intro.init(seed); // override with user
 
 	await game.init(seed);
 }

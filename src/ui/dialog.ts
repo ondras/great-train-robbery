@@ -37,11 +37,9 @@ export async function confirm(content: Node | string): Promise<boolean> {
 	let footer = document.createElement("footer")
 
 	let ok = document.createElement("span");
-	ok.classList.add("button");
 	ok.innerHTML = `Yes [<kbd>Enter</kbd>]`;
 
 	let ko = document.createElement("span");
-	ko.classList.add("button");
 	ko.innerHTML = `[<kbd>Esc</kbd>] No`;
 
 	footer.append(ko, ok);

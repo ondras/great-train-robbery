@@ -6,27 +6,6 @@
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body>
-		<!--
-		<select id="font" style="position:fixed;top:0;right:0;">
-			<option value="inconsolata">inconsolata</option>
-			<option value="monospace">monospace (has box drawing)</option>
-			<option value="mononoki">mononoki (has box drawing)</option>
-			<option value="cascadiacode">cascadia code (has box drawing)</option>
-			<option value="cascadiamono" selected>cascadia mono (has box drawing)</option>
-			<option value="xenon3">xenon 3 (old, no box drawing)</option>
-			<option value="xenon2">xenon 2 (new variable, has box drawing)</option>
-			<option value="metrickal">metrickal (no box drawing)</option>
-			<option value="input">input (has box drawing)</option>
-		</select>
-
-		<script>
-			const fselect = document.querySelector("#font");
-			function sync() { document.documentElement.dataset.font = fselect.value; window.dispatchEvent(new Event("resize")); }
-			fselect.addEventListener("change", sync);
-			sync();
-		</script>
--->
-
 		<main id="intro" hidden>
 			<section>
 <h1>The Great Train Robbery</h1>
@@ -94,10 +73,40 @@
 				</span>
 			</section>
 
-			<template class="confirm-hire">Really hire <span class="name"></span>? It will cost you <span class="gold"></span>.</template>
-			<template class="confirm-fire">Really fire <span class="name"></span>? You will get your <span class="gold"></span> back.</template>
+			<template class="confirm-hire">Really hire <span class="name"></span>? It will cost you <span class="price"></span><span class="gold">$</span>.</template>
+			<template class="confirm-fire">Really fire <span class="name"></span>? You will get your <span class="price"></span><span class="gold">$</span> back.</template>
 			<template class="confirm-action">Start the action? Once we start, there is no going back.</template>
 			<template class="confirm-remove-task">Really remove <span class="task"></span>?</template>
+
+			<template class="game-over">
+				<strong>The robbery is over!</strong>
+				<br/><br/>
+				Let's see how you did...
+				<table class="game-over">
+					<tr>
+						<td>Unspent money:</td>
+						<td><span class="money"></span><span class="gold">$</span></td>
+					</tr>
+					<tr>
+						<td>Party members:</td>
+						<td><span class="party"></span></td>
+					</tr>
+					<tr>
+						<td>Money looted from the train:</td>
+						<td><span class="loot"></span><span class="gold">$</span></td>
+					</tr>
+					<tr class="total">
+						<td>Total score (given to each member):</td>
+						<td><span class="score"></span><span class="gold">$</span></td>
+					</tr>
+				</table>
+
+				<footer>
+					<span>[<kbd>1</kbd>] Replay</span>
+					<span>[<kbd>2</kbd>] New Game</span>
+					<span>[<kbd>3</kbd>] GitHub</span>
+				</footer>
+			</template>
 
 		</main>
 

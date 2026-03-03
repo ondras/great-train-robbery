@@ -1,43 +1,3 @@
-/*
-@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&display=swap');
-@import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-neon@5.2.5/index.min.css");
-@import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-argon@5.2.5/index.min.css");
-@import url("https://cdn.jsdelivr.net/npm/@fontsource/monaspace-xenon@5.2.5/index.min.css");
-@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap');
-
-@font-face {
-	font-family: "monaspace xenon 2";
-	src: url("fonts/Monaspace Xenon/Monaspace Xenon Var.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "monaspace xenon 3";
-	src: url("fonts/monaspace-xenon-latin-400-normal.woff2") format("woff2");
-	font-weight: 400;
-}
-
-@font-face {
-	font-family: "monaspace xenon 3";
-	src: url("fonts/monaspace-xenon-latin-700-normal.woff2") format("woff2");
-	font-weight: 700;
-}
-
-@font-face {
-	font-family: "input";
-	src: url("fonts/Input-Regular.ttf") format("truetype");
-}
-
-@font-face {
-	font-family: "metrickal";
-	src: url("fonts/Metrickal-Regular.otf") format("opentype");
-}
-
-@font-face {
-	font-family: "mononoki";
-	src: url("fonts/mononoki-Regular.otf") format("opentype");
-}
-*/
-
 @font-face {
 	font-family: "cascadia mono";
 	src: url("CascadiaMono.woff2") format("woff2");
@@ -49,18 +9,7 @@
 
 :root {
 	--radius: 4px;
-/*
-	&[data-font=monospace] { font-family: monospace; }
-	&[data-font=cascadiacode] { font-family: cascadia code; }
-	&[data-font=cascadiamono] { font-family: cascadia mono; }
-	&[data-font=xenon3] { font-family: "monaspace xenon 3"; }
-	&[data-font=xenon2] { font-family: "monaspace xenon 2"; }
-	&[data-font=input] { font-family: "input"; }
-	&[data-font=metrickal] { font-family: "metrickal"; }
-	&[data-font=mononoki] { font-family: "mononoki"; }
-	&[data-font=inconsolata] { font-family: "inconsolata"; }
-*/
-	font-family: cascadia mono;
+	font-family: cascadia mono, monospace;
 }
 
 button, input, select, option, kbd, pre {
@@ -80,7 +29,7 @@ dialog {
 		margin-top: 1lh;
 		display: flex;
 		justify-content: space-between;
-		padding: 0 2ch;
+		padding: 0 1ch;
 
 		&:has(span:only-child) {
 			justify-content: center;
@@ -135,12 +84,16 @@ kbd {
 	}
 }
 
-table.item-table {
+table {
 	border-collapse: collapse;
+
+	td { padding: 0.5lh 1ch; }
+}
+
+table.item-table {
 	margin: 0.5lh 0;
 
 	td {
-		padding: 0.5lh 1ch;
 		&:first-child {
 			padding-left: 3ch;
 		}
@@ -168,6 +121,32 @@ table.item-table {
 	}
 }
 
+table.game-over {
+	margin-top: 1lh;
+	margin-bottom: 0.5lh;
+
+	td:first-child {
+		color: var(--label);
+		text-align: right;
+	}
+
+	.total {
+		font-weight: bold;
+		--border-width: 2px;
+
+		td {
+			position: relative;
+			padding-top: 1.5lh;
+			&::before {
+				content: "";
+				position: absolute;
+				inset: calc(0.5lh - var(--border-width)/2) 0 0 0;
+				border-top: var(--border-width) solid var(--fg)
+			}
+		}
+	}
+}
+
 #nav, #heading {
 	--border-width: 2px;
 	--spacing: calc(0.5lh - var(--border-width)/2);
@@ -180,8 +159,7 @@ table.item-table {
 	display: flex;
 
 	span {
-		--spacing: 0.5lh 0.5ch;
-		padding: var(--spacing);
+		padding: 0.5lh 0.5ch;
 		margin: 0.5lh 1ch;
 
 		&::before, &::after { color: var(--highlight); }

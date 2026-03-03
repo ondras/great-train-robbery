@@ -134,6 +134,7 @@ export async function init(seed: number) {
 
 	await ui.init();
 
+//	gameOver(seed);
 	ui.activate("map");
 //	startAction();
 }
