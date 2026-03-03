@@ -13,7 +13,7 @@ const dom = {
 
 function updateMoney() {
 	let current = game.currentMoney();
-	dom.money.innerHTML = `${current}<span class="gold">$<span>`;
+	dom.money.innerHTML = `<span class="gold">${current}</span>`;
 }
 
 function updateParty() {

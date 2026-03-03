@@ -1,9 +1,11 @@
-import { world, Entity } from "../world.ts";
+import { world, spatialIndex, Entity } from "../world.ts";
 import display from "../display.ts";
 import { AttackTask, moveCloser } from "./tasks.ts";
 import { dist8, distEuclidean, Position, computePath } from "./util.ts";
 import { damage } from "./damage.ts";
 import * as train from "./train.ts";
+import * as game from "../game.ts";
+import * as log from "../ui/log.ts";
 
 
 function getTargetPositions(task: AttackTask): Position[] {
@@ -17,6 +19,17 @@ function getTargetPositions(task: AttackTask): Position[] {
 		case "wagon": return train.getAllPositions(false);
 
 		case "enemy": return [];
+
+		case "party": {
+			let positions: Position[] = [];
+			for (let entity of game.personQuery.entities) {
+				let result = world.getComponents(entity, "position", "person");
+				if (!result) { continue; } // without position
+				if (result.person.relation != "party") { continue; } // not party
+				positions.push([result.position.x, result.position.y]);
+			}
+			return positions;
+		}
 	}
 }
 
@@ -33,6 +46,16 @@ function sortPositions(positions: Position[], target: Position): Position[] {
 async function doAttack(entity: Entity, target: Position): Promise<number> {
 	let { position, actor } = world.requireComponents(entity, "position", "actor");
 	let currentPosition = [position.x, position.y];
+
+	let entities = spatialIndex.list(target[0], target[1]);
+	let targetEntity = [...entities].find(e => {
+		let blocks = world.getComponent(e, "blocks");
+		return (blocks && blocks.movement);
+	});
+	if (targetEntity) {
+		let str = log.format("%s shoots at %s.", entity, targetEntity);
+		log.add(str);
+	}
 
 	let path = computePath(currentPosition, target);
 	// FIXME detect first obstacle

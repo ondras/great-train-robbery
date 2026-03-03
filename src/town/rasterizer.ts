@@ -81,8 +81,9 @@ function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 					case left: ch = edges[3]; break;
 				}
 
-				let position = {x, y, blocks: {sight: false, movement: true}};
-				let entity = world.createEntity({position});
+				let blocks = {sight: false, movement: true};
+				let position = {x, y};
+				let entity = world.createEntity({position, blocks});
 				spatialIndex.update(entity);
 			}
 
@@ -144,8 +145,8 @@ function rasterizePathSegment(crossing: Crossing, i: number, path: Path, options
 		display.draw(x, y, {
 			ch: "#",
 			fg: "#777",
-			bg: "#630"
-		}, {part:"track"});
+			bg: "rgb(80 40 0)"
+		});
 	}
 
 	return positions;

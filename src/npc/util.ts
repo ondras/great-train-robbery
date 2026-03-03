@@ -42,16 +42,19 @@ export function computePath(a: Position, b: Position): Position[] {
 	return path;
 }
 
-export function getFreeNeighbors(center: Position): Position[] {
+export function getFreeNeighbors(center: Position, forceInsideTown: boolean): Position[] {
 	let { town } = world.findEntities("town").values().next().value!;
 
 	return DIRS_8.map(dir => [center[0] + dir[0], center[1] + dir[1]]).filter(([x, y]) => {
-		if (x < 0 || y < 0 || x >= town.width || y >= town.height) { return false; }
+		if (forceInsideTown) {
+			if (x < 0 || y < 0 || x >= town.width || y >= town.height) { return false; }
+		}
 
 		let targetEntities = spatialIndex.list(x, y);
 		return [...targetEntities].every(e => {
-			let position = world.requireComponent(e, "position");
-			return !position.blocks.movement;
+			let blocks = world.getComponent(e, "blocks");
+			if (!blocks) { return true; }
+			return !blocks.movement;
 		});
 	});
 }

@@ -6,7 +6,9 @@ import * as conf from "../conf.ts";
 
 export async function wander(entity: Entity) {
 	let { position, actor } = world.requireComponents(entity, "position", "actor");
-	let neighbors = getFreeNeighbors([position.x, position.y]);
+
+	let forceInsideTown = true;
+	let neighbors = getFreeNeighbors([position.x, position.y], forceInsideTown);
 
 	if (neighbors.length == 0) { return 0; }
 	let neighbor = neighbors.random();

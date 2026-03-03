@@ -1,6 +1,7 @@
 import * as keyboard from "./keyboard.ts";
 import * as viewport from "./viewport.ts";
 import * as status from "./status.ts";
+import * as log from "./log.ts";
 import display from "../display.ts";
 
 import Pane from "./pane.ts";
@@ -65,6 +66,10 @@ export function startAction() {
 
 	showNav("map");
 	panes.map.activate();
+
+	log.clear();
+	log.add("This is it. The Great Train Robbery is about to start. Let's just wait for the train...");
+	log.newline();
 }
 
 export async function init() {

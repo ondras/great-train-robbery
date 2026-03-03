@@ -53,7 +53,7 @@ body {
 		--tile-height: 1rem;
 		--tile-width: 0.75rem;
 
-		&::part(track) { font-weight: bold; }
+		&::part(train) { font-weight: bold; }
 	}
 
 	#status {
@@ -66,7 +66,7 @@ body {
 			flex-direction: column;
 		}
 
-		::before { color: var(--label); }
+		.col > *::before { color: var(--label); }
 
 		.status::before { content: "Status: "; }
 		.money::before { content: "Money: "; margin-right: 1ch; }
@@ -76,7 +76,12 @@ body {
 		.party, .hp { text-align: right; }
 	}
 
-	.gold { color: var(--gold); }
+	.gold {
+		&::before {
+			content: "$";
+			color: var(--gold);
+		}
+	}
 }
 
 @media (max-width: 999px), (max-height: 599px) {

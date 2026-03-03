@@ -1,4 +1,4 @@
-import { spatialIndex, world, Building, Person, Actor } from "../world.ts";
+import { spatialIndex, world, Building, Person, Actor, Named } from "../world.ts";
 import display from "../display.ts";
 import * as random from "../random.ts";
 import * as rules from "../rules.ts";
@@ -6,8 +6,10 @@ import { Task } from "./tasks.ts";
 
 
 function createPerson(x: number, y: number) {
-	let position = {x, y, blocks: {sight: false, movement: true}};
+	let position = {x, y};
+	let blocks = {sight: false, movement: true};
 	let visual = {ch: "@", fg: color()};
+	let named = {name: NAMES.random()};
 
 	let actor: Actor = {
 		wait: 0,
@@ -16,7 +18,6 @@ function createPerson(x: number, y: number) {
 	};
 
 	let person: Person = {
-		name: NAMES.random(),
 		items: [],
 		price: rules.personPrice,
 		relation: random.float() > 0.5 ? "npc" : "party",
@@ -24,13 +25,15 @@ function createPerson(x: number, y: number) {
 		hp: rules.personHp
 	}
 
-	if (random.float() < rules.personBonusChance) { applyBonus(person, actor); }
+	if (random.float() < rules.personBonusChance) { applyBonus(person, actor, named); }
 
 	let components = {
 		position,
 		actor,
 		visual,
-		person
+		person,
+		blocks,
+		named
 	}
 
 	let entity = world.createEntity(components);
@@ -88,7 +91,7 @@ const BONUSES: Bonus[] = [
 ];
 
 
-function applyBonus(person: Person, actor: Actor) {
+function applyBonus(person: Person, actor: Actor, named: Named) {
 	let bonus = BONUSES.random();
 	Object.entries(bonus.values).forEach(([key, value]) => {
 		if (key == "hp") { person.hp += value; }
@@ -97,7 +100,7 @@ function applyBonus(person: Person, actor: Actor) {
 	});
 
 	let template = bonus.names.random();
-	person.name = template.replace("%s", person.name);
+	named.name = template.replace("%s", named.name);
 }
 
 export function generatePeople() {

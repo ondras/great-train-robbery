@@ -1,5 +1,5 @@
 import Pane from "./pane.ts";
-import { world, Entity, Person, Visual } from "../world.ts";
+import { world, Entity, Person, Visual, Named } from "../world.ts";
 import { confirm } from "./dialog.ts";
 import ItemTable from "./item-table.ts";
 import { fillPerson, template } from "./util.ts";
@@ -11,6 +11,7 @@ interface PersonItem {
 	id: number;
 	person: Person;
 	visual: Visual;
+	named: Named;
 }
 
 export default class Saloon extends Pane {
@@ -25,6 +26,7 @@ export default class Saloon extends Pane {
 		this.render();
 		log.clear();
 		log.add("Welcome to the saloon! Here you can hire people for your heist, or fire them if you change your mind.");
+		log.newline();
 	}
 
 	handleKey(e: KeyboardEvent): boolean {
@@ -42,31 +44,32 @@ export default class Saloon extends Pane {
 	}
 
 	protected async tryHire(entity: Entity) {
-		const { person } = world.requireComponents(entity, "person", "visual");
+		const { person, named } = world.requireComponents(entity, "person", "visual", "named");
 
-		let content = template(".confirm-hire", {name: person.name, price: String(person.price)});
+		let content = template(".confirm-hire", {name: named.name, price: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
 		person.relation = "party";
 		status.update();
+		log.add(`You hired ${named.name} for ${person.price}$.`);
 		log.newline();
-		log.add(`You hired ${person.name} for ${person.price}$.`);
 
 		this.render(entity);
 	}
 
 	protected async tryFire(entity: Entity) {
-		const { person } = world.requireComponents(entity, "person", "visual");
+		const { person, named } = world.requireComponents(entity, "person", "visual", "named");
 
-		let content = template(".confirm-fire", {name: person.name, price: String(person.price)});
+		let content = template(".confirm-fire", {name: named.name, price: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
 		person.relation = "npc";
 		status.update();
+		log.add(`You fired ${named.name} and got your ${person.price}$ back.`);
 		log.newline();
-		log.add(`You fired ${person.name} and got your ${person.price}$ back.`);
+
 		// FIXME zahodit tasky
 		// FIXME zahodit predmety
 		// FIXME zahodit location
@@ -80,12 +83,13 @@ export default class Saloon extends Pane {
 		node.replaceChildren();
 		this.activeKeyHandlers = [];
 
-		let results = world.findEntities("person", "visual");
+		let results = world.findEntities("person", "visual", "named");
 		let allItems = [...results.entries()].map(entry => {
 			return {
 				id: entry[0],
 				person: entry[1].person,
 				visual: entry[1].visual,
+				named: entry[1].named,
 			};
 		});
 
@@ -118,12 +122,12 @@ export default class Saloon extends Pane {
 }
 
 function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: boolean) {
-	let { person, visual } = item;
+	let { person, visual, named } = item;
 
-	fillPerson(row.insertCell(), person, visual);
+	fillPerson(row.insertCell(), named, visual);
 
 	let price = row.insertCell();
-	price.innerHTML = `price: ${person.price}<span class="gold">$</span>`;
+	price.innerHTML = `price: <span class="gold">${person.price}</span>`;
 
 	let action = row.insertCell();
 

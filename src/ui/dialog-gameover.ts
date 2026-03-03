@@ -16,11 +16,7 @@ function formatParty(party: Person[]): string {
 	let alive = 0;
 	let dead = 0;
 	party.forEach(p => {
-		if (p.hp > 0) {
-			alive++;
-		} else {
-			dead++;
-		}
+		(p.hp > 0 ? alive++ : dead++);
 	});
 
 	let components = [];
@@ -46,6 +42,10 @@ export async function gameOver(seed: number) {
 		let { person } = world.requireComponents(entity, "person");
 		if (person.relation == "party") {
 			party.push(person);
+			person.items.forEach(e => {
+				let item = world.requireComponent(e, "item");
+				if (item.type == "gold") { loot += item.price; }
+			});
 		}
 	}
 

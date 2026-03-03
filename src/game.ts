@@ -8,7 +8,7 @@ import { rasterize } from "./town/rasterizer.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
 
-import { scheduler, spatialIndex, world } from "./world.ts";
+import { scheduler, world } from "./world.ts";
 import * as tasks from "./npc/tasks.ts";
 import * as train from "./npc/train.ts";
 import { gameOver } from "./ui/dialog-gameover.ts";
@@ -16,6 +16,7 @@ import { sleep } from "./npc/util.ts";
 
 
 let actionPaused = false;
+let seed: number;
 
 function actionKeyboardHandler(e: KeyboardEvent): boolean {
 	if (e.code == "Space") { actionPaused = !actionPaused; }
@@ -41,13 +42,6 @@ function createTown(W: number, H: number) {
 	display.rows = height;
 
 	npcGenerator.generatePeople();
-
-	let gold = world.createEntity({
-		position: {x: 1, y: 1, blocks: {sight: false, movement: false}},
-		item: {type: "gold", label: "Gold"}
-	});
-	spatialIndex.update(gold);
-	display.draw(1, 1, {ch: "$", fg: "gold"}, {zIndex: 1});
 }
 
 export async function runAction() {
@@ -57,21 +51,19 @@ export async function runAction() {
 			continue;
 		}
 
-		let finished = isGameFinished();
-		if (finished) {
-			gameOver();
-			return;
-		}
+		if (isGameFinished()) { return gameOver(seed); }
 
 		let entity = scheduler.next();
 		if (!entity) { break; }
 		let time = await tasks.run(entity);
-		scheduler.commit(entity, time);
+
+		if (world.hasComponents(entity, "actor")) { // important: the actor might have been removed during the task
+			scheduler.commit(entity, time);
+		}
 	}
 }
 
 export const personQuery = world.query("person");
-
 
 function isGameFinished(): boolean {
 	let activePartyMembers = 0;
@@ -128,7 +120,9 @@ export async function startAction() {
 	runAction();
 }
 
-export async function init(seed: number) {
+
+export async function init(s: number) {
+	seed = s;
 	random.seed(seed);
 	createTown(4, 4);
 
@@ -136,5 +130,5 @@ export async function init(seed: number) {
 
 //	gameOver(seed);
 	ui.activate("map");
-//	startAction();
+	startAction();
 }

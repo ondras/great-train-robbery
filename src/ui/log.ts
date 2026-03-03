@@ -1,3 +1,6 @@
+import { Entity, world } from "../world.ts";
+
+
 const node = document.querySelector("#log")!;
 
 
@@ -19,4 +22,15 @@ export function add(message: string) {
 export function clear() {
 	node.textContent = "";
 	newline();
+}
+
+export function format(message: string, ...entities: Entity[]) {
+	function s(e: Entity) {
+		let named = world.getComponent(e, "named");
+		return (named ? named.name : `Entity ${e}`);
+	}
+
+	entities = entities.slice();
+
+	return message.replace(/%s/g, _ => s(entities.shift()!));
 }

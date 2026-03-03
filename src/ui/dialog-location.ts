@@ -10,7 +10,7 @@ interface BuildingItem {
 }
 
 export async function pickLocation(entity: Entity): Promise<Entity | false> {
-	const { person, visual } = world.requireComponents(entity, "person", "visual");
+	const { person, named, visual } = world.requireComponents(entity, "person", "named", "visual");
 
 	let dialog = createDialog();
 
@@ -27,7 +27,7 @@ export async function pickLocation(entity: Entity): Promise<Entity | false> {
 	let itemTable = new ItemTable<BuildingItem>(options);
 
 	let p = document.createElement("p");
-	fillPerson(p, person, visual);
+	fillPerson(p, named, visual);
 
 	function handleKey(e: KeyboardEvent) {
 		let id = itemTable.keyToId(e);

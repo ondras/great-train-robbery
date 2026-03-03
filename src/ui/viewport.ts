@@ -2,6 +2,7 @@ import display from "../display.ts";
 
 
 const main = document.querySelector<HTMLElement>("#main")!;
+const log = document.querySelector<HTMLElement>("#log")!;
 
 function syncFontSize() {
 	let game = document.querySelector<HTMLElement>("#game")!;
@@ -26,6 +27,7 @@ function syncDisplaySize() {
 	let tileHeight = cs.getPropertyValue("--tile-height");
 	main.style.width = `calc(${display.cols + 1} * ${tileWidth})`;
 	main.style.height = `calc(${display.rows + 1} * ${tileHeight})`;
+	log.style.height = main.style.height;
 }
 
 export function init() {

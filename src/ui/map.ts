@@ -22,6 +22,7 @@ export default class Map extends Pane {
 		super.activate();
 		log.clear();
 		log.add("Welcome! As you can see, the townsfolk are busy running their daily errands. Feel free to look around.");
+		log.newline();
 	}
 
 	deactivate() {

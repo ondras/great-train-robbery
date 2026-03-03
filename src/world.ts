@@ -7,10 +7,11 @@ export type Entity = face.Entity;
 export interface Position {
 	x: number;
 	y: number;
-	blocks: {
-		sight: boolean;
-		movement: boolean;
-	}
+}
+
+export interface Blocks {
+	sight: boolean;
+	movement: boolean;
 }
 
 export interface Visual {
@@ -18,6 +19,7 @@ export interface Visual {
 	fg?: string;
 	bg?: string;
 	zIndex?: number;
+	part?: string;
 }
 
 /* z-indexes:
@@ -33,8 +35,11 @@ export interface Actor {
 	duration: number;
 }
 
-export interface Person {
+export interface Named {
 	name: string;
+}
+
+export interface Person {
 	items: Entity[];
 	price: number;
 	relation: "npc" | "party" | "enemy";
@@ -77,7 +82,7 @@ export interface Town {
 }
 
 export interface Item {
-	label: string;
+	price: number;
 	type: "gold" | "horse" | "weapon";
 }
 
@@ -86,6 +91,8 @@ interface Components {
 	visual: Visual;
 	actor: Actor;
 	person: Person;
+	blocks: Blocks;
+	named: Named;
 
 	town: Town;
 	building: Building;

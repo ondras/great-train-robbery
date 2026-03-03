@@ -1,11 +1,11 @@
-import { Person, Visual } from "../world.ts";
+import { Named, Visual } from "../world.ts";
 
 
-export function fillPerson(parent: Element, person: Person, visual: Visual) {
+export function fillPerson(parent: Element, named: Named, visual: Visual) {
 	let ch = document.createElement("span");
 	ch.textContent = visual.ch;
 	if (visual.fg) { ch.style.color = visual.fg; }
-	parent.append(ch, " ", person.name);
+	parent.append(ch, " ", named.name);
 }
 
 export function template(selector: string, values: Record<string, string> = {}) {

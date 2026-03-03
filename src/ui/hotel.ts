@@ -1,5 +1,5 @@
 import Pane from "./pane.ts";
-import { world, Entity, Person, Visual } from "../world.ts";
+import { world, Entity, Person, Visual, Named } from "../world.ts";
 import ItemTable from "./item-table.ts";
 import { Task } from "../npc/tasks.ts";
 import { confirm } from "./dialog.ts";
@@ -10,8 +10,8 @@ import { fillPerson, template } from "./util.ts";
 
 interface PersonItem {
 	id: number;
-	person: Person;
 	visual: Visual;
+	named: Named;
 }
 
 interface TaskItem {
@@ -114,13 +114,13 @@ export default class Hotel extends Pane {
 
 		node.replaceChildren();
 
-		let results = world.findEntities("person", "visual");
+		let results = world.findEntities("person", "visual", "named");
 		let entries = [...results.entries()].filter(entry => entry[1].person.relation == "party");
 		let items = entries.map(entry => {
 			return {
 				id: entry[0],
-				person: entry[1].person,
-				visual: entry[1].visual
+				visual: entry[1].visual,
+				named: entry[1].named
 			}
 		});
 
@@ -146,10 +146,10 @@ export default class Hotel extends Pane {
 
 		let activeKeyHandlers = [];
 
-		let { person, visual, actor } = world.requireComponents(activePerson, "person", "visual", "actor");
+		let { person, visual, actor, named } = world.requireComponents(activePerson, "person", "visual", "actor", "named");
 
 		let p1 = document.createElement("p");
-		fillPerson(p1, person, visual);
+		fillPerson(p1, named, visual);
 		p1.innerHTML += ` [<kbd>Esc</kbd>] back to your party`;
 		node.append(p1);
 		activeKeyHandlers.push({key:"escape", cb: () => this.renderPersons()});
@@ -210,13 +210,13 @@ export default class Hotel extends Pane {
 }
 
 function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: boolean) {
-	let { person, visual } = item;
+	let { visual, named } = item;
 
 	let ch = document.createElement("span");
 	ch.textContent = visual.ch;
 	if (visual.fg) { ch.style.color = visual.fg; }
 
-	row.insertCell().append(ch, " ", person.name);
+	fillPerson(row.insertCell(), named, visual);
 }
 
 function buildTaskRow(row: HTMLTableRowElement, item: TaskItem, isActive: boolean, items: TaskItem[]) {
