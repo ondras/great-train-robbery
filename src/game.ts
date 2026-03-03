@@ -11,7 +11,7 @@ import * as npcGenerator from "./npc/generator.ts";
 import { scheduler, spatialIndex, world } from "./world.ts";
 import * as tasks from "./npc/tasks.ts";
 import * as train from "./npc/train.ts";
-import { gameOver } from "./ui/dialog.ts";
+import { gameOver } from "./ui/dialog-gameover.ts";
 import { sleep } from "./npc/util.ts";
 
 
@@ -65,7 +65,8 @@ export async function runAction() {
 
 		let entity = scheduler.next();
 		if (!entity) { break; }
-		await tasks.run(entity);
+		let time = await tasks.run(entity);
+		scheduler.commit(entity, time);
 	}
 }
 
@@ -133,6 +134,6 @@ export async function init(seed: number) {
 
 	await ui.init();
 
-	ui.activate("saloon");
-	startAction();
+	ui.activate("map");
+//	startAction();
 }

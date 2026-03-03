@@ -5,3 +5,4 @@ export const personPrice = 100;
 export const personBonusChance = 0.9;
 
 export const wagonHp = 10;
+export const baseTaskDuration = 10;

@@ -16,34 +16,34 @@ function sortPositions(positions: Position[], target: Position): Position[] {
 }
 
 function doCollect(entity: Entity, item: Entity) {
-	let { items } = world.requireComponent(entity, "person");
-	items.push(item);
+	let { person, actor } = world.requireComponents(entity, "person", "actor");
+	person.items.push(item);
 
 	log.add(`Entity ${entity} picked up ${item}`)
 
 	display.delete(item);
 	world.removeComponents(item, "position");
 	spatialIndex.update(item);
+
+	return actor.duration;
 }
 
-export async function collect(entity: Entity): Promise<boolean> {
+export async function collect(entity: Entity): Promise<number> {
 	const { position } = world.requireComponents(entity, "position");
 
 	let entitiesHere = [...spatialIndex.list(position.x, position.y)]
 						.filter(e => world.hasComponents(e, "item"));
 	if (entitiesHere.length > 0) {
-		doCollect(entity, entitiesHere[0]);
-		return true;
+		return doCollect(entity, entitiesHere[0]);
 	}
 
 	let results = world.findEntities("item", "position");
-	if (!results.size) { return false; }
+	if (!results.size) { return 0; }
 
 	const currentPosition = [position.x, position.y];
 	let positions = [...results.values()].map(result => [result.position.x, result.position.y]);
 	sortPositions(positions, currentPosition);
 
 	let targetPosition = positions[0];
-	if (entity == 379 && window.debug) debugger;
 	return moveCloser(entity, targetPosition);
 }

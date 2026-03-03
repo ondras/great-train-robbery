@@ -89,7 +89,8 @@ export async function move(entity: Entity) {
 	train.trackOffset++;
 
 	updateTrainPositions(train);
-	return sleep(conf.MOVE_DELAY);
+	await sleep(conf.MOVE_DELAY);
+	return rules.baseTaskDuration;
 }
 
 export function getAllPositions(isLocomotive: boolean): Position[] {

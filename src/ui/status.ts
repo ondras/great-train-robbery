@@ -1,5 +1,5 @@
 import * as game from "../game.ts";
-import { world, Entity } from "../world.ts";
+import { world } from "../world.ts";
 
 
 const node = document.querySelector("#status")!;
@@ -20,7 +20,6 @@ function updateParty() {
 	let results = [...game.personQuery.entities]
 					.map(entity => world.requireComponents(entity, "person", "visual"))
 					.filter(result => result.person.relation == "party");
-	console.log(game.personQuery.entities, results);
 
 	if (results.length == 0) {
 		dom.party.textContent = "(no members)";

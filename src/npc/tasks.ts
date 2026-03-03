@@ -20,32 +20,15 @@ interface WanderTask {
 	type: "wander";
 }
 
-interface ATask {
-	type: "a";
-}
-
-interface BTask {
-	type: "b";
-}
-
-interface TestTask {
-	type: "test";
-	condition: "aaa";
-}
-
 export interface AttackTask {
 	type: "attack";
 	target: "sheriff" | "guard" | "locomotive" | "wagon" | "enemy";
 }
 
-export type Task = TrainTask | WanderTask | TestTask | ATask | BTask | AttackTask | CollectTask;
-
-type Condition = string;
+export type Task = TrainTask | WanderTask | AttackTask | CollectTask;
 
 
-
-export async function runTask(task: Task, entity: Entity) {
-	// FIXME kdyz to nedopadne, je treba zkouset dalsi
+export async function runTask(task: Task, entity: Entity): Promise<number> {
 	switch (task.type) {
 		case "wander": return wander(entity);
 		case "train": return train.move(entity);
@@ -54,30 +37,24 @@ export async function runTask(task: Task, entity: Entity) {
 	}
 }
 
-function pickTask(tasks: Task[], entity: Entity): Task | undefined {
-	return tasks.find(task => {
-		if ("condition" in task) { return isConditionFulfilled(task.condition, entity); }
-		return true;
-	});
+export async function run(entity: Entity): Promise<number> {
+	let { tasks, duration } = world.requireComponent(entity, "actor");
+
+	for (let task of tasks) {
+		let time = await runTask(task, entity);
+		if (time) { return time; }
+	}
+
+	console.log("!!!", entity);
+	await sleep(100);
+	return duration;
 }
 
-export function run(entity: Entity) {
-	let { tasks } = world.requireComponent(entity, "actor");
+export async function moveCloser(entity: Entity, target: Position): Promise<number> {
+	let { position, actor } = world.requireComponents(entity, "position", "actor");
 
-	let task = pickTask(tasks, entity);
-	if (!task) { console.log("!!!", entity); return sleep(100); }
-
-	return runTask(task, entity);
-}
-
-function isConditionFulfilled(condition: Condition, entity: Entity): boolean {
-	return false;
-}
-
-export async function moveCloser(entity: Entity, target: Position): Promise<boolean> {
-	let { position } = world.requireComponents(entity, "position");
 	let neighbors = getFreeNeighbors([position.x, position.y]);
-	if (neighbors.length == 0) { return false; }
+	if (neighbors.length == 0) { return 0; }
 
 	function CMP_DIST(a: Position, b: Position) {
 		let da = dist4(a, target);
@@ -93,5 +70,5 @@ export async function moveCloser(entity: Entity, target: Position): Promise<bool
 	display.move(entity, position.x, position.y, 0);
 
 	await sleep(conf.MOVE_DELAY);
-	return true;
+	return actor.duration;
 }

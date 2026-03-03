@@ -31,24 +31,6 @@ export async function show<T>(dialog: HTMLDialogElement, handleKey: (e: Keyboard
 }
 
 
-export async function alert(content: Node | string): Promise<true> {
-	let dialog = createDialog();
-	let footer = document.createElement("footer")
-
-	let ok = document.createElement("span");
-	ok.classList.add("button");
-	ok.innerHTML = `OK`;
-
-	function handleKey(e: KeyboardEvent) {
-		if (e.key == "Enter") { return true; }
-	}
-
-	footer.append(ok);
-	dialog.append(content, footer);
-
-	return show(dialog, handleKey);
-}
-
 export async function confirm(content: Node | string): Promise<boolean> {
 	let dialog = createDialog();
 
@@ -71,13 +53,3 @@ export async function confirm(content: Node | string): Promise<boolean> {
 	}
 	return show(dialog, handleKey);
 }
-
-export async function gameOver() {
-	let content = document.createDocumentFragment();
-
-	let strong = document.createElement("strong");
-	strong.textContent = "💀 GAME OVER";
-	content.append(strong);
-	alert(content);
-}
-

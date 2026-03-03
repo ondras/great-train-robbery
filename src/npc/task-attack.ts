@@ -13,6 +13,7 @@ function getTargetPositions(task: AttackTask): Position[] {
 		case "guard": return [];
 
 		case "locomotive": return train.getAllPositions(true);
+
 		case "wagon": return train.getAllPositions(false);
 
 		case "enemy": return [];
@@ -29,8 +30,8 @@ function sortPositions(positions: Position[], target: Position): Position[] {
 	return positions.sort(CMP_DIST);
 }
 
-async function doAttack(entity: Entity, target: Position) {
-	let { position } = world.requireComponents(entity, "position");
+async function doAttack(entity: Entity, target: Position): Promise<number> {
+	let { position, actor } = world.requireComponents(entity, "position", "actor");
 	let currentPosition = [position.x, position.y];
 
 	let path = computePath(currentPosition, target);
@@ -56,7 +57,10 @@ async function doAttack(entity: Entity, target: Position) {
 	}
 */
 	display.delete(id);
-	return damage(target);
+	damage(target);
+
+	// FIXME weapon duration
+	return actor.duration;
 }
 
 function canBeAttacked(target: Position, current: Position): boolean {
@@ -68,7 +72,7 @@ function canBeReached(target: Position, current: Position): boolean {
 	return true;
 }
 
-export async function attack(entity: Entity, task: AttackTask): Promise<boolean> {
+export async function attack(entity: Entity, task: AttackTask): Promise<number> {
 	// FIXME pick a gun
 
 
@@ -90,8 +94,7 @@ export async function attack(entity: Entity, task: AttackTask): Promise<boolean>
 	// these can be attacked immediately -> attack
 	if (attackablePositions.length > 0) {
 		let target = attackablePositions[0];
-		await doAttack(entity, target);
-		return true;
+		return doAttack(entity, target);
 	}
 
 	// these can be reached eventually -> move closer
@@ -100,5 +103,5 @@ export async function attack(entity: Entity, task: AttackTask): Promise<boolean>
 		return moveCloser(entity, target);
 	}
 
-	return false;
+	return 0;
 }

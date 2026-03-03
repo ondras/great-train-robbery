@@ -36,6 +36,7 @@ async function runDemo(signal: AbortSignal) {
 	while (!signal.aborted) {
 		let entity = scheduler.next();
 		if (!entity) { break; }
-		await tasks.runTask({type:"wander"}, entity);
+		let time = await tasks.runTask({type:"wander"}, entity);
+		scheduler.commit(entity, time);
 	}
 }

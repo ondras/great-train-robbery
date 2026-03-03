@@ -30,6 +30,7 @@ export interface Visual {
 export interface Actor {
 	wait: number;
 	tasks: Task[];
+	duration: number;
 }
 
 export interface Person {
@@ -98,6 +99,6 @@ interface Components {
 
 export const world = new face.World<Components>();
 export const spatialIndex = new face.SpatialIndex(world);
-export const scheduler = new face.FairActorScheduler(world);
+export const scheduler = new face.DurationActorScheduler(world);
 
-window.world = world;
+(window as any).world = world;

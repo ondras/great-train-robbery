@@ -5,13 +5,14 @@ import * as conf from "../conf.ts";
 
 
 export async function wander(entity: Entity) {
-	let pos = world.requireComponent(entity, "position");
-	let neighbors = getFreeNeighbors([pos.x, pos.y]);
+	let { position, actor } = world.requireComponents(entity, "position", "actor");
+	let neighbors = getFreeNeighbors([position.x, position.y]);
 
-	if (neighbors.length == 0) { return; }
+	if (neighbors.length == 0) { return 0; }
 	let neighbor = neighbors.random();
-	pos.x = neighbor[0];
-	pos.y = neighbor[1];
+	position.x = neighbor[0];
+	position.y = neighbor[1];
 	spatialIndex.update(entity);
-	await display.move(entity, pos.x, pos.y, conf.MOVE_DELAY);
+	await display.move(entity, position.x, position.y, conf.MOVE_DELAY);
+	return actor.duration;
 }

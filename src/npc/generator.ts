@@ -1,4 +1,4 @@
-import { spatialIndex, world, Building, Person } from "../world.ts";
+import { spatialIndex, world, Building, Person, Actor } from "../world.ts";
 import display from "../display.ts";
 import * as random from "../random.ts";
 import * as rules from "../rules.ts";
@@ -8,7 +8,12 @@ import { Task } from "./tasks.ts";
 function createPerson(x: number, y: number) {
 	let position = {x, y, blocks: {sight: false, movement: true}};
 	let visual = {ch: "@", fg: color()};
-	let actor = {wait: 0, tasks: [{type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[]};
+
+	let actor: Actor = {
+		wait: 0,
+		tasks: [{type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[],
+		duration: rules.baseTaskDuration
+	};
 
 	let person: Person = {
 		name: NAMES.random(),
@@ -19,7 +24,7 @@ function createPerson(x: number, y: number) {
 		hp: rules.personHp
 	}
 
-	if (random.float() < rules.personBonusChance) { applyBonus(person); }
+	if (random.float() < rules.personBonusChance) { applyBonus(person, actor); }
 
 	let components = {
 		position,
@@ -35,7 +40,7 @@ function createPerson(x: number, y: number) {
 
 
 const COUNT = 10;
-const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Emily","Flint","Gideon","Harlan",
+const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Emily","Flint","Gideon","Gonzales","Harlan",
 		    "Jasper","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
 			"Stetson","Trace","Tucker","Virgil","Wade","Wyatt"];
 
@@ -44,28 +49,51 @@ interface Bonus {
 	values: {
 		hp?: number;
 		price?: number;
+		speed?: number;
 	}
 }
 
 const BONUSES: Bonus[] = [
 	{
-		names: ["Healthy %s", "%s the Healthy", "Big %s", "%s the Big"],
+		names: ["Healthy %s", "%s the Healthy", "Big %s", "%s the Tough"],
 		values: {
-			hp: Math.floor(rules.personHp * 0.5)
+			hp: Math.ceil(rules.personHp * 0.5)
+		}
+	},	{
+		names: ["Weak %s", "%s the Sick"],
+		values: {
+			hp: -Math.floor(rules.personHp * 0.5)
 		}
 	},	{
 		names: ["Cheap %s", "%s the Cheap"],
 		values: {
 			price: -Math.floor(rules.personPrice * 0.4)
 		}
+	},	{
+		names: ["Expensive %s", "%s the Luxurious"],
+		values: {
+			price: Math.floor(rules.personPrice * 0.4)
+		}
+	},	{
+		names: ["Speedy %s", "%s the Lightning"],
+		values: {
+			speed: 0.5
+		}
+	},	{
+		names: ["Slow %s", "%s the Snail"],
+		values: {
+			speed: 2
+		}
 	}
 ];
 
 
-function applyBonus(person: Person) {
+function applyBonus(person: Person, actor: Actor) {
 	let bonus = BONUSES.random();
 	Object.entries(bonus.values).forEach(([key, value]) => {
-		(person[key as keyof typeof person] as number) += value;
+		if (key == "hp") { person.hp += value; }
+		if (key == "price") { person.price += value; }
+		if (key == "speed") { actor.duration = Math.round(actor.duration * value); }
 	});
 
 	let template = bonus.names.random();
