@@ -2,6 +2,7 @@ export interface Plot {
 	x: number;
 	y: number;
 	building?: Building;
+	trees?: boolean;
 }
 
 export interface Crossing {
@@ -29,7 +30,10 @@ export function addBuilding(town: Town, type: string, plot: Plot, secondaryPlot?
 
 	let building = { plots, type };
 	town.buildings.push(building);
-	plots.forEach(plot => plot.building = building);
+	plots.forEach(plot => {
+		plot.trees = false;
+		plot.building = building;
+	});
 
 	if (secondaryPlot) {
 		let crossings = filterCommonCrossings(town.crossings, plot, secondaryPlot);

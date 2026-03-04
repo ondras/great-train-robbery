@@ -143,7 +143,7 @@ export async function startAction() {
 	npcGenerator.placeIntoBuildings(partyEntities);
 
 	train.create(12);
-
+return;
 	keyboard.pushHandler(actionKeyboardHandler);
 	runAction();
 }

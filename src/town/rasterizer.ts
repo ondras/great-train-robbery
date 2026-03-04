@@ -25,6 +25,7 @@ export function rasterize(town: Town, path: Path, options: RasterizerOptions) {
 
 	rasterizeGround(width, height, options);
 	rasterizeBuildings(town, options);
+	rasterizeTrees(town, options);
 	let track = rasterizePath(path, options);
 
 	let t = { width, height, track };
@@ -49,6 +50,23 @@ function rasterizeGround(width: number, height: number, options: RasterizerOptio
 			});
 		}
 	}
+}
+
+function rasterizeTrees(town: Town, options: RasterizerOptions) {
+	let g = gutter(options);
+	town.plots.filter(plot => plot.trees).forEach(plot => {
+		let x = g + plot.x * (options.plotWidth + options.roadWidth);
+		let y = g + plot.y * (options.plotHeight + options.roadWidth);
+
+		for (let i=0; i<options.plotWidth; i++) {
+			for (let j=0; j<options.plotHeight; j++) {
+				if (random.float() < 0.05) {
+					// FIXME zrevidovat
+					display.draw(x+i, y+j, { ch: "T", fg: "#0a0" });
+				}
+			}
+		}
+	})
 }
 
 function rasterizeBuildings(town: Town, options: RasterizerOptions) {
