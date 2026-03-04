@@ -43,7 +43,7 @@ export interface Person {
 	items: Entity[];
 	price: number;
 	relation: "npc" | "party" | "enemy";
-	location?: Entity; // FIXME
+	building?: Entity;
 	hp: number;
 }
 

@@ -10,7 +10,9 @@ import * as log from "../ui/log.ts";
 const WAGONS = 3;
 const WAGON_LENGTH = 3;
 const WAGON = ["┇oo", "┅oo", "┇oo", "┅oo"];
-const LOCOMOTIVE = [["🠉", "◼", "O"], ["🠊", "◼", "O"], ["🠋", "◼", "O"], ["🠈", "◼", "O"]];
+const LOCOMOTIVE = [["🠉", "◼", "T"], ["🠊", "◼", "T"], ["🠋", "◼", "T"], ["🠈", "◼", "T"]];
+
+// ︰ ‥  ⁝ …  ‖ =
 
 
 export function color(hpFraction: number) {
@@ -39,7 +41,9 @@ export function create(trackOffset: number) {
 		for (let j=0;j<WAGON_LENGTH;j++) {
 			let trainPart = { wagon: wagonEntity };
 			let blocks = {sight: false, movement: true};
-			let visual = { ch:"", fg:color(1), part:"train", zIndex: 2 } as Visual;
+			let part: string | undefined = "train";
+			if (i > 0 && j == 0) { part = undefined; } // no bold for connectors
+			let visual = { ch:"", fg:color(1), part, zIndex: 2 } as Visual;
 			let trainPartEntity = world.createEntity({ trainPart, blocks, visual });
 			parts.push(trainPartEntity);
 		}

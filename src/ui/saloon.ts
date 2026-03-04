@@ -59,20 +59,20 @@ export default class Saloon extends Pane {
 	}
 
 	protected async tryFire(entity: Entity) {
-		const { person, named } = world.requireComponents(entity, "person", "visual", "named");
+		const { person, named, actor } = world.requireComponents(entity, "person", "visual", "named", "actor");
 
 		let content = template(".confirm-fire", {name: named.name, price: String(person.price)});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
 		person.relation = "npc";
+		person.items = [];
+		person.building = undefined;
+		actor.tasks = [];
+
 		status.update();
 		log.add(`You fired ${named.name} and got your ${person.price}$ back.`);
 		log.newline();
-
-		// FIXME zahodit tasky
-		// FIXME zahodit predmety
-		// FIXME zahodit location
 
 		this.render(entity);
 	}

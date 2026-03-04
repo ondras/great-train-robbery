@@ -65,7 +65,7 @@ export default class Hotel extends Pane {
 		let entity = await pickLocation(activePerson);
 		if (entity) {
 			let { person } = world.requireComponents(activePerson, "person");
-			person.location = entity;
+			person.building = entity;
 		}
 		this.renderPerson(activePerson);
 	}
@@ -155,9 +155,9 @@ export default class Hotel extends Pane {
 		activeKeyHandlers.push({key:"escape", cb: () => this.renderPersons()});
 
 		let location = "(unset)";
-		if (person.location) {
-			let building = world.requireComponent(person.location, "building");
-			location = building.type;
+		if (person.building) {
+			let named = world.requireComponent(person.building, "named");
+			location = named.name;
 		}
 
 		let p2 = document.createElement("p");

@@ -7,6 +7,7 @@ import { createDialog, show } from "./dialog.ts";
 interface BuildingItem {
 	id: number;
 	building: Building;
+	name: string;
 }
 
 export async function pickLocation(entity: Entity): Promise<Entity | false> {
@@ -14,16 +15,16 @@ export async function pickLocation(entity: Entity): Promise<Entity | false> {
 
 	let dialog = createDialog();
 
-	// FIXME filtr na ty, co maji strechu
-	let result = world.findEntities("building");
+	let result = world.findEntities("building", "named");
 	let items = [...result.entries()].map(entry => {
 		return {
 			id: entry[0],
-			building: entry[1].building
+			building: entry[1].building,
+			name: entry[1].named.name
 		}
 	});
 
-	let options = { rowBuilder: buildBuildingRow, activeId: person.location };
+	let options = { rowBuilder: buildBuildingRow, activeId: person.building };
 	let itemTable = new ItemTable<BuildingItem>(options);
 
 	let p = document.createElement("p");
@@ -42,5 +43,7 @@ export async function pickLocation(entity: Entity): Promise<Entity | false> {
 }
 
 function buildBuildingRow(row: HTMLTableRowElement, item: BuildingItem) {
-	row.insertCell().textContent = `${item.building.type}`;
+	let text = item.name;
+	if (item.building.roof) { text += " (roof)"; }
+	row.insertCell().textContent = text;
 }

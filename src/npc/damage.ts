@@ -2,6 +2,7 @@ import { world, spatialIndex, Train, Person, Entity } from "../world.ts";
 import { Position } from "./util.ts";
 import * as train from "./train.ts";
 import * as log from "../ui/log.ts";
+import * as status from "../ui/status.ts";
 import * as rules from "../rules.ts";
 import display from "../display.ts";
 
@@ -37,6 +38,8 @@ function damagePerson(person: Person, entity: Entity) {
 		let str = log.format("%s is killed!", entity);
 		log.add(str);
 	}
+
+	status.update();
 }
 
 export function damage(position: Position) {

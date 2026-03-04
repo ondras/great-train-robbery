@@ -8,7 +8,7 @@ import { rasterize } from "./town/rasterizer.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
 
-import { scheduler, world } from "./world.ts";
+import { scheduler, spatialIndex, world, Entity } from "./world.ts";
 import * as tasks from "./npc/tasks.ts";
 import * as train from "./npc/train.ts";
 import { gameOver } from "./ui/dialog-gameover.ts";
@@ -110,16 +110,45 @@ export function currentMoney() {
 	return money;
 }
 
+function removePersons() {
+	for (let entity of personQuery.entities) {
+		display.delete(entity);
+		world.removeComponents(entity, "position");
+		spatialIndex.update(entity);
+	}
+}
+
 export async function startAction() {
+	removePersons();
+
+	let partyEntities: Entity[] = [];
+	let otherEntities: Entity[] = [];
+
+	for (let entity of personQuery.entities) {
+		let person = world.requireComponent(entity, "person");
+		(person.relation == "party" ? partyEntities : otherEntities).push(entity);
+	}
+
+	/* */
+	let buildings = world.findEntities("building");
+	partyEntities.forEach(entity => {
+		let person = world.requireComponent(entity, "person");
+		person.building = [...buildings.keys()].random();
+	});
+	/* */
+
 	ui.startAction();
 
-	keyboard.pushHandler(actionKeyboardHandler);
+	npcGenerator.placeRandomly(otherEntities);
+	npcGenerator.placeIntoBuildings(partyEntities);
 
 	train.create(15);
 
+	return;
+
+	keyboard.pushHandler(actionKeyboardHandler);
 	runAction();
 }
-
 
 export async function init(s: number) {
 	seed = s;
@@ -130,5 +159,5 @@ export async function init(s: number) {
 
 //	gameOver(seed);
 	ui.activate("map");
-//	startAction();
+	startAction();
 }

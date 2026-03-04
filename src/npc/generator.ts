@@ -1,14 +1,14 @@
-import { spatialIndex, world, Building, Person, Actor, Named } from "../world.ts";
+import { spatialIndex, world, Entity, Building, Person, Actor, Named } from "../world.ts";
 import display from "../display.ts";
 import * as random from "../random.ts";
 import * as rules from "../rules.ts";
 import { Task } from "./tasks.ts";
+import { Position } from "./util.ts";
 
 
-function createPerson(x: number, y: number) {
-	let position = {x, y};
+function createPerson() {
 	let blocks = {sight: false, movement: true};
-	let visual = {ch: "@", fg: color()};
+	let visual = {ch: "@", fg: color(), zIndex: 2};
 	let named = {name: NAMES.random()};
 
 	let actor: Actor = {
@@ -21,14 +21,13 @@ function createPerson(x: number, y: number) {
 		items: [],
 		price: rules.personPrice,
 		relation: random.float() > 0.5 ? "npc" : "party",
-		location: undefined,
+		building: undefined,
 		hp: rules.personHp
 	}
 
 	if (random.float() < rules.personBonusChance) { applyBonus(person, actor, named); }
 
 	let components = {
-		position,
 		actor,
 		visual,
 		person,
@@ -37,8 +36,9 @@ function createPerson(x: number, y: number) {
 	}
 
 	let entity = world.createEntity(components);
-	display.draw(position.x, position.y, visual, {id:entity, zIndex:2});
 	spatialIndex.update(entity);
+
+	return entity;
 }
 
 
@@ -90,7 +90,6 @@ const BONUSES: Bonus[] = [
 	}
 ];
 
-
 function applyBonus(person: Person, actor: Actor, named: Named) {
 	let bonus = BONUSES.random();
 	Object.entries(bonus.values).forEach(([key, value]) => {
@@ -103,14 +102,54 @@ function applyBonus(person: Person, actor: Actor, named: Named) {
 	named.name = template.replace("%s", named.name);
 }
 
-export function generatePeople() {
+export function placeRandomly(entities: Entity[]) {
 	let freePositions = computeFreePositions();
 
-	for (let i=0;i<COUNT;i++) {
+	entities.forEach(entity => {
 		let index = random.arrayIndex(freePositions);
 		let pos = freePositions.splice(index, 1)[0];
-		createPerson(pos[0], pos[1]);
+		let visual = world.requireComponent(entity, "visual");
+
+		world.addComponents(entity, {position: {x: pos[0], y: pos[1]}});
+		spatialIndex.update(entity);
+		display.draw(pos[0], pos[1], visual, {id:entity, zIndex:visual.zIndex});
+	});
+}
+
+export function placeIntoBuildings(entities: Entity[]) {
+	function getFreePositions(building: Building): Position[] {
+		let positions: Position[] = [];
+		for (let i=1; i<building.width-1; i++) {
+			for (let j=1; j<building.height-1; j++) {
+				let x = building.x + i;
+				let y = building.y + j;
+				let entities = spatialIndex.list(x, y);
+				if (entities.size == 0) { positions.push([x, y]); }
+			}
+		}
+		return positions;
 	}
+
+	entities.forEach(entity => {
+		let { person, visual } = world.requireComponents(entity, "person", "visual");
+		let building = world.requireComponent(person.building!, "building");
+		let pos = getFreePositions(building).random();
+
+		world.addComponents(entity, {position: {x: pos[0], y: pos[1]}});
+		spatialIndex.update(entity);
+		display.draw(pos[0], pos[1], visual, {id:entity, zIndex:visual.zIndex});
+	});
+}
+
+export function generatePeople() {
+	let entities: Entity[] = [];
+
+	for (let i=0;i<COUNT;i++) {
+		let entity = createPerson();
+		entities.push(entity);
+	}
+
+	placeRandomly(entities);
 }
 
 function color() {
@@ -125,7 +164,7 @@ function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean 
 	});
 }
 
-// fixme volne pozice spis jako atribut komponenty "town"
+// fixme volne pozice spis jako atribut komponenty "town"?
 function computeFreePositions(): number[][] {
 	const { town } = world.findEntities("town").values().next().value!;
 
