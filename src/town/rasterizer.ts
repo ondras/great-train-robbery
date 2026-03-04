@@ -2,7 +2,13 @@ import { Town, Crossing, Plot, Building, Path } from "./town.ts";
 import display from "../display.ts";
 import { spatialIndex, world } from "../world.ts";
 import { DIRS_4 } from "../dirs.ts";
+import * as buildings from "./buildings.ts";
+import * as random from "../random.ts";
 
+
+const WINDOW_COLOR = "#338"; // FIXME
+const DOOR_COLOR = "saddlebrown"; // FIXME
+const INTERIOR_COLOR = "#888"; // FIXME
 
 interface RasterizerOptions {
 	roadWidth: number;
@@ -49,57 +55,121 @@ function rasterizeBuildings(town: Town, options: RasterizerOptions) {
 	town.buildings.forEach(building => rasterizeBuilding(building, options));
 }
 
+function isDoor(i: number, j: number, bbox: ReturnType<typeof computeBuildingBbox>) {
+	let cx = Math.round(bbox.width / 2);
+	let cy = Math.round(bbox.height / 2);
+	if (i != cx && j != cy) { return false; }
+	return random.float() < 0.5;
+}
+
+function isWindow(i: number, j: number, bbox: ReturnType<typeof computeBuildingBbox>) {
+	let edgeX = (i == 0) || (i == bbox.width-1);
+	let edgeY = (j == 0) || (j == bbox.height-1);
+
+	if (edgeX && edgeY)	{ return false; } // no windows in corners
+
+	let chance = (random.float() < 0.5);
+
+	if (!edgeX) { // horizontal walls
+		return (i % 2 == 0) && chance;
+	}
+
+	if (!edgeY) { // vertical walls
+		return (j % 2 == 0) && chance;
+	}
+
+	return false;
+}
+
+function rasterizeBuildingDoor(x: number, y: number) {
+	display.draw(x, y, { ch: "/", fg: DOOR_COLOR });
+}
+
+function rasterizeBuildingWindow(x: number, y: number, edges: Record<string, boolean>, design: buildings.WallDesign) {
+	let ch = "";
+	let { left, right, top, bottom } = edges;
+
+	switch (true) {
+		case top: ch = design.edges[0]; break;
+		case right: ch = design.edges[1]; break;
+		case bottom: ch = design.edges[2]; break;
+		case left: ch = design.edges[3]; break;
+	}
+
+	display.draw(x, y, { ch, fg: WINDOW_COLOR });
+}
+
+function rasterizeBuildingWall(x: number, y: number, edges: Record<string, boolean>, design: buildings.WallDesign, color: string) {
+	let ch = "";
+	let { left, right, top, bottom } = edges;
+
+	switch (true) {
+		case left && top: ch = design.corners[0]; break;
+		case right && top: ch = design.corners[1]; break;
+		case right && bottom: ch = design.corners[2]; break;
+		case left && bottom: ch = design.corners[3]; break;
+		case top: ch = design.edges[0]; break;
+		case right: ch = design.edges[1]; break;
+		case bottom: ch = design.edges[2]; break;
+		case left: ch = design.edges[3]; break;
+	}
+
+	let blocks = {sight: false, movement: true};
+	let position = {x, y};
+	let entity = world.createEntity({position, blocks});
+	spatialIndex.update(entity);
+	display.draw(x, y, { ch, fg: color })
+}
+
+function rasterizeBuildingInterior(x: number, y: number, color: string) {
+	display.draw(x, y, { ch: ".", fg: color });
+}
+
 function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 	let bbox = computeBuildingBbox(building, options);
-	let { corners, edges } = BUILDING_DESIGNS.random();
 
-	let b = {
-		...bbox,
-		type: building.name
-	}
-	world.createEntity({building: b});
+	let design = buildings.getWallDesign(building.type);
+	let name = buildings.getBuildingName(building.type);
+	let color = buildings.getBuildingColor();
+	let roof = (random.float() < 0.5);
+
+	let b = { ...bbox, type: building.type, roof };
+	let named = { name };
+	world.createEntity({building: b, named});
 
 	for (let i = 0; i < bbox.width; i++) {
 		for (let j = 0; j < bbox.height; j++) {
-			let left = (i == 0);
-			let right = (i == bbox.width-1);
-			let top = (j == 0);
-			let bottom = (j == bbox.height-1);
-			let ch = " ";
+			let edges = {
+				left: (i == 0),
+				right: (i == bbox.width-1),
+				top: (j == 0),
+				bottom: (j == bbox.height-1)
+			}
 			let x = bbox.x + i;
 			let y = bbox.y + j;
 
-			if (left || right || top || bottom) { // corner/edge
-				switch (true) {
-					case left && top: ch = corners[0]; break;
-					case right && top: ch = corners[1]; break;
-					case right && bottom: ch = corners[2]; break;
-					case left && bottom: ch = corners[3]; break;
-					case top: ch = edges[0]; break;
-					case right: ch = edges[1]; break;
-					case bottom: ch = edges[2]; break;
-					case left: ch = edges[3]; break;
+			if (edges.left || edges.right || edges.top || edges.bottom) {
+				if (roof) {
+					rasterizeBuildingWall(x, y, edges, design, color);
+				} else if (isDoor(i, j, bbox)) {
+					rasterizeBuildingDoor(x, y);
+				} else if (isWindow(i, j, bbox)) {
+					rasterizeBuildingWindow(x, y, edges, design);
+				} else {
+					rasterizeBuildingWall(x, y, edges, design, color);
 				}
-
-				let blocks = {sight: false, movement: true};
-				let position = {x, y};
-				let entity = world.createEntity({position, blocks});
-				spatialIndex.update(entity);
+			} else {
+				rasterizeBuildingInterior(x, y, roof ? color : INTERIOR_COLOR);
 			}
-
-			display.draw(x, y, { ch });
 		}
 	}
 
-	let nameRows = building.name.split("\n");
 	let cx = Math.floor(bbox.x + bbox.width / 2);
-	let cy = Math.floor(bbox.y + bbox.height / 2);
-	nameRows.forEach((nameRow, i) => {
-//		let y = cy - Math.floor(nameRows.length / 2) + i;
+	name.split("\n").forEach((nameRow, i) => {
 		let y = bbox.y + i + 1;
 		nameRow.split("").forEach((ch, j) => {
 			let x = cx - Math.ceil(nameRow.length / 2) + j;
-			display.draw(x, y, { ch });
+			display.draw(x, y, { ch, fg: color });
 		});
 	});
 }
@@ -202,23 +272,3 @@ function getFurthestPlot(town: Town) {
 	return furthestPlot;
 }
 
-interface BuildingDesign {
-	corners: string[];
-	edges: string[];
-}
-const BUILDING_DESIGNS: BuildingDesign[] = [
-	{
-		corners: ["┌", "┐", "┘", "└"],
-		edges: ["─", "│", "─", "│"]
-	},
-
-	{
-		corners: ["╔", "╗", "╝", "╚"],
-		edges: ["═", "║", "═", "║"]
-	},
-
-	{
-		corners: ["┏", "┓", "┛", "┗"],
-		edges: ["━", "┃", "━", "┃"]
-	}
-];

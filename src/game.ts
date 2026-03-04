@@ -130,5 +130,5 @@ export async function init(s: number) {
 
 //	gameOver(seed);
 	ui.activate("map");
-	startAction();
+//	startAction();
 }

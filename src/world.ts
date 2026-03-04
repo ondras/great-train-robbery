@@ -23,7 +23,7 @@ export interface Visual {
 }
 
 /* z-indexes:
-  0: regular ground, walls
+  0: regular ground, walls, windows, doors
   1: items
   2: people, train parts
   3: projectiles, fx
@@ -52,6 +52,7 @@ export interface Building {
 	y: number;
 	width: number;
 	height: number;
+	roof: boolean;
 	type: string; // FIXME
 }
 

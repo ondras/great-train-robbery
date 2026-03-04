@@ -11,7 +11,7 @@ export interface Crossing {
 }
 
 export interface Building {
-	name: string;
+	type: string;
 	plots: Plot[];
 }
 
@@ -23,12 +23,11 @@ export interface Town {
 	buildings: Building[];
 }
 
-
-export function addBuilding(town: Town, name: string, plot: Plot, secondaryPlot?: Plot) {
+export function addBuilding(town: Town, type: string, plot: Plot, secondaryPlot?: Plot) {
 	let plots = [plot];
 	if (secondaryPlot) { plots.push(secondaryPlot); }
 
-	let building = { plots, name };
+	let building = { plots, type };
 	town.buildings.push(building);
 	plots.forEach(plot => plot.building = building);
 
@@ -41,7 +40,6 @@ export function addBuilding(town: Town, name: string, plot: Plot, secondaryPlot?
 		c2.neighbors.forEach((n, i, all) => all[i] = (n == c1) ? undefined : n);
 	}
 }
-
 
 function filterCommonCrossings(crossings: Crossing[], plotA: Plot, plotB: Plot): Crossing[] {
 	function isAroundPlot(crossing: Crossing, plot: Plot): boolean {
@@ -56,6 +54,3 @@ function filterCommonCrossings(crossings: Crossing[], plotA: Plot, plotB: Plot):
 
 	return crossings.filter(isCommonCrossing);
 }
-
-
-

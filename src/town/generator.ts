@@ -1,14 +1,8 @@
 import { Town, Path, Plot, Crossing, addBuilding } from "./town.ts";
 import { DIRS_4 } from "../dirs.ts";
-import * as random from "../random.ts"
+import * as random from "../random.ts";
+import * as buildings from "./buildings.ts";
 
-
-const NAMES = [
-	"bank", "sheriff", "saloon", "church", "station", "hotel", "brothel",
-	"jail", "eatery", "general\nstore", "barber", "doctor's",
-	"undertaker", "post\noffice", "town\hall", "water tower",
-	"cattle\npen", "stable"
-];
 
 const EMPTY_PERCENTAGE = 0.26; // FIXME +- random
 const DOUBLE_CHANCE = 0.33; // FIXME +- random
@@ -31,7 +25,7 @@ export function emptyTown(width: number, height: number): Town {
 
 export function generateBuildings(town: Town) {
 	let totalPlots = town.plots.length;
-	let namePool = [...NAMES];
+	let typePool = buildings.generateTypePool();
 
 	while (true) {
 		let emptyPlots = town.plots.filter(p => !p.building);
@@ -39,26 +33,18 @@ export function generateBuildings(town: Town) {
 			break;
 		}
 
-		let name = namePool.random();
-		let index = namePool.indexOf(name);
-		namePool.splice(index, 1);
+		let type = typePool.shift()!;
 
 		let plot = emptyPlots.random();
 		let neighbors = getNeighborPlots(plot, emptyPlots);
 
 		if (neighbors.length > 0 && random.float() < DOUBLE_CHANCE) {
 			let secondaryPlot = neighbors.random();
-			addBuilding(town, name, plot, secondaryPlot);
+			addBuilding(town, type, plot, secondaryPlot);
 		} else {
-			addBuilding(town, name, plot);
+			addBuilding(town, type, plot);
 		}
 	}
-
-	/*
-	addBuilding(town, "a", town.plots[4], town.plots[5]);
-	addBuilding(town, "b", town.plots[6], town.plots[10]);
-	addBuilding(town, "c", town.plots[2], town.plots[3]);
-	*/
 }
 
 export function generateAllPaths(town: Town): Path[] {
