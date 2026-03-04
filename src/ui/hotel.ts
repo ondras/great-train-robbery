@@ -1,10 +1,10 @@
 import Pane from "./pane.ts";
-import { world, Entity, Person, Visual, Named } from "../world.ts";
+import { world, Entity, Visual, Named } from "../world.ts";
 import ItemTable from "./item-table.ts";
 import { Task } from "../npc/tasks.ts";
 import { confirm } from "./dialog.ts";
-import { pickLocation } from "./dialog-location.ts";
-import { pickTask } from "./dialog-task.ts";
+import { pickLocation, getBuildingName } from "./dialog-location.ts";
+import { pickTask, getTaskLabel } from "./dialog-task.ts";
 import { fillPerson, template } from "./util.ts";
 
 
@@ -18,6 +18,7 @@ interface TaskItem {
 	id: number;
 	task: Task;
 }
+
 
 export default class Hotel extends Pane {
 	/**
@@ -72,9 +73,8 @@ export default class Hotel extends Pane {
 
 	protected async editTask(activePerson: Entity, taskIndex?: number) {
 		let { tasks } = world.requireComponents(activePerson, "actor").actor;
-		let currentTask = (taskIndex != undefined) ? tasks[taskIndex] : undefined;
 
-		let result = await pickTask(currentTask);
+		let result = await pickTask();
 		if (!result) { return; }
 
 		if (taskIndex != undefined) {
@@ -101,7 +101,8 @@ export default class Hotel extends Pane {
 		let { tasks } = world.requireComponents(activePerson, "actor").actor;
 		let task = tasks[taskIndex];
 
-		let content = template(".confirm-remove-task", {task:task.type});
+		let label = getTaskLabel(task);
+		let content = template(".confirm-remove-task", {task:label});
 		let ok = await confirm(content);
 		if (!ok) { return; }
 
@@ -125,7 +126,7 @@ export default class Hotel extends Pane {
 		});
 
 		if (items.length == 0) {
-			node.append("No active members. Hire some in the saloon!");
+			node.append("No active members. Hire some in the Saloon!");
 			return;
 		}
 
@@ -150,15 +151,9 @@ export default class Hotel extends Pane {
 
 		let p1 = document.createElement("p");
 		fillPerson(p1, named, visual);
-		p1.innerHTML += ` [<kbd>Esc</kbd>] back to your party`;
 		node.append(p1);
-		activeKeyHandlers.push({key:"escape", cb: () => this.renderPersons()});
 
-		let location = "(unset)";
-		if (person.building) {
-			let named = world.requireComponent(person.building, "named");
-			location = named.name;
-		}
+		let location = (person.building ? getBuildingName(person.building) : "(unset)");
 
 		let p2 = document.createElement("p");
 		p2.innerHTML = `<kbd>L</kbd>ocation: ${location}`;
@@ -196,14 +191,22 @@ export default class Hotel extends Pane {
 			}
 		}
 
-		node.append(taskTable.build(items));
+		let footer = document.createElement("footer");
 
 		if (actor.tasks.length < 10) {
-			let p = document.createElement("p");
-			p.innerHTML = `<kbd>A</kbd>dd new task`;
-			node.append(p);
+			let span = document.createElement("span");
+			span.innerHTML = `<kbd>A</kbd>dd new task`;
+			footer.append(span);
 			activeKeyHandlers.push({key:"a", cb: () => this.editTask(activePerson)});
 		}
+
+		let span = document.createElement("span");
+		span.innerHTML = `<kbd>B</kbd>ack to your party`;
+		footer.append(span);
+		activeKeyHandlers.push({key:"escape", cb: () => this.renderPersons()});
+
+		node.append(taskTable.build(items), footer);
+
 
 		this.activeKeyHandlers = activeKeyHandlers;
 	}
@@ -220,7 +223,7 @@ function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: bo
 }
 
 function buildTaskRow(row: HTMLTableRowElement, item: TaskItem, isActive: boolean, items: TaskItem[]) {
-	row.insertCell().textContent = item.task.type;
+	row.insertCell().textContent = getTaskLabel(item.task);
 
 	if (isActive) {
 		row.insertCell().innerHTML = `<kbd>E</kbd>dit`;

@@ -46,7 +46,7 @@ export function update() {
 export function setMode(mode: "planning" | "action") {
 	switch (mode) {
 		case "planning":
-			dom.status.innerHTML = "<strong>planning</strong>";
+			dom.status.innerHTML = "<strong>planning the robbery</strong>";
 		break;
 
 		case "action":

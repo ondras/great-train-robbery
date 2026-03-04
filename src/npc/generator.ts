@@ -127,13 +127,24 @@ export function placeIntoBuildings(entities: Entity[]) {
 				if (entities.size == 0) { positions.push([x, y]); }
 			}
 		}
+		let cx = building.x + Math.ceil(building.width / 2);
+		let cy = building.y + Math.ceil(building.height / 2);
+		positions.sort((a, b) => {
+			let da = Math.abs(a[1]-cy);
+			let db = Math.abs(b[1]-cy);
+			if (da != db) { return da-db; } // prioritize verical centering
+			da = Math.abs(a[0]-cx);
+			db = Math.abs(b[0]-cx);
+			return da - db;
+		});
+
 		return positions;
 	}
 
 	entities.forEach(entity => {
 		let { person, visual } = world.requireComponents(entity, "person", "visual");
 		let building = world.requireComponent(person.building!, "building");
-		let pos = getFreePositions(building).random();
+		let pos = getFreePositions(building).shift()!;
 
 		world.addComponents(entity, {position: {x: pos[0], y: pos[1]}});
 		spatialIndex.update(entity);

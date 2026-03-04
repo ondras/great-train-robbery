@@ -112,7 +112,7 @@ export default class Saloon extends Pane {
 
 		if (activePerson) {
 			const person = world.requireComponent(activePerson, "person");
-			if (person.relation) {
+			if (person.relation == "party") {
 				this.activeKeyHandlers = [{key: "f", cb: () => this.tryFire(activePerson)}];
 			} else {
 				this.activeKeyHandlers = [{key: "h", cb: () => this.tryHire(activePerson)}];

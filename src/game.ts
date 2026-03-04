@@ -144,8 +144,6 @@ export async function startAction() {
 
 	train.create(15);
 
-	return;
-
 	keyboard.pushHandler(actionKeyboardHandler);
 	runAction();
 }
@@ -158,6 +156,6 @@ export async function init(s: number) {
 	await ui.init();
 
 //	gameOver(seed);
-	ui.activate("map");
-	startAction();
+	ui.activate("hotel");
+//	startAction();
 }

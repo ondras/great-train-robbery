@@ -25,7 +25,7 @@ dialog {
 
 	&::backdrop { background-color: var(--backdrop); }
 
-	footer {
+	footer { /* FIXME pouziti i mimo dialog (v hotelu) */
 		margin-top: 1lh;
 		display: flex;
 		justify-content: space-between;

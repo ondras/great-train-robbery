@@ -1,13 +1,11 @@
 import ItemTable from "./item-table.ts";
-import { world, Entity, Building } from "../world.ts";
+import { world, Entity } from "../world.ts";
 import { fillPerson } from "./util.ts";
 import { createDialog, show } from "./dialog.ts";
 
 
 interface BuildingItem {
 	id: number;
-	building: Building;
-	name: string;
 }
 
 export async function pickLocation(entity: Entity): Promise<Entity | false> {
@@ -28,7 +26,9 @@ export async function pickLocation(entity: Entity): Promise<Entity | false> {
 	let itemTable = new ItemTable<BuildingItem>(options);
 
 	let p = document.createElement("p");
+	p.innerHTML = "Choose a starting location for ";
 	fillPerson(p, named, visual);
+	p.append(":");
 
 	function handleKey(e: KeyboardEvent) {
 		let id = itemTable.keyToId(e);
@@ -37,13 +37,22 @@ export async function pickLocation(entity: Entity): Promise<Entity | false> {
 		if (e.key == "Escape") { return false; }
 	}
 
-	dialog.append(p, itemTable.build(items));
+	let footer = document.createElement("footer");
+	footer.innerHTML = "<span>[<kbd>Esc</kbd>] to cancel</span>";
+
+	dialog.append(p, itemTable.build(items), footer);
+
 
 	return show(dialog, handleKey);
 }
 
+export function getBuildingName(entity: Entity) {
+	let { building, named } = world.requireComponents(entity, "building", "named");
+	let name = named.name;
+	if (building.roof) { name += " (roof)"; }
+	return name;
+}
+
 function buildBuildingRow(row: HTMLTableRowElement, item: BuildingItem) {
-	let text = item.name;
-	if (item.building.roof) { text += " (roof)"; }
-	row.insertCell().textContent = text;
+	row.insertCell().textContent = getBuildingName(item.id);
 }

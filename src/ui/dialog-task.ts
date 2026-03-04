@@ -1,50 +1,141 @@
 import ItemTable from "./item-table.ts";
-import { world, Entity, Building } from "../world.ts";
-import { fillPerson } from "./util.ts";
 import { createDialog, show } from "./dialog.ts";
 import { Task } from "../npc/tasks.ts";
 
 
-interface BuildingItem {
-	id: number;
-	building: Building;
+const taskGroups = {
+	"attack": "Attacking",
+	"movement": "Movement",
+	"other": "Other"
 }
 
-export async function pickTask(task?: Task): Promise<Task | false> {
-	/*
-	const { person, visual } = world.requireComponents(entity, "person", "visual");
+interface AllowedTask {
+	task: Task;
+	label: string;
+	group: keyof typeof taskGroups;
+}
 
-	let dialog = createDialog();
+const allowedTasks: AllowedTask[] = [
+	{task: {type:"attack", target:"locomotive"}, label: "Attack the locomotive", group: "attack"} ,
+	{task: {type:"attack", target:"wagon"}, label: "Attack wagons with gold", group: "attack"},
+	{task: {type:"attack", target:"guard"}, label: "Attack train guards", group: "attack"},
+	{task: {type:"wander"}, label: "Wander around cluelessly", group: "movement"},
+	{task: {type:"escape"}, label: "Escape once there is nothing to collect", group: "movement"},
+	{task: {type:"collect"}, label: "Collect gold looted from the train", group: "other"}
+];
 
-	// FIXME filtr na ty, co maji strechu
-	let result = world.findEntities("building");
-	let items = [...result.entries()].map(entry => {
-		return {
-			id: entry[0],
-			building: entry[1].building
-		}
-	});
+/** FIXME
+ * Place dynamite
+ * Heal self
+ * Heal others
+ * Smoke a cigar
+ */
 
-	let options = { rowBuilder: buildBuildingRow, activeId: person.location };
-	let itemTable = new ItemTable<BuildingItem>(options);
+function objectsEqual(a: any, b: any): boolean {
+	let keys = new Set<string>();
+	Object.keys(a).forEach(k => keys.add(k));
+	Object.keys(b).forEach(k => keys.add(k));
 
-	let p = document.createElement("p");
-	fillPerson(p, person, visual);
+	for (let key of keys) {
+		if (a[key] != b[key]) { return false; }
+	}
+
+	return true;
+}
+
+export function getTaskLabel(task: Task): string {
+	let found = allowedTasks.find(t => objectsEqual(t.task, task));
+	return (found ? found.label : "(unknown task)");
+}
+
+interface TaskItem {
+	id: number;
+	task: AllowedTask;
+}
+
+async function pickTaskInGroup(dialog: HTMLDialogElement, groupIndex: number): Promise<Task | false | "back"> {
+	let options = { rowBuilder: buildTaskRow };
+	let taskTable = new ItemTable<TaskItem>(options);
+
+	let groupId = Object.keys(taskGroups)[groupIndex] as keyof typeof taskGroups;
+	let groupTasks = allowedTasks.filter(task => task.group == groupId);
+	let items = groupTasks.map((task, id) => ({ id, task }));
 
 	function handleKey(e: KeyboardEvent) {
-		let id = itemTable.keyToId(e);
+		let id = taskTable.keyToId(e);
+		if (id != undefined) { return id; }
+
+		if (e.key == "Escape") { return false; }
+		if (e.key.toLowerCase() == "b") { return "back" as const; }
+	}
+
+	let p = document.createElement("p");
+	p.innerHTML = `Chosen task group: ${taskGroups[groupId]}`;
+
+	let footer = document.createElement("footer");
+	footer.innerHTML = "<span><kbd>B</kbd>ack</span><span>[<kbd>Esc</kbd>] to cancel</span>";
+
+	dialog.replaceChildren(p, taskTable.build(items), footer);
+
+	let taskIndex = await show(dialog, handleKey);
+
+	if (taskIndex === false) { return false; }
+	if (taskIndex == "back") { return "back"; }
+
+	return groupTasks[taskIndex].task;
+}
+
+function buildTaskRow(row: HTMLTableRowElement, item: TaskItem) {
+	row.insertCell().textContent = item.task.label;
+}
+
+interface GroupItem {
+	id: number;
+	label: string;
+}
+
+async function pickGroup(dialog: HTMLDialogElement): Promise<number | false> {
+	let options = { rowBuilder: buildGroupRow };
+	let groupTable = new ItemTable<GroupItem>(options);
+
+	let items = Object.values(taskGroups).map((label, id) => ({ id, label }));
+
+	function handleKey(e: KeyboardEvent) {
+		let id = groupTable.keyToId(e);
 		if (id != undefined) { return id; }
 
 		if (e.key == "Escape") { return false; }
 	}
 
-	dialog.append(p, itemTable.build(items));
+	let p = document.createElement("p");
+	p.innerHTML = "To pick a task, first choose a group:";
+
+	let footer = document.createElement("footer");
+	footer.innerHTML = "<span>[<kbd>Esc</kbd>] to cancel</span>";
+
+	dialog.replaceChildren(p, groupTable.build(items), footer);
 
 	return show(dialog, handleKey);
-	*/
-	return false
 }
 
-function buildBuildingRow(row: HTMLTableRowElement, item: BuildingItem) {
-	row.insertCell().textContent = `${item.building.type}`;
+function buildGroupRow(row: HTMLTableRowElement, item: GroupItem) {
+	row.insertCell().textContent = item.label;
 }
+
+export async function pickTask(): Promise<Task | false> {
+	let dialog = createDialog();
+
+	while (true) {
+		let groupIndex = await pickGroup(dialog);
+		if (groupIndex === false) { return false; }
+
+		let task = await pickTaskInGroup(dialog, groupIndex);
+		if (task === false) { return false; }
+
+		if (task == "back") { continue; }
+
+		return task;
+	}
+}
+
+
