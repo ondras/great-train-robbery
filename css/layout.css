@@ -13,7 +13,7 @@ body {
 		"main log"
 		"status status";
 
-	grid-template-columns: auto 50ch;
+	grid-template-columns: auto 60ch;
 	grid-template-rows: auto auto auto;
 
 	width: fit-content;
@@ -29,6 +29,6 @@ body {
 
 	#log {
 		grid-area: log;
-		overflow: auto;
+		overflow: hidden;
 	}
 }

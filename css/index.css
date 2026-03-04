@@ -49,8 +49,11 @@ body {
 	#log {
 		padding: 0.5lh 1ch;
 		border-left: var(--border-width) solid var(--highlight);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5lh;
 
-		p { margin: 0;}
+		p { margin: 0; }
 	}
 
 	#saloon, #hotel {

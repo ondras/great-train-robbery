@@ -51,8 +51,10 @@ export async function gameOver(seed: number) {
 
 	let money = game.currentMoney();
 	let score = computeScore(money, loot, party);
+	let title = (score > 0 ? "The robbery is over. Good job!" : "The robbery is over!");
 
 	let data = {
+		title,
 		money: String(money),
 		party: formatParty(party),
 		loot: String(loot),

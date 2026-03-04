@@ -19,9 +19,8 @@ function doCollect(entity: Entity, item: Entity) {
 	let { person, actor } = world.requireComponents(entity, "person", "actor");
 	person.items.push(item);
 
-	let str = log.format("%s picks up %s.", entity, item);
+	let str = log.format("%A picks up %a.", entity, item);
 	log.add(str);
-	log.newline();
 
 	display.delete(item);
 	world.removeComponents(item, "position");

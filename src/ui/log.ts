@@ -4,18 +4,35 @@ import { Entity, world } from "../world.ts";
 const node = document.querySelector("#log")!;
 
 
-let lastParagraph: HTMLElement | null = null;
+let lastParagraphNode: HTMLElement | null = null;
+let lastMessageNode: HTMLElement | null = null;
+let lastMessage = "";
+let lastMessageCount = 0;
 
 export function newline() {
-	lastParagraph = null;
+	lastParagraphNode = null;
+	lastMessageNode = null;
+	lastMessage = "";
+	lastMessageCount = 0;
 }
 
 export function add(message: string) {
-	if (!lastParagraph) {
-		lastParagraph = document.createElement("p");
-		node.append(lastParagraph);
+	if (!lastParagraphNode) {
+		lastParagraphNode = document.createElement("p");
+		node.append(lastParagraphNode);
 	}
-	lastParagraph.textContent += message + " ";
+
+	if (message == lastMessage) {
+		lastMessageCount++;
+		lastMessageNode!.textContent = `${message}(x${lastMessageCount})`;
+	} else {
+		lastMessage = message;
+		lastMessageCount = 1;
+		lastMessageNode = document.createElement("span");
+		lastMessageNode.textContent = message;
+		lastParagraphNode.append(lastMessageNode, " ");
+	}
+
 	node.scrollTop = node.scrollHeight;
 }
 
@@ -24,13 +41,33 @@ export function clear() {
 	newline();
 }
 
-export function format(message: string, ...entities: Entity[]) {
-	function s(e: Entity) {
-		let named = world.getComponent(e, "named");
-		return (named ? named.name : `Entity ${e}`);
+function extractName(entity: Entity, type: string) {
+	let named = world.getComponent(entity, "named");
+	if (!named) { return `entity ${entity}`; }
+
+	let { name } = named;
+	if (name.charAt(0) == name.charAt(0).toUpperCase()) { return name; } // given name
+
+	if (named.unique) { return `the ${name}`; }
+
+	switch (type.toLowerCase()) {
+		case "a": return `a ${name}`;
+		case "the": return `the ${name}`;
+		default: return name;
+	}
+}
+
+function s(e: Entity, type: string) {
+	let name = extractName(e, type);
+
+	if (type.charAt(0) == type.charAt(0).toUpperCase()) {
+		name = name.charAt(0).toUpperCase() + name.slice(1);
 	}
 
-	entities = entities.slice();
+	return name;
+}
 
-	return message.replace(/%s/g, _ => s(entities.shift()!));
+export function format(message: string, ...entities: Entity[]) {
+	entities = entities.slice();
+	return message.replace(/%(\w+)/g, (_, type) => s(entities.shift()!, type));
 }

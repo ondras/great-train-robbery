@@ -1,7 +1,7 @@
 import { world, spatialIndex, Entity } from "../world.ts";
 import { sleep, Position, dist4, getFreeNeighbors } from "./util.ts";
 import { attack } from "./task-attack.ts";
-import { wander } from "./task-wander.ts";
+import { wander, move } from "./task-move.ts";
 import { collect } from "./task-collect.ts";
 import { escape } from "./task-escape.ts";
 import display from "../display.ts";
@@ -27,10 +27,15 @@ interface WanderTask {
 
 export interface AttackTask {
 	type: "attack";
-	target: "sheriff" | "guard" | "locomotive" | "wagon" | "enemy" | "party";
+	target: "guard" | "locomotive" | "wagon" | "party";
 }
 
-export type Task = TrainTask | WanderTask | AttackTask | CollectTask | EscapeTask;
+export interface MoveTask {
+	type: "move";
+	target: "center" | "locomotive";
+}
+
+export type Task = TrainTask | WanderTask | AttackTask | CollectTask | EscapeTask | MoveTask;
 
 export async function runTask(task: Task, entity: Entity): Promise<number> {
 	switch (task.type) {
@@ -39,6 +44,7 @@ export async function runTask(task: Task, entity: Entity): Promise<number> {
 		case "attack": return attack(entity, task);
 		case "collect": return collect(entity);
 		case "escape": return escape(entity);
+		case "move": return move(entity, task);
 	}
 }
 
@@ -74,9 +80,9 @@ async function moveTowardsDistance(entity: Entity, target: Position, idealDistan
 	neighbors.sort(CMP_DIST);
 	let neighbor = neighbors[0];
 
-	// moved outside: remove the position component
+	// moved outside: remove the position + actor components
 	if (neighbor[0] < 0 || neighbor[1] < 0 || neighbor[0] >= town.width || neighbor[1] >= town.height) {
-		world.removeComponents(entity, "position");
+		world.removeComponents(entity, "position", "actor");
 		spatialIndex.update(entity);
 		display.delete(entity);
 	} else {

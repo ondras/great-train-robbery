@@ -18,9 +18,12 @@ function damageTrain(trainComponent: Train, isLocomotive: boolean) {
 		let fraction = lastWagon.hp / rules.wagonHp;
 		let color = train.color(fraction);
 		for (let part of lastWagon.parts) {
-			let { visual, position } = world.requireComponents(part, "visual", "position");
+			let visual = world.requireComponent(part, "visual");
 			visual.fg = color;
-			display.draw(position.x, position.y, visual, {id: part, zIndex:visual.zIndex});
+
+			// might be away already
+			let position = world.getComponent(part, "position");
+			position && display.draw(position.x, position.y, visual, {id: part, zIndex:visual.zIndex});
 		}
 
 		if (lastWagon.hp <= 0) { train.disconnectLastWagon(trainComponent); }
@@ -35,8 +38,9 @@ function damagePerson(person: Person, entity: Entity) {
 		spatialIndex.update(entity);
 		display.delete(entity);
 
-		let str = log.format("%s is killed!", entity);
+		let str = log.format("%The is killed!", entity);
 		log.add(str);
+		log.newline();
 	}
 
 	status.update();
@@ -58,6 +62,4 @@ export function damage(position: Position) {
 			damagePerson(person, entity);
 		}
 	}
-
-	log.newline();
 }

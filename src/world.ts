@@ -37,6 +37,7 @@ export interface Actor {
 
 export interface Named {
 	name: string;
+	unique?: boolean;
 }
 
 export interface Person {

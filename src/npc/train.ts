@@ -12,8 +12,6 @@ const WAGON_LENGTH = 3;
 const WAGON = ["┇oo", "┅oo", "┇oo", "┅oo"];
 const LOCOMOTIVE = [["🠉", "◼", "T"], ["🠊", "◼", "T"], ["🠋", "◼", "T"], ["🠈", "◼", "T"]];
 
-// ︰ ‥  ⁝ …  ‖ =
-
 
 export function color(hpFraction: number) {
 	let hue = 0;
@@ -37,6 +35,7 @@ export function create(trackOffset: number) {
 		let wagon: Wagon = { train, parts, hp: rules.wagonHp, locomotive: (i==0) };
 		let wagonEntity = world.createEntity({ wagon });
 		wagons.push(wagonEntity);
+		let named = { name: (i==0 ? "locomotive" : "train"), unique:true };
 
 		for (let j=0;j<WAGON_LENGTH;j++) {
 			let trainPart = { wagon: wagonEntity };
@@ -44,7 +43,7 @@ export function create(trackOffset: number) {
 			let part: string | undefined = "train";
 			if (i > 0 && j == 0) { part = undefined; } // no bold for connectors
 			let visual = { ch:"", fg:color(1), part, zIndex: 2 } as Visual;
-			let trainPartEntity = world.createEntity({ trainPart, blocks, visual });
+			let trainPartEntity = world.createEntity({ trainPart, blocks, visual, named });
 			parts.push(trainPartEntity);
 		}
 	}
@@ -99,6 +98,7 @@ function updateTrainPartVisual(visual: Visual, wagonIndex: number, partIndex: nu
 }
 
 export async function move(entity: Entity) {
+	// FIXME collisions with other stuff
 	let train = world.requireComponent(entity, "train");
 	train.trackOffset++;
 
@@ -134,15 +134,17 @@ function dropGoldAndGuards(positions: Position[]) {
 		let position = positions.random();
 		removePosition(position);
 
+		let visual = {ch: "@", fg: "#666", zIndex: 2};
 		let guard = world.createEntity({
 			person: { items: [], price: 0, relation: "enemy", hp:rules.guardHp },
 			actor: { wait: 0, duration: rules.baseTaskDuration, tasks: [{type:"attack", target:"party"}] },
 			position: {x: position[0], y: position[1]},
 			blocks: {sight: false, movement: true},
+			visual,
 			named: {name: "guard"}
 		});
 		spatialIndex.update(guard);
-		display.draw(position[0], position[1], {ch: "@", fg: "#666"}, {id:guard, zIndex: 2});
+		display.draw(position[0], position[1], visual, {id:guard, zIndex: visual.zIndex});
 	}
 	log.add("Security guards jump out of the damaged wagon.");
 
@@ -181,4 +183,18 @@ export function disconnectLastWagon(train: Train) {
 	log.add("The last wagon is so damaged that it disconnects from the train.");
 
 	dropGoldAndGuards(freePositions);
+
+	log.newline();
+}
+
+export function getLocomotivePosition(): Position | undefined {
+	let results = world.findEntities("wagon");
+	for (let { wagon } of results.values()) {
+		if (!wagon.locomotive) { continue; }
+		let parts = wagon.parts.slice().reverse(); // start from the last to prevent getting ran over
+		for (let part of parts) {
+			let position = world.getComponent(part, "position");
+			if (position) { return [position.x, position.y]; }
+		}
+	}
 }

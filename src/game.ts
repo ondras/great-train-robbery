@@ -142,9 +142,7 @@ export async function startAction() {
 	npcGenerator.placeRandomly(otherEntities);
 	npcGenerator.placeIntoBuildings(partyEntities);
 
-	train.create(15);
-
-	return;
+	train.create(12);
 
 	keyboard.pushHandler(actionKeyboardHandler);
 	runAction();
@@ -159,5 +157,5 @@ export async function init(s: number) {
 
 //	gameOver(seed);
 	ui.activate("hotel");
-//	startAction();
+	startAction();
 }

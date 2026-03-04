@@ -19,8 +19,12 @@ const allowedTasks: AllowedTask[] = [
 	{task: {type:"attack", target:"locomotive"}, label: "Attack the locomotive", group: "attack"} ,
 	{task: {type:"attack", target:"wagon"}, label: "Attack wagons with gold", group: "attack"},
 	{task: {type:"attack", target:"guard"}, label: "Attack train guards", group: "attack"},
+
 	{task: {type:"wander"}, label: "Wander around cluelessly", group: "movement"},
 	{task: {type:"escape"}, label: "Escape once there is nothing to collect", group: "movement"},
+	{task: {type:"move", target:"center"}, label: "Move towards the town center", group: "movement"},
+	{task: {type:"move", target:"locomotive"}, label: "Move towards the locomotive", group: "movement"},
+
 	{task: {type:"collect"}, label: "Collect gold looted from the train", group: "other"}
 ];
 
