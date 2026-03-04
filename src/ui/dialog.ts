@@ -34,16 +34,16 @@ export async function show<T>(dialog: HTMLDialogElement, handleKey: (e: Keyboard
 export async function confirm(content: Node | string): Promise<boolean> {
 	let dialog = createDialog();
 
-	let footer = document.createElement("footer")
+	let menu = document.createElement("menu")
 
-	let ok = document.createElement("span");
+	let ok = document.createElement("li");
 	ok.innerHTML = `Yes [<kbd>Enter</kbd>]`;
 
-	let ko = document.createElement("span");
+	let ko = document.createElement("li");
 	ko.innerHTML = `[<kbd>Esc</kbd>] No`;
 
-	footer.append(ko, ok);
-	dialog.append(content, footer);
+	menu.append(ko, ok);
+	dialog.append(content, menu);
 
 	function handleKey(e: KeyboardEvent) {
 		if (e.key == "Enter") { return true; }

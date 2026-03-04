@@ -144,6 +144,8 @@ export async function startAction() {
 
 	train.create(15);
 
+	return;
+
 	keyboard.pushHandler(actionKeyboardHandler);
 	runAction();
 }

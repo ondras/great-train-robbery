@@ -37,10 +37,10 @@ export async function pickLocation(entity: Entity): Promise<Entity | false> {
 		if (e.key == "Escape") { return false; }
 	}
 
-	let footer = document.createElement("footer");
-	footer.innerHTML = "<span>[<kbd>Esc</kbd>] to cancel</span>";
+	let menu = document.createElement("menu");
+	menu.innerHTML = "<li>[<kbd>Esc</kbd>] to cancel</li>";
 
-	dialog.append(p, itemTable.build(items), footer);
+	dialog.append(p, itemTable.build(items), menu);
 
 
 	return show(dialog, handleKey);

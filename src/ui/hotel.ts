@@ -191,21 +191,21 @@ export default class Hotel extends Pane {
 			}
 		}
 
-		let footer = document.createElement("footer");
+		let menu = document.createElement("menu");
 
 		if (actor.tasks.length < 10) {
-			let span = document.createElement("span");
-			span.innerHTML = `<kbd>A</kbd>dd new task`;
-			footer.append(span);
+			let item = document.createElement("li");
+			item.innerHTML = `<kbd>A</kbd>dd new task`;
+			menu.append(item);
 			activeKeyHandlers.push({key:"a", cb: () => this.editTask(activePerson)});
 		}
 
-		let span = document.createElement("span");
-		span.innerHTML = `<kbd>B</kbd>ack to your party`;
-		footer.append(span);
+		let item = document.createElement("li");
+		item.innerHTML = `<kbd>B</kbd>ack to your party`;
+		menu.append(item);
 		activeKeyHandlers.push({key:"escape", cb: () => this.renderPersons()});
 
-		node.append(taskTable.build(items), footer);
+		node.append(taskTable.build(items), menu);
 
 
 		this.activeKeyHandlers = activeKeyHandlers;

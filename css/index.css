@@ -40,8 +40,17 @@ body {
 		justify-content: center;
 	}
 
+	#main, #log {
+		--border-width: 2px;
+		border-top: var(--border-width) solid var(--highlight);
+		border-bottom: var(--border-width) solid var(--highlight);
+	}
+
 	#log {
-		background-color: gray;
+		padding: 0.5lh 1ch;
+		border-left: var(--border-width) solid var(--highlight);
+
+		p { margin: 0;}
 	}
 
 	#saloon, #hotel {
@@ -59,7 +68,7 @@ body {
 	#status {
 		display: flex;
 		justify-content: space-between;
-		padding: 0 1ch;
+		padding: 0.5lh 1ch;
 
 		.col {
 			display: flex;

@@ -72,10 +72,10 @@ async function pickTaskInGroup(dialog: HTMLDialogElement, groupIndex: number): P
 	let p = document.createElement("p");
 	p.innerHTML = `Chosen task group: ${taskGroups[groupId]}`;
 
-	let footer = document.createElement("footer");
-	footer.innerHTML = "<span><kbd>B</kbd>ack</span><span>[<kbd>Esc</kbd>] to cancel</span>";
+	let menu = document.createElement("menu");
+	menu.innerHTML = "<li><kbd>B</kbd>ack</li><li>[<kbd>Esc</kbd>] to cancel</li>";
 
-	dialog.replaceChildren(p, taskTable.build(items), footer);
+	dialog.replaceChildren(p, taskTable.build(items), menu);
 
 	let taskIndex = await show(dialog, handleKey);
 
@@ -110,10 +110,10 @@ async function pickGroup(dialog: HTMLDialogElement): Promise<number | false> {
 	let p = document.createElement("p");
 	p.innerHTML = "To pick a task, first choose a group:";
 
-	let footer = document.createElement("footer");
-	footer.innerHTML = "<span>[<kbd>Esc</kbd>] to cancel</span>";
+	let menu = document.createElement("menu");
+	menu.innerHTML = "<li>[<kbd>Esc</kbd>] to cancel</li>";
 
-	dialog.replaceChildren(p, groupTable.build(items), footer);
+	dialog.replaceChildren(p, groupTable.build(items), menu);
 
 	return show(dialog, handleKey);
 }
