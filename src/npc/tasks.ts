@@ -19,6 +19,7 @@ export interface TrainTask {
 
 export interface EscapeTask {
 	type: "escape";
+	withGold: boolean;
 }
 
 interface WanderTask {
@@ -43,7 +44,7 @@ export async function runTask(task: Task, entity: Entity): Promise<number> {
 		case "train": return train.move(entity);
 		case "attack": return attack(entity, task);
 		case "collect": return collect(entity);
-		case "escape": return escape(entity);
+		case "escape": return escape(entity, task);
 		case "move": return move(entity, task);
 	}
 }

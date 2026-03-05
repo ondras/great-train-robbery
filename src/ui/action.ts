@@ -22,8 +22,8 @@ export default class Action extends Pane {
 	handleKey(e: KeyboardEvent) {
 		if (!this.ready) { return false; }
 
-		switch (e.key.toLowerCase()) {
-			case "g":
+		switch (e.key) {
+			case "Enter":
 				this.tryStart();
 				return true;
 			break;

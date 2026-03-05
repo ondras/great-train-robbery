@@ -10,7 +10,7 @@ export interface Position {
 }
 
 export interface Blocks {
-	sight: boolean;
+	projectile: boolean;
 	movement: boolean;
 }
 

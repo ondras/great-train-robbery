@@ -44,7 +44,7 @@ export function create(trackOffset: number) {
 
 		for (let j=0;j<WAGON_LENGTH;j++) {
 			let trainPart = { wagon: wagonEntity };
-			let blocks = {sight: false, movement: true};
+			let blocks = {projectile: true, movement: true};
 			let part: string | undefined = "train";
 			if (i > 0 && j == 0) { part = undefined; } // no bold for connectors
 			let visual = { ch:"", fg:color(1), part, zIndex: 2 } as Visual;
@@ -126,13 +126,10 @@ export function getAllPositions(isLocomotive: boolean): Position[] {
 		let wagon = world.requireComponent(result.trainPart.wagon, "wagon");
 		if (wagon.locomotive != isLocomotive) { continue; }
 
-		if (isLocomotive && wagon.hp <= 0) { continue; } // broken locomotive is not a target
-
 		positions.push([result.position.x, result.position.y]);
 	}
 	return positions;
 }
-
 
 function createGuard(x: number, y: number) {
 	// FIXME gun jen nekteri
@@ -140,12 +137,16 @@ function createGuard(x: number, y: number) {
 		item: {type: "weapon", price: 0, ...rules.guardGun},
 	});
 
+	let items: Entity[] = [];
+	if (1) { items.push(gun); }
+
 	let visual = GUARD_VISUAL;
+	let tasks = [{type:"attack", target:"party"} as const, {type:"escape", withGold: false} as const];
 	let guard = world.createEntity({
-		person: { items: [gun], price: 0, relation: "enemy", hp:rules.guardHp },
-		actor: { wait: 0, duration: rules.baseTaskDuration, tasks: [{type:"attack", target:"party"}] },
+		person: { items, price: 0, relation: "enemy", hp:rules.guardHp },
+		actor: { wait: 0, duration: rules.baseTaskDuration, tasks },
 		position: {x, y},
-		blocks: {sight: false, movement: true},
+		blocks: {projectile: true, movement: true},
 		visual,
 		named: {name: "guard"}
 	});
@@ -212,6 +213,7 @@ export function disconnectLastWagon(train: Train) {
 }
 
 export function getLocomotivePosition(): Position | undefined {
+	// FIXME podobne jako getAllPositions
 	let results = world.findEntities("wagon");
 	for (let { wagon } of results.values()) {
 		if (!wagon.locomotive) { continue; }
@@ -235,6 +237,10 @@ export function updateSpeed(train: Train) {
 
 	if (locomotive.hp <= 0) {
 		world.removeComponents(locomotive.train, "actor");
+
+		// no longer a train part
+		locomotive.parts.forEach(part => world.removeComponents(part, "trainPart"));
+
 		log.add("The locomotive is completely broken. The train is stopped!");
 		log.newline();
 	} else {

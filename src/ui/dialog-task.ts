@@ -21,7 +21,7 @@ const allowedTasks: AllowedTask[] = [
 	{task: {type:"attack", target:"guard"}, label: "Attack train guards", group: "attack"},
 
 	{task: {type:"wander"}, label: "Wander around cluelessly", group: "movement"},
-	{task: {type:"escape"}, label: "Escape once there is nothing to collect", group: "movement"},
+	{task: {type:"escape", withGold: true}, label: "Escape once there is nothing to collect", group: "movement"},
 	{task: {type:"move", target:"center"}, label: "Move towards the town center", group: "movement"},
 	{task: {type:"move", target:"locomotive"}, label: "Move towards the locomotive", group: "movement"},
 
@@ -112,7 +112,7 @@ async function pickGroup(dialog: HTMLDialogElement): Promise<number | false> {
 	}
 
 	let p = document.createElement("p");
-	p.innerHTML = "To pick a task, first choose a group:";
+	p.innerHTML = "To pick a task, first choose a category:";
 
 	let menu = document.createElement("menu");
 	menu.innerHTML = "<li>[<kbd>Esc</kbd>] to cancel</li>";

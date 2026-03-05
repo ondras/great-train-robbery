@@ -9,6 +9,8 @@
     "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/typed-event-target.ts": "873cdb229a1d8433bb7b064639545ac5e528c6e291bf9c1813b08ffeb5c701de",
     "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/world.ts": "4a956e5967d74d8d3d204bebeb05affb4a4509a15c9d87b2a1e319c5f378490a",
     "https://cdn.jsdelivr.net/gh/ondras/rl-display@12857ba/src/rl-display.ts": "45eb50d85ba52e6d523a27a6b87e640758565bda7e9347b550c0be32363f8109",
-    "https://cdn.jsdelivr.net/gh/ondras/rl-display@12857ba/src/storage.ts": "2eabe3e987d6c75c5cbc68977151d350296f22dfbf48949d1c4130a913b4a60c"
+    "https://cdn.jsdelivr.net/gh/ondras/rl-display@12857ba/src/storage.ts": "2eabe3e987d6c75c5cbc68977151d350296f22dfbf48949d1c4130a913b4a60c",
+    "https://cdn.jsdelivr.net/gh/ondras/rl-display@ad920fa/src/rl-display.ts": "20ba03a510198946d41e473885ef2a6b1be339f5c5de9f15510b60f33cafdd76",
+    "https://cdn.jsdelivr.net/gh/ondras/rl-display@ad920fa/src/storage.ts": "2eabe3e987d6c75c5cbc68977151d350296f22dfbf48949d1c4130a913b4a60c"
   }
 }

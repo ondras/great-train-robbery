@@ -2,19 +2,18 @@ import { spatialIndex, world, Entity, Building, Person, Actor, Named } from "../
 import display from "../display.ts";
 import * as random from "../random.ts";
 import * as rules from "../rules.ts";
-import { Task } from "./tasks.ts";
 import { Position } from "./util.ts";
 
 
 function createPerson(name: string) {
-	let blocks = {sight: false, movement: true};
+	let blocks = {projectile: true, movement: true};
 	let visual = {ch: "@", fg: color(), zIndex: 2};
 	let named = {name};
 
 	let actor: Actor = {
 		wait: 0,
-//		tasks: [{type:"escape"}, {type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[],
-		tasks: [{type:"attack", target:"locomotive"}] as Task[],
+		tasks: [{type:"escape", withGold: true}, {type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}],
+//		tasks: [{type:"attack", target:"locomotive"}] as Task[],
 		duration: rules.baseTaskDuration,
 	};
 

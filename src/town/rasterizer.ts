@@ -65,7 +65,7 @@ function rasterizeTrees(town: Town, options: RasterizerOptions) {
 			for (let j=0; j<options.plotHeight; j++) {
 				if (random.float() < TREE_CHANCE) {
 					let position = { x: x+i, y: y+j };
-					let blocks = { sight: false, movement: true };
+					let blocks = { projectile: true, movement: true };
 					let entity = world.createEntity({position, blocks});
 					spatialIndex.update(entity);
 					display.draw(position.x, position.y, { ch: TREE_CH.random(), fg: TREE_COLOR.random() });
@@ -123,7 +123,7 @@ function rasterizeBuildingWindow(x: number, y: number, edges: Record<string, boo
 	display.draw(x, y, { ch, fg: WINDOW_COLOR });
 }
 
-function rasterizeBuildingWall(x: number, y: number, edges: Record<string, boolean>, design: buildings.WallDesign, color: string) {
+function rasterizeBuildingWall(x: number, y: number, edges: Record<string, boolean>, design: buildings.WallDesign, color: string, roof: boolean) {
 	let ch = "";
 	let { left, right, top, bottom } = edges;
 
@@ -138,7 +138,7 @@ function rasterizeBuildingWall(x: number, y: number, edges: Record<string, boole
 		case left: ch = design.edges[3]; break;
 	}
 
-	let blocks = {sight: false, movement: true};
+	let blocks = {projectile: roof ? false : true, movement: true}; // roofs do not block projectiles, so you can shoot from them
 	let position = {x, y};
 	let entity = world.createEntity({position, blocks});
 	spatialIndex.update(entity);
@@ -174,13 +174,13 @@ function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 
 			if (edges.left || edges.right || edges.top || edges.bottom) {
 				if (roof) {
-					rasterizeBuildingWall(x, y, edges, design, color);
+					rasterizeBuildingWall(x, y, edges, design, color, roof);
 				} else if (isDoor(i, j, bbox)) {
 					rasterizeBuildingDoor(x, y);
 				} else if (isWindow(i, j, bbox)) {
 					rasterizeBuildingWindow(x, y, edges, design);
 				} else {
-					rasterizeBuildingWall(x, y, edges, design, color);
+					rasterizeBuildingWall(x, y, edges, design, color, roof);
 				}
 			} else {
 				rasterizeBuildingInterior(x, y, roof ? color : INTERIOR_COLOR);

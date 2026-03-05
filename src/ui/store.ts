@@ -1,7 +1,7 @@
 import Pane from "./pane.ts";
 import { world, Entity, Person, Visual, Named, Item } from "../world.ts";
 import { confirm, alert } from "./dialog.ts";
-import { buyItem } from "./dialog-buy.ts";
+import { pickItem } from "./dialog-buy.ts";
 import ItemTable from "./item-table.ts";
 import { fillPerson, template } from "./util.ts";
 import * as status from "./status.ts";
@@ -155,7 +155,7 @@ export default class Store extends Pane {
 	}
 
 	protected async purchase(person: Entity) {
-		let itemEntity = await buyItem();
+		let itemEntity = await pickItem();
 		if (!itemEntity) { return; }
 
 		const { named, item } = world.requireComponents(itemEntity, "named", "item");

@@ -98,7 +98,6 @@ function isGameFinished(): boolean {
 	}
 
 	// FIXME nesmrtelny na strese
-	// FIXME zastavena lokomotiva
 
 	// all party members inactive (dead or away)
 	if (activePartyMembers == 0) { return true; }
@@ -179,6 +178,6 @@ export async function init(s: number) {
 
 	await ui.init();
 
-	ui.activate("saloon");
+	ui.activate("store");
 //	startAction();
 }

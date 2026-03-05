@@ -59,6 +59,8 @@ function damagePerson(person: Person, entity: Entity, damage: Damage) {
 			display.draw(position.x, position.y, visual, {id: e, zIndex: visual.zIndex});
 		});
 
+		// FIXME corpse?
+
 		let str = log.format("%The is killed!", entity);
 		log.add(str);
 		log.newline();

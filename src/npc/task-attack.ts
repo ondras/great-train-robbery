@@ -16,21 +16,37 @@ interface Weapon {
 
 const SHOT_VISUAL = {ch: "*", fg: "#fff", zIndex: 3};
 
-function getTargetPositions(task: AttackTask): Position[] {
+function getTargetPositions(task: AttackTask, weapon?: Weapon): Position[] {
+	let positions: Position[] = [];
 	switch (task.target) {
-		case "guard": return [];
+
+		case "guard": {
+			for (let entity of rules.personQuery.entities) {
+				let result = world.getComponents(entity, "position", "person");
+				if (!result) { continue; } // without position
+				if (result.person.relation != "enemy") { continue; } // not enemy
+				positions.push([result.position.x, result.position.y]);
+			}
+			return positions;
+		}
 
 		case "locomotive": return train.getAllPositions(true);
 
 		case "wagon": return train.getAllPositions(false);
 
 		case "party": {
-			let positions: Position[] = [];
 			for (let entity of rules.personQuery.entities) {
 				let result = world.getComponents(entity, "position", "person");
 				if (!result) { continue; } // without position
-				if (result.person.relation != "party") { continue; } // not party
-				positions.push([result.position.x, result.position.y]);
+
+				const { person, position } = result;
+				if (person.relation != "party") { continue; } // not party
+
+				if (person.building) {
+					let building = world.requireComponent(person.building, "building");
+					if (building.roof && !weapon) { continue; } // target on roof and no ranged weapon
+				}
+				positions.push([position.x, position.y]);
 			}
 			return positions;
 		}
@@ -51,7 +67,7 @@ function getBlockerAt(pos: Position) {
 	let entities = spatialIndex.list(pos[0], pos[1]);
 	return [...entities].find(e => {
 		let blocks = world.getComponent(e, "blocks");
-		return (blocks && blocks.movement);
+		return (blocks && blocks.projectile);
 	});
 }
 
@@ -95,7 +111,7 @@ function canBeAttacked(target: Position, current: Position, weapon: Weapon, buil
 	let dist = distEuclidean(current, target);
 	if (dist > weapon.range) { return false; }
 
-	if (building) { return true; }
+	if (building && building.roof) { return true; }
 
 	// blockers along the path
 	let path = computePath(current, target);
@@ -103,7 +119,6 @@ function canBeAttacked(target: Position, current: Position, weapon: Weapon, buil
 	path.pop(); // target position
 
 	if (path.some(pos => getBlockerAt(pos))) {
-		console.log("found shot blocker", current, "->", target);
 		return false;
 	}
 
@@ -111,7 +126,7 @@ function canBeAttacked(target: Position, current: Position, weapon: Weapon, buil
 }
 
 function canBeReached(target: Position, current: Position, weapon: Weapon, building?: Building): boolean {
-	if (!building) { return true; } // not roof-limited
+	if (!building || building.roof) { return true; } // not roof-limited
 
 	// roof: if at least one roof corner is within range, we can move there
 	let { x, y, width, height } = building;
@@ -129,11 +144,7 @@ function canBeReached(target: Position, current: Position, weapon: Weapon, build
 }
 
 export async function attack(entity: Entity, task: AttackTask): Promise<number> {
-	let weapon: Weapon = { // fist
-		verb: "punches",
-		damage: { amount: rules.punchDamage, explosionRadius: 0 },
-		range: 1.5 // allow punching diagonally where distEuclidean is ~1.4
-	}
+	let weapon: Weapon | undefined = undefined;
 
 	let building: Building | undefined = undefined;
 
@@ -146,7 +157,7 @@ export async function attack(entity: Entity, task: AttackTask): Promise<number> 
 			if (item.type == "weapon") {
 				weapon = {
 					verb: "shoots at",
-					range: item.range + (building ? rules.roofRangeBonus : 0),
+					range: item.range + (building && building.roof ? rules.roofRangeBonus : 0),
 					damage: { amount: item.damage, explosionRadius: item.explosionRadius || 0 }
 				}
 			}
@@ -157,15 +168,24 @@ export async function attack(entity: Entity, task: AttackTask): Promise<number> 
 	const currentPosition = [position.x, position.y];
 
 	// multiple cells can be a target
-	let candidatePositions = getTargetPositions(task);
+	let candidatePositions = getTargetPositions(task, weapon);
 	sortPositions(candidatePositions, currentPosition);
+
+	// NOW we assign a default weapon
+	if (!weapon) {
+		weapon = { // fist
+			verb: "punches",
+			damage: { amount: rules.punchDamage, explosionRadius: 0 },
+			range: 1.5 // allow punching diagonally where distEuclidean is ~1.4
+		}
+	}
 
 	let attackablePositions: Position[] = [];
 	let reachablePositions: Position[] = [];
 
 	candidatePositions.forEach(pos => {
-		if (canBeAttacked(pos, currentPosition, weapon, building)) { attackablePositions.push(pos); }
-		if (canBeReached(pos, currentPosition, weapon, building)) { reachablePositions.push(pos); }
+		if (canBeAttacked(pos, currentPosition, weapon as Weapon, building)) { attackablePositions.push(pos); }
+		if (canBeReached(pos, currentPosition, weapon as Weapon, building)) { reachablePositions.push(pos); }
 	});
 
 	// these can be attacked immediately -> attack
