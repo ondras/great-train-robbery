@@ -107,13 +107,15 @@ export default class Saloon extends Pane {
 		this.personTable = personTable;
 
 		if (activeItems.length) {
-			node.append("Heist members:");
-			node.append(personTable.build(activeItems));
+			let p = document.createElement("p");
+			p.textContent = "Robbery members:"
+			node.append(p, personTable.build(activeItems));
 		}
 
 		if (inactiveItems.length) {
-			node.append("Available people:");
-			node.append(personTable.build(inactiveItems));
+			let p = document.createElement("p");
+			p.textContent = "Available people:"
+			node.append(p, personTable.build(inactiveItems));
 		}
 
 		if (activePerson) {

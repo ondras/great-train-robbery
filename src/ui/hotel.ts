@@ -127,7 +127,7 @@ export default class Hotel extends Pane {
 		});
 
 		if (items.length == 0) {
-			node.append("No active members. Hire some in the Saloon!");
+			node.append("You have not hired any people yet. Hire some in the Saloon and come back to plan the robbery.");
 			return;
 		}
 

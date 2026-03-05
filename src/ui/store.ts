@@ -80,7 +80,7 @@ export default class Store extends Pane {
 		});
 
 		if (items.length == 0) {
-			node.append("No active members. Hire some in the Saloon! FIXME");
+			node.append("You have not hired any people yet. Hire some in the Saloon and come back to buy their equipment.");
 			return;
 		}
 

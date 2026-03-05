@@ -88,6 +88,16 @@ body {
 		.party, .hp { text-align: right; }
 	}
 
+	#action {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5lh;
+	}
+
+	p {
+		margin: 0;
+	}
+
 	.gold {
 		&::before {
 			content: "$";
