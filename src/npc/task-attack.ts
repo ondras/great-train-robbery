@@ -4,7 +4,7 @@ import { AttackTask, moveCloser } from "./tasks.ts";
 import { dist8, distEuclidean, Position, computePath } from "./util.ts";
 import { damage } from "./damage.ts";
 import * as train from "./train.ts";
-import * as game from "../game.ts";
+import * as rules from "../rules.ts";
 import * as log from "../ui/log.ts";
 
 
@@ -18,7 +18,7 @@ function getTargetPositions(task: AttackTask): Position[] {
 
 		case "party": {
 			let positions: Position[] = [];
-			for (let entity of game.personQuery.entities) {
+			for (let entity of rules.personQuery.entities) {
 				let result = world.getComponents(entity, "position", "person");
 				if (!result) { continue; } // without position
 				if (result.person.relation != "party") { continue; } // not party

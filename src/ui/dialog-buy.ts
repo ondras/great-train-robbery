@@ -1,11 +1,9 @@
 import ItemTable from "./item-table.ts";
 import { createDialog, show } from "./dialog.ts";
-import { Task } from "../npc/tasks.ts";
 import { world, Entity, Item, Named } from "../world.ts";
 
 
-// FIXME check na cenu
-// FIXME check na existenci podobneho
+// FIXME detailnejsi vypis predmetu?
 
 interface InventoryItem {
 	id: number;
@@ -27,10 +25,10 @@ function getAvailableItems(): Entity[] {
 		for (let item of person.items) { allItems.delete(item); }
 	}
 
-	return [...allItems];;
+	return [...allItems];
 }
 
-export async function buyItem(ownedItems: Entity[]): Promise<Entity | false> {
+export async function buyItem(): Promise<Entity | false> {
 	let dialog = createDialog();
 
 	let options = { rowBuilder: buildInventoryRow };

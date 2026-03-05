@@ -1,4 +1,4 @@
-import * as game from "../game.ts";
+import * as rules from "../rules.ts";
 import { world } from "../world.ts";
 
 
@@ -12,12 +12,12 @@ const dom = {
 }
 
 function updateMoney() {
-	let current = game.currentMoney();
+	let current = rules.currentMoney();
 	dom.money.innerHTML = `<span class="gold">${current}</span>`;
 }
 
 function updateParty() {
-	let results = [...game.personQuery.entities]
+	let results = [...rules.personQuery.entities]
 					.map(entity => world.requireComponents(entity, "person", "visual"))
 					.filter(result => result.person.relation == "party");
 

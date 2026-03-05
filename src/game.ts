@@ -65,13 +65,12 @@ export async function runAction() {
 	}
 }
 
-export const personQuery = world.query("person");
 
 function isGameFinished(): boolean {
 	let activePartyMembers = 0;
 	let enemies = 0;
 
-	for (let entity of personQuery.entities) {
+	for (let entity of rules.personQuery.entities) {
 		let person = world.requireComponent(entity, "person");
 		switch (person.relation) {
 			case "enemy": enemies++; break;
@@ -87,33 +86,22 @@ function isGameFinished(): boolean {
 
 	// train away (all connected wagons gone) + all enemies dead + nothing to pick
 
-	let trainParts = world.findEntities("trainPart", "position");
+	let trainParts = world.findEntities("trainPart", "position"); // FIXME query
 	if (trainParts.size > 0) { return false; }
 
 	if (enemies > 0) { return false; } // FIXME nemuze nastat nekonecna honicka?
 
-	let items = world.findEntities("item", "position");
-	if (items.size > 0) { return false; } // FIXME splnuje tohle pouze zlato?
+	let items = world.findEntities("item", "position"); // FIXME query
+	let types = [...items.keys()].map(entity => world.requireComponent(entity, "item").type);
+	let gold = types.filter(t => t == "gold");
+	if (gold.length > 0) { return false; }
 
 	return true;
 }
 
-export function currentMoney() {
-	let money = rules.initialMoney;
-
-	let entities = personQuery.entities;
-	for (let entity of entities) {
-		let person = world.requireComponent(entity, "person");
-		if (person.relation != "party") { continue; }
-		money -= person.price;
-	}
-
-	// FIXME predmety
-	return money;
-}
 
 function removePersons() {
-	for (let entity of personQuery.entities) {
+	for (let entity of rules.personQuery.entities) {
 		display.delete(entity);
 		world.removeComponents(entity, "position");
 		spatialIndex.update(entity);
@@ -126,7 +114,7 @@ export async function startAction() {
 	let partyEntities: Entity[] = [];
 	let otherEntities: Entity[] = [];
 
-	for (let entity of personQuery.entities) {
+	for (let entity of rules.personQuery.entities) {
 		let person = world.requireComponent(entity, "person");
 		(person.relation == "party" ? partyEntities : otherEntities).push(entity);
 	}

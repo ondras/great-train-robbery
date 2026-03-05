@@ -51,3 +51,20 @@ export async function confirm(content: Node | string): Promise<boolean> {
 	}
 	return show(dialog, handleKey);
 }
+
+export async function alert(message: string): Promise<unknown> {
+	let dialog = createDialog();
+
+	let menu = document.createElement("menu")
+
+	let ok = document.createElement("li");
+	ok.innerHTML = `[<kbd>Enter</kbd>] Ok`;
+
+	menu.append(ok);
+	dialog.append(message, menu);
+
+	function handleKey(e: KeyboardEvent) {
+		if (e.key == "Enter") { return true; }
+	}
+	return show(dialog, handleKey);
+}

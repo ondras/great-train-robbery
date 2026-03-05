@@ -1,11 +1,12 @@
 import Pane from "./pane.ts";
 import { world, Entity, Person, Visual, Named, Item } from "../world.ts";
-import { confirm } from "./dialog.ts";
+import { confirm, alert } from "./dialog.ts";
 import { buyItem } from "./dialog-buy.ts";
 import ItemTable from "./item-table.ts";
 import { fillPerson, template } from "./util.ts";
 import * as status from "./status.ts";
 import * as log from "./log.ts";
+import * as rules from "../rules.ts";
 
 
 interface PersonItem {
@@ -157,12 +158,22 @@ export default class Store extends Pane {
 	}
 
 	protected async purchase(person: Entity) {
-		let { items } = world.requireComponent(person, "person");
-
-		let itemEntity = await buyItem(items);
+		let itemEntity = await buyItem();
 		if (!itemEntity) { return; }
 
 		const { named, item } = world.requireComponents(itemEntity, "named", "item");
+		if (item.price > rules.currentMoney()) {
+			await alert("You do not have enough money :-(");
+			return;
+		}
+
+		// FIXME test na existenci podobneho
+		let { items } = world.requireComponent(person, "person");
+
+		let content = template(".confirm-buy", {name: named.name, price: String(item.price)});
+		let ok = await confirm(content);
+		if (!ok) { return; }
+
 		items.push(itemEntity);
 		status.update();
 		log.add(`You bought ${named.name} for ${item.price}$.`);

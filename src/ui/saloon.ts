@@ -1,13 +1,12 @@
 import Pane from "./pane.ts";
 import { world, Entity, Person, Visual, Named } from "../world.ts";
-import { confirm } from "./dialog.ts";
+import { confirm, alert } from "./dialog.ts";
 import ItemTable from "./item-table.ts";
 import { fillPerson, template } from "./util.ts";
 import * as status from "./status.ts";
+import * as rules from "../rules.ts";
 import * as log from "./log.ts";
 
-
-// FIXME test na penize pri nakupu
 
 interface PersonItem {
 	id: number;
@@ -47,6 +46,11 @@ export default class Saloon extends Pane {
 
 	protected async tryHire(entity: Entity) {
 		const { person, named } = world.requireComponents(entity, "person", "visual", "named");
+
+		if (rules.currentMoney() < person.price) {
+			await alert("You do not have enough money :-(");
+			return;
+		}
 
 		let content = template(".confirm-hire", {name: named.name, price: String(person.price)});
 		let ok = await confirm(content);

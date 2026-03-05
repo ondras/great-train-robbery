@@ -1,5 +1,5 @@
 import * as dialog from "./dialog.ts";
-import * as game from "../game.ts";
+import * as rules from "../rules.ts";
 import { template } from "./util.ts";
 import { world, Person } from "../world.ts";
 
@@ -38,7 +38,7 @@ export async function gameOver(seed: number) {
 	let party: Person[] = [];
 	let loot = 0;
 
-	for (let entity of game.personQuery.entities) {
+	for (let entity of rules.personQuery.entities) {
 		let { person } = world.requireComponents(entity, "person");
 		if (person.relation == "party") {
 			party.push(person);
@@ -49,7 +49,7 @@ export async function gameOver(seed: number) {
 		}
 	}
 
-	let money = game.currentMoney();
+	let money = rules.currentMoney();
 	let score = computeScore(money, loot, party);
 	let title = (score > 0 ? "The robbery is over. Good job!" : "The robbery is over!");
 
