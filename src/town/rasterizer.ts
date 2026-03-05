@@ -9,7 +9,8 @@ import * as random from "../random.ts";
 const WINDOW_COLOR = "#338"; // FIXME
 const DOOR_COLOR = "saddlebrown"; // FIXME
 const INTERIOR_COLOR = "#888"; // FIXME
-const TREE_COLOR = ["#0a0", "#0c0", "#0e0"]; // FIXME
+const TREE_COLOR = ["#653", "#353", "#9a6"];
+const TREE_CH = ["T", "Y"];
 const TREE_CHANCE = 0.05;
 
 interface RasterizerOptions {
@@ -67,7 +68,7 @@ function rasterizeTrees(town: Town, options: RasterizerOptions) {
 					let blocks = { sight: false, movement: true };
 					let entity = world.createEntity({position, blocks});
 					spatialIndex.update(entity);
-					display.draw(position.x, position.y, { ch: "T", fg: TREE_COLOR.random() });
+					display.draw(position.x, position.y, { ch: TREE_CH.random(), fg: TREE_COLOR.random() });
 				}
 			}
 		}
