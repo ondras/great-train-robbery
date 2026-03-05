@@ -81,6 +81,8 @@ function isGameFinished(): boolean {
 		}
 	}
 
+	// FIXME nesmrtelny na strese
+
 	// all party members inactive (dead or away)
 	if (activePartyMembers == 0) { return true; }
 
@@ -108,24 +110,38 @@ function removePersons() {
 	}
 }
 
-export async function startAction() {
-	removePersons();
-
-	let partyEntities: Entity[] = [];
-	let otherEntities: Entity[] = [];
-
-	for (let entity of rules.personQuery.entities) {
-		let person = world.requireComponent(entity, "person");
-		(person.relation == "party" ? partyEntities : otherEntities).push(entity);
-	}
-
-	/* */
+function debugParty(partyEntities: Entity[]) {
 	let buildings = world.findEntities("building");
 	partyEntities.forEach(entity => {
 		let person = world.requireComponent(entity, "person");
 		person.building = [...buildings.keys()].random();
 	});
-	/* */
+
+	return;
+
+	npcGenerator.placeRandomly(partyEntities);
+	let pe = partyEntities[0];
+	let { position, visual, person } = world.requireComponents(pe, "position", "visual", "person");
+	position.x = 20;
+	position.y = 18;
+	spatialIndex.update(pe);
+	display.draw(position.x, position.y, visual, {id:pe, zIndex: visual.zIndex});
+	let gold = world.createEntity({item: {type:"gold", price:100}, visual: {ch: "$", fg: "yellow", zIndex: 2}});
+	person.items.push(gold);
+
+}
+
+export async function startAction() {
+	removePersons();
+
+	let partyEntities: Entity[] = [];
+	let otherEntities: Entity[] = [];
+	for (let entity of rules.personQuery.entities) {
+		let person = world.requireComponent(entity, "person");
+		(person.relation == "party" ? partyEntities : otherEntities).push(entity);
+	}
+
+	debugParty(partyEntities);
 
 	ui.startAction();
 
@@ -147,5 +163,5 @@ export async function init(s: number) {
 
 //	gameOver(seed);
 	ui.activate("store");
-//	startAction();
+	startAction();
 }

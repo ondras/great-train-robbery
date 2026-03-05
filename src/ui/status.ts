@@ -31,7 +31,7 @@ function updateParty() {
 	let hp: string[] = [];
 	results.forEach(result => {
 		party.push(`<span style="color:${result.visual.fg}">@</span>`);
-		hp.push(`${result.person.hp}`);
+		hp.push(`${Math.max(0, result.person.hp)}`);
 	});
 
 	dom.party.innerHTML = party.join(" ");

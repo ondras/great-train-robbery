@@ -1,12 +1,20 @@
-import { world, spatialIndex, Entity } from "../world.ts";
+import { world, spatialIndex, Entity, Building } from "../world.ts";
 import display from "../display.ts";
 import { AttackTask, moveCloser } from "./tasks.ts";
 import { dist8, distEuclidean, Position, computePath } from "./util.ts";
-import { damage } from "./damage.ts";
+import { Damage, damagePosition } from "./damage.ts";
 import * as train from "./train.ts";
 import * as rules from "../rules.ts";
 import * as log from "../ui/log.ts";
 
+
+interface Weapon {
+	damage: Damage;
+	range: number;
+	verb: string;
+}
+
+const SHOT_VISUAL = {ch: "*", fg: "#fff", zIndex: 3};
 
 function getTargetPositions(task: AttackTask): Position[] {
 	switch (task.target) {
@@ -39,28 +47,27 @@ function sortPositions(positions: Position[], target: Position): Position[] {
 	return positions.sort(CMP_DIST);
 }
 
-async function doAttack(entity: Entity, target: Position): Promise<number> {
-	let { position, actor } = world.requireComponents(entity, "position", "actor");
-	let currentPosition = [position.x, position.y];
-
-	let entities = spatialIndex.list(target[0], target[1]);
-	let targetEntity = [...entities].find(e => {
+function getBlockerAt(pos: Position) {
+	let entities = spatialIndex.list(pos[0], pos[1]);
+	return [...entities].find(e => {
 		let blocks = world.getComponent(e, "blocks");
 		return (blocks && blocks.movement);
 	});
+}
+
+async function doAttack(entity: Entity, target: Position, weapon: Weapon): Promise<number> {
+	let { position, actor } = world.requireComponents(entity, "position", "actor");
+	let currentPosition = [position.x, position.y];
+
+	let targetEntity = getBlockerAt(target);
 	if (targetEntity) {
-		let str = log.format("%A shoots at %a.", entity, targetEntity);
+		let str = log.format(`%A ${weapon.verb} %a.`, entity, targetEntity);
 		log.add(str);
 	}
 
-	let path = computePath(currentPosition, target);
-	// FIXME detect first obstacle
-
-	let visual = {
-		ch: "*"
-	}
+	let visual = SHOT_VISUAL;
 	let id = "shot";
-	display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:3});
+	display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:visual.zIndex});
 	let dist = distEuclidean(currentPosition, target);
 	await display.move(id, target[0], target[1], 10*dist);
 
@@ -76,24 +83,73 @@ async function doAttack(entity: Entity, target: Position): Promise<number> {
 	}
 */
 	display.delete(id);
-	damage(target);
+	damagePosition(target, weapon.damage);
 
-	// FIXME weapon duration
+	// FIXME weapon duration?
 	return actor.duration;
 }
 
-function canBeAttacked(target: Position, current: Position): boolean {
-	// FIXME check blockers, range, gun, roof
+function canBeAttacked(target: Position, current: Position, weapon: Weapon, building?: Building): boolean {
+	let dist = distEuclidean(current, target);
+	if (dist > weapon.range) { return false; }
+
+	if (building) { return true; }
+
+	// blockers along the path
+	let path = computePath(current, target);
+	path.shift(); // current position
+	path.pop(); // target position
+
+	if (path.some(pos => getBlockerAt(pos))) {
+		console.log("found shot blocker", current, "->", target);
+		return false;
+	}
+
 	return true;
 }
 
-function canBeReached(target: Position, current: Position): boolean {
-	return true;
+function canBeReached(target: Position, current: Position, weapon: Weapon, building?: Building): boolean {
+	if (!building) { return true; } // not roof-limited
+
+	// roof: if at least one roof corner is within range, we can move there
+	let { x, y, width, height } = building;
+	let corners = [
+		[x+1, y+1],
+		[x+width-2, y+1],
+		[x+1, y+height-2],
+		[x+width-2, y+height-2],
+	];
+
+	return corners.some(corner => {
+		let dist = distEuclidean(corner, target);
+		return dist <= weapon.range;
+	});
 }
 
 export async function attack(entity: Entity, task: AttackTask): Promise<number> {
-	// FIXME pick a gun
+	let weapon: Weapon = { // fist
+		verb: "punches",
+		damage: { amount: rules.punchDamage, explosionRadius: 0 },
+		range: 1.5 // allow punching diagonally where distEuclidean is ~1.4
+	}
 
+	let building: Building | undefined = undefined;
+
+	let person = world.getComponent(entity, "person");
+	if (person) {
+		if (person.building) { building = world.requireComponent(person.building, "building"); }
+
+		person.items.forEach(e => {
+			let item = world.requireComponent(e, "item");
+			if (item.type == "weapon") {
+				weapon = {
+					verb: "shoots at",
+					range: item.range + (building ? rules.roofRangeBonus : 0),
+					damage: { amount: item.damage, explosionRadius: item.explosionRadius || 0 }
+				}
+			}
+		});
+	}
 
 	const { position } = world.requireComponents(entity, "position");
 	const currentPosition = [position.x, position.y];
@@ -106,14 +162,14 @@ export async function attack(entity: Entity, task: AttackTask): Promise<number> 
 	let reachablePositions: Position[] = [];
 
 	candidatePositions.forEach(pos => {
-		if (canBeAttacked(pos, currentPosition)) { attackablePositions.push(pos); }
-		if (canBeReached(pos, currentPosition)) { reachablePositions.push(pos); }
+		if (canBeAttacked(pos, currentPosition, weapon, building)) { attackablePositions.push(pos); }
+		if (canBeReached(pos, currentPosition, weapon, building)) { reachablePositions.push(pos); }
 	});
 
 	// these can be attacked immediately -> attack
 	if (attackablePositions.length > 0) {
 		let target = attackablePositions[0];
-		return doAttack(entity, target);
+		return doAttack(entity, target, weapon);
 	}
 
 	// these can be reached eventually -> move closer

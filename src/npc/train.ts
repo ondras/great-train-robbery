@@ -5,12 +5,15 @@ import { sleep, Position, getFreeNeighbors } from "./util.ts";
 import { Task } from "./tasks.ts";
 import * as rules from "../rules.ts";
 import * as log from "../ui/log.ts";
+import { damagePosition } from "./damage.ts";
 
 
 const WAGONS = 3;
 const WAGON_LENGTH = 3;
 const WAGON = ["┇oo", "┅oo", "┇oo", "┅oo"];
 const LOCOMOTIVE = [["🠉", "◼", "T"], ["🠊", "◼", "T"], ["🠋", "◼", "T"], ["🠈", "◼", "T"]];
+const GUARD_VISUAL = {ch: "@", fg: "#666", zIndex: 2};
+const GOLD_VISUAL = {ch: "$", fg: "gold", zIndex: 1};
 
 
 export function color(hpFraction: number) {
@@ -98,9 +101,15 @@ function updateTrainPartVisual(visual: Visual, wagonIndex: number, partIndex: nu
 }
 
 export async function move(entity: Entity) {
-	// FIXME collisions with other stuff
 	let train = world.requireComponent(entity, "train");
 	train.trackOffset++;
+
+	const { town } = world.findEntities("town").values().next().value!;
+	if (train.trackOffset < town.track.length) {
+		let {x, y} = town.track[train.trackOffset];
+		let damage = { amount: 10, explosionRadius: 0 };
+		damagePosition([x, y], damage);
+	}
 
 	updateTrainPositions(train);
 	await sleep(conf.MOVE_DELAY);
@@ -120,6 +129,25 @@ export function getAllPositions(isLocomotive: boolean): Position[] {
 }
 
 
+function createGuard(x: number, y: number) {
+	// FIXME gun jen nekteri
+	let gun = world.createEntity({
+		item: {type: "weapon", price: 0, ...rules.guardGun},
+	});
+
+	let visual = GUARD_VISUAL;
+	let guard = world.createEntity({
+		person: { items: [gun], price: 0, relation: "enemy", hp:rules.guardHp },
+		actor: { wait: 0, duration: rules.baseTaskDuration, tasks: [{type:"attack", target:"party"}] },
+		position: {x, y},
+		blocks: {sight: false, movement: true},
+		visual,
+		named: {name: "guard"}
+	});
+	spatialIndex.update(guard);
+	display.draw(x, y, visual, {id:guard, zIndex: visual.zIndex});
+}
+
 function dropGoldAndGuards(positions: Position[]) {
 	// careful: "positions" might contain duplicates
 
@@ -133,18 +161,7 @@ function dropGoldAndGuards(positions: Position[]) {
 	for (let i=0; i<rules.droppedGuardCount; i++) {
 		let position = positions.random();
 		removePosition(position);
-
-		let visual = {ch: "@", fg: "#666", zIndex: 2};
-		let guard = world.createEntity({
-			person: { items: [], price: 0, relation: "enemy", hp:rules.guardHp },
-			actor: { wait: 0, duration: rules.baseTaskDuration, tasks: [{type:"attack", target:"party"}] },
-			position: {x: position[0], y: position[1]},
-			blocks: {sight: false, movement: true},
-			visual,
-			named: {name: "guard"}
-		});
-		spatialIndex.update(guard);
-		display.draw(position[0], position[1], visual, {id:guard, zIndex: visual.zIndex});
+		createGuard(position[0], position[1]);
 	}
 	log.add("Security guards jump out of the damaged wagon.");
 
@@ -152,13 +169,15 @@ function dropGoldAndGuards(positions: Position[]) {
 		let position = positions.random();
 		removePosition(position);
 
+		let visual = GOLD_VISUAL;
 		let gold = world.createEntity({
 			position: {x: position[0], y: position[1]},
 			item: {type: "gold", price: rules.goldPrice},
+			visual,
 			named: {name: "Gold"}
 		});
 		spatialIndex.update(gold);
-		display.draw(position[0], position[1], {ch: "$", fg: "gold"}, {id:gold, zIndex: 1});
+		display.draw(position[0], position[1], visual, {id:gold, zIndex: visual.zIndex});
 	}
 	log.add("Several bags with money are scattered on the ground!");
 }

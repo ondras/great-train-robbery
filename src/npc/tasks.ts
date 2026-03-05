@@ -57,7 +57,7 @@ export async function run(entity: Entity): Promise<number> {
 	}
 
 	console.log("!!!", entity);
-	await sleep(100);
+	await sleep(20);
 	return duration;
 }
 

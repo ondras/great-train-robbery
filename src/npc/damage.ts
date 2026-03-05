@@ -6,14 +6,18 @@ import * as status from "../ui/status.ts";
 import * as rules from "../rules.ts";
 import display from "../display.ts";
 
+export interface Damage {
+	amount: number;
+	explosionRadius: number;
+}
 
-function damageTrain(trainComponent: Train, isLocomotive: boolean) {
+function damageTrain(trainComponent: Train, isLocomotive: boolean, damage: Damage) {
 	if (isLocomotive) {
 		// FIXME
 	} else {
 		let lastWagon = world.requireComponent(trainComponent.wagons.at(-1)!, "wagon");
 
-		lastWagon.hp--;
+		lastWagon.hp -= damage.amount;
 
 		let fraction = lastWagon.hp / rules.wagonHp;
 		let color = train.color(fraction);
@@ -30,13 +34,27 @@ function damageTrain(trainComponent: Train, isLocomotive: boolean) {
 	}
 }
 
-function damagePerson(person: Person, entity: Entity) {
-	person.hp--; // fixme weapon type
+function damagePerson(person: Person, entity: Entity, damage: Damage) {
+	person.hp -= damage.amount;
 
 	if (person.hp <= 0) {
+		let position = world.requireComponent(entity, "position");
+
 		world.removeComponents(entity, "position", "actor");
 		spatialIndex.update(entity);
 		display.delete(entity);
+
+		// had gold? place it on the ground.
+		person.items.forEach(e => {
+			let item = world.requireComponent(e, "item");
+			if (item.type != "gold") { return; }
+
+			let visual = world.requireComponent(e, "visual");
+
+			world.addComponent(e, "position", { ...position });
+			spatialIndex.update(e);
+			display.draw(position.x, position.y, visual, {id: e, zIndex: visual.zIndex});
+		});
 
 		let str = log.format("%The is killed!", entity);
 		log.add(str);
@@ -46,7 +64,7 @@ function damagePerson(person: Person, entity: Entity) {
 	status.update();
 }
 
-export function damage(position: Position) {
+export function damagePosition(position: Position, damage: Damage) {
 	let entities = spatialIndex.list(position[0], position[1]);
 
 	for (let entity of entities) {
@@ -54,12 +72,10 @@ export function damage(position: Position) {
 		if (trainPart) {
 			let wagon = world.requireComponent(trainPart.wagon, "wagon");
 			let train = world.requireComponent(wagon.train, "train");
-			damageTrain(train, wagon.locomotive);
+			damageTrain(train, wagon.locomotive, damage);
 		}
 
 		let person = world.getComponent(entity, "person");
-		if (person) {
-			damagePerson(person, entity);
-		}
+		person && damagePerson(person, entity, damage);
 	}
 }
