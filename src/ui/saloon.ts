@@ -26,7 +26,7 @@ export default class Saloon extends Pane {
 		super.activate();
 		this.render();
 		log.clear();
-		log.add("Welcome to the saloon! Here you can hire people for your heist, or fire them if you change your mind.");
+		log.add("Welcome to the Saloon! Here you can hire people for your heist, or fire them if you change your mind.");
 		log.newline();
 	}
 

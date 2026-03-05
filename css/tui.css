@@ -93,8 +93,6 @@ table {
 }
 
 table.item-table {
-	margin: 0.5lh 0;
-
 	td {
 		&:first-child {
 			padding-left: 3ch;

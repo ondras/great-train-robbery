@@ -3,6 +3,7 @@ import Pane from "./pane.ts";
 import { confirm } from "./dialog.ts";
 import * as game from "../game.ts";
 import * as rules from "../rules.ts";
+import * as log from "./log.ts";
 import { template } from "./util.ts";
 
 
@@ -17,8 +18,11 @@ export default class Action extends Pane {
 		super.activate();
 
 		const { node } = this;
-
 		this.ready = false;
+
+		log.clear();
+		log.add("This is the last check before we start the heist. We rob the train right at midnight!");
+		log.newline();
 
 		let messages: string[] = [];
 
@@ -33,25 +37,25 @@ export default class Action extends Pane {
 		let locations = party.every(item => item.person.building);
 
 		if (party.length == 0) {
-			messages.push("You have not hired any people yet. Hire some in the Saloon.");
+			messages.push("✘ You have not hired any people yet. Hire some in the Saloon.");
 		} else {
-			messages.push(`You hired a party of ${party.length} people.`);
+			messages.push(`✔ You hired a party of ${party.length} people.`);
 
 			if (itemCount == 0) {
-				messages.push(`You have not equipped your party with any items. You can do that in the General Store.`);
+				messages.push(`✘ You have not equipped your party with any items. You can do that in the General Store.`);
 			} else {
-				messages.push(`Your party is equipped with ${itemCount} items.`);
+				messages.push(`✔ Your party is equipped with ${itemCount} items.`);
 			}
 
 			if (!tasks) {
-				messages.push(`Every member of your party needs to have at least one task assigned. Plan their tasks in the Hotel.`);
+				messages.push(`✘ Every member of your party needs to have at least one task assigned. Plan their tasks in the Hotel.`);
 			} else {
-				messages.push(`Every member of your party has at least one task assigned.`);
+				messages.push(`✔ Every member of your party has at least one task assigned.`);
 
 				if (!locations) {
-					messages.push(`Every member of your party needs to have a starting location assigned. Do that in the Hotel.`);
+					messages.push(`✘ Every member of your party needs to have a starting location assigned. Do that in the Hotel.`);
 				} else {
-					messages.push(`Every member of your party has a starting location assigned.`);
+					messages.push(`✔ Every member of your party has a starting location assigned.`);
 					this.ready = true;
 				}
 			}

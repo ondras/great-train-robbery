@@ -3,7 +3,7 @@ import { createDialog, show } from "./dialog.ts";
 import { world, Entity, Item, Named } from "../world.ts";
 
 
-const itemGroups = {
+export const itemGroups = {
 	"weapon": "Weapons",
 	"horse": "Horses",
 	"aid": "Healing",

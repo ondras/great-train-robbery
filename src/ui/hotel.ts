@@ -15,6 +15,8 @@ interface PersonItem {
 	id: number;
 	visual: Visual;
 	named: Named;
+	building?: Entity;
+	taskCount: number;
 }
 
 interface TaskItem {
@@ -41,7 +43,7 @@ export default class Hotel extends Pane {
 		super.activate();
 		this.renderPersons();
 		log.clear();
-		log.add("FIXME");
+		log.add("Welcome to the Hotel! This is the best place to decide on the robbery plan and set up starting locations for your party members.");
 		log.newline();
 	}
 
@@ -116,13 +118,15 @@ export default class Hotel extends Pane {
 
 		node.replaceChildren();
 
-		let results = world.findEntities("person", "visual", "named");
+		let results = world.findEntities("person", "visual", "named", "actor");
 		let entries = [...results.entries()].filter(entry => entry[1].person.relation == "party");
 		let items = entries.map(entry => {
 			return {
 				id: entry[0],
 				visual: entry[1].visual,
-				named: entry[1].named
+				named: entry[1].named,
+				taskCount: entry[1].actor.tasks.length,
+				building: entry[1].person.building
 			}
 		});
 
@@ -138,7 +142,9 @@ export default class Hotel extends Pane {
 		this.taskTable = undefined;
 		this.activePerson = undefined;
 
-		node.append(personTable.build(items));
+		let p = document.createElement("p");
+		p.textContent = "Select a party member to set their starting location and organize their tasks.";
+		node.append(p, personTable.build(items));
 	}
 
 	protected renderPerson(activePerson: Entity, taskIndex?: number) {
@@ -152,6 +158,7 @@ export default class Hotel extends Pane {
 
 		let p1 = document.createElement("p");
 		fillPerson(p1, named, visual);
+		p1.append("'s plans:")
 		node.append(p1);
 
 		let location = (person.building ? getBuildingName(person.building) : "(unset)");
@@ -164,6 +171,10 @@ export default class Hotel extends Pane {
 		let p3 = document.createElement("p");
 		p3.innerHTML = `Tasks:`;
 		node.append(p3);
+
+		if (actor.tasks.length == 0) {
+			p3.innerHTML += " (none)";
+		}
 
 		let options = { rowBuilder: buildTaskRow, activeId: taskIndex };
 		let taskTable = new ItemTable<TaskItem>(options);
@@ -215,11 +226,10 @@ export default class Hotel extends Pane {
 function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: boolean) {
 	let { visual, named } = item;
 
-	let ch = document.createElement("span");
-	ch.textContent = visual.ch;
-	if (visual.fg) { ch.style.color = visual.fg; }
-
 	fillPerson(row.insertCell(), named, visual);
+
+	let loc = (item.building ? getBuildingName(item.building) : "location not set")
+	row.insertCell().textContent = `${item.taskCount} task(s), ${loc}`;
 }
 
 function buildTaskRow(row: HTMLTableRowElement, item: TaskItem, isActive: boolean, items: TaskItem[]) {

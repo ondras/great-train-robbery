@@ -74,7 +74,7 @@ async function pickTaskInGroup(dialog: HTMLDialogElement, groupIndex: number): P
 	}
 
 	let p = document.createElement("p");
-	p.innerHTML = `Chosen task group: ${taskGroups[groupId]}`;
+	p.innerHTML = `Chosen task category: ${taskGroups[groupId]}`;
 
 	let menu = document.createElement("menu");
 	menu.innerHTML = "<li><kbd>B</kbd>ack</li><li>[<kbd>Esc</kbd>] to cancel</li>";

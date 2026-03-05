@@ -57,7 +57,13 @@ body {
 	}
 
 	#saloon, #hotel, #store, #action, #help {
+		&:not([hidden]) { display: flex; }
+		align-items: start;
+		flex-direction: column;
+		gap: 0.5lh;
 		padding: 0.5lh 1ch;
+
+		menu { align-self: stretch; }
 	}
 
 	rl-display {
@@ -86,12 +92,6 @@ body {
 		.hp::before { content: "Health: "; }
 
 		.party, .hp { text-align: right; }
-	}
-
-	#action {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5lh;
 	}
 
 	p {
