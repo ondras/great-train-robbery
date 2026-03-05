@@ -56,8 +56,8 @@ body {
 		p { margin: 0; }
 	}
 
-	#saloon, #hotel {
-		padding: 0 1ch;
+	#saloon, #hotel, #store, #action {
+		padding: 0.5lh 1ch;
 	}
 
 	rl-display {

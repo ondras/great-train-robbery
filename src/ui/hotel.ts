@@ -6,7 +6,10 @@ import { confirm } from "./dialog.ts";
 import { pickLocation, getBuildingName } from "./dialog-location.ts";
 import { pickTask, getTaskLabel } from "./dialog-task.ts";
 import { fillPerson, template } from "./util.ts";
+import * as log from "./log.ts";
 
+
+// FIXME vic logovani
 
 interface PersonItem {
 	id: number;
@@ -37,6 +40,9 @@ export default class Hotel extends Pane {
 	activate() {
 		super.activate();
 		this.renderPersons();
+		log.clear();
+		log.add("FIXME");
+		log.newline();
 	}
 
 	handleKey(e: KeyboardEvent): boolean {
@@ -71,18 +77,13 @@ export default class Hotel extends Pane {
 		this.renderPerson(activePerson);
 	}
 
-	protected async editTask(activePerson: Entity, taskIndex?: number) {
-		let { tasks } = world.requireComponents(activePerson, "actor").actor;
-
+	protected async addTask(activePerson: Entity) {
 		let result = await pickTask();
 		if (!result) { return; }
 
-		if (taskIndex != undefined) {
-			tasks[taskIndex] = result;
-		} else {
-			tasks.push(result);
-		}
-		this.renderPerson(activePerson, taskIndex);
+		let { tasks } = world.requireComponent(activePerson, "actor");
+		tasks.push(result);
+		this.renderPerson(activePerson);
 	}
 
 	protected moveTask(activePerson: Entity, taskIndex: number, offset: number) {
@@ -178,7 +179,6 @@ export default class Hotel extends Pane {
 
 		if (taskIndex != undefined) {
 			activeKeyHandlers.push(
-				{key:"e", cb: () => this.editTask(activePerson, taskIndex)},
 				{key:"r", cb: () => this.removeTask(activePerson, taskIndex)}
 			);
 
@@ -197,13 +197,13 @@ export default class Hotel extends Pane {
 			let item = document.createElement("li");
 			item.innerHTML = `<kbd>A</kbd>dd new task`;
 			menu.append(item);
-			activeKeyHandlers.push({key:"a", cb: () => this.editTask(activePerson)});
+			activeKeyHandlers.push({key:"a", cb: () => this.addTask(activePerson)});
 		}
 
 		let item = document.createElement("li");
 		item.innerHTML = `<kbd>B</kbd>ack to your party`;
 		menu.append(item);
-		activeKeyHandlers.push({key:"escape", cb: () => this.renderPersons()});
+		activeKeyHandlers.push({key:"b", cb: () => this.renderPersons()});
 
 		node.append(taskTable.build(items), menu);
 
@@ -226,7 +226,6 @@ function buildTaskRow(row: HTMLTableRowElement, item: TaskItem, isActive: boolea
 	row.insertCell().textContent = getTaskLabel(item.task);
 
 	if (isActive) {
-		row.insertCell().innerHTML = `<kbd>E</kbd>dit`;
 		row.insertCell().innerHTML = `<kbd>R</kbd>emove`;
 		let movements: string[] = [];
 		if (items.indexOf(item) > 0) { movements.push(`<kbd>↑</kbd>`); }

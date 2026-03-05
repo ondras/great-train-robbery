@@ -7,6 +7,8 @@ import * as status from "./status.ts";
 import * as log from "./log.ts";
 
 
+// FIXME test na penize pri nakupu
+
 interface PersonItem {
 	id: number;
 	person: Person;

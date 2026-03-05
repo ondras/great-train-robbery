@@ -7,6 +7,7 @@ import display from "./display.ts";
 import { rasterize } from "./town/rasterizer.ts";
 import * as townGenerator from "./town/generator.ts";
 import * as npcGenerator from "./npc/generator.ts";
+import * as itemGenerator from "./items/generator.ts";
 
 import { scheduler, spatialIndex, world, Entity } from "./world.ts";
 import * as tasks from "./npc/tasks.ts";
@@ -42,6 +43,7 @@ function createTown(W: number, H: number) {
 	display.rows = height;
 
 	npcGenerator.generatePeople();
+	itemGenerator.generateItems();
 }
 
 export async function runAction() {
@@ -143,7 +145,7 @@ export async function startAction() {
 	npcGenerator.placeIntoBuildings(partyEntities);
 
 	train.create(12);
-return;
+
 	keyboard.pushHandler(actionKeyboardHandler);
 	runAction();
 }
@@ -156,6 +158,6 @@ export async function init(s: number) {
 	await ui.init();
 
 //	gameOver(seed);
-	ui.activate("hotel");
-	startAction();
+	ui.activate("store");
+//	startAction();
 }

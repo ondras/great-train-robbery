@@ -83,10 +83,9 @@ export interface Town {
 	}[];
 }
 
-export interface Item {
+export type Item = {
 	price: number;
-	type: "gold" | "horse" | "weapon";
-}
+} & ( { type: "gold"} | { type: "horse"; speed: number; } | { type: "weapon"; damage: number; } );
 
 interface Components {
 	position: Position;

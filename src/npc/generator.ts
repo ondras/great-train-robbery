@@ -6,15 +6,15 @@ import { Task } from "./tasks.ts";
 import { Position } from "./util.ts";
 
 
-function createPerson() {
+function createPerson(name: string) {
 	let blocks = {sight: false, movement: true};
 	let visual = {ch: "@", fg: color(), zIndex: 2};
-	let named = {name: NAMES.random()};
+	let named = {name};
 
 	let actor: Actor = {
 		wait: 0,
 		tasks: [{type:"escape"}, {type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[],
-		duration: rules.baseTaskDuration
+		duration: rules.baseTaskDuration,
 	};
 
 	let person: Person = {
@@ -24,6 +24,7 @@ function createPerson() {
 		building: undefined,
 		hp: rules.personHp
 	}
+
 
 	if (random.float() < rules.personBonusChance) { applyBonus(person, actor, named); }
 
@@ -37,6 +38,9 @@ function createPerson() {
 
 	let entity = world.createEntity(components);
 	spatialIndex.update(entity);
+
+	let item = world.createEntity({item: {type: "horse", price: 10, speed: 5}, named: {name: "Look at my Horse"}});
+	person.items.push(item);
 
 	return entity;
 }
@@ -153,10 +157,14 @@ export function placeIntoBuildings(entities: Entity[]) {
 }
 
 export function generatePeople() {
+	let names = NAMES.slice();
 	let entities: Entity[] = [];
 
 	for (let i=0;i<COUNT;i++) {
-		let entity = createPerson();
+		let nameIndex = random.arrayIndex(names);
+		let name = names.splice(nameIndex, 1)[0];
+
+		let entity = createPerson(name);
 		entities.push(entity);
 	}
 
