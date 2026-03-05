@@ -6,6 +6,7 @@ import * as status from "../ui/status.ts";
 import * as rules from "../rules.ts";
 import display from "../display.ts";
 
+
 export interface Damage {
 	amount: number;
 	explosionRadius: number;
@@ -13,7 +14,9 @@ export interface Damage {
 
 function damageTrain(trainComponent: Train, isLocomotive: boolean, damage: Damage) {
 	if (isLocomotive) {
-		// FIXME
+		let wagon = world.requireComponent(trainComponent.wagons[0], "wagon");
+		wagon.hp -= damage.amount;
+		train.updateSpeed(trainComponent);
 	} else {
 		let lastWagon = world.requireComponent(trainComponent.wagons.at(-1)!, "wagon");
 

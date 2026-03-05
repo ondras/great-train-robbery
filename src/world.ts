@@ -87,7 +87,7 @@ export type Item = {
 	price: number;
 } & (
 	{ type: "gold"} |
-	{ type: "horse"; durationDiff: number; } |
+	{ type: "horse"; duration: number; } |
 	{ type: "aid"; } |
 	{ type: "dynamite"; damage: number; } |
 	{ type: "weapon"; damage: number; range: number; explosionRadius?: number }

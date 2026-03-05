@@ -217,3 +217,19 @@ export function getLocomotivePosition(): Position | undefined {
 		}
 	}
 }
+
+
+export function updateSpeed(train: Train) {
+	let locomotive = world.requireComponent(train.wagons[0], "wagon");
+
+	// FIXME
+
+	if (locomotive.hp <= 0) {
+		world.removeComponents(locomotive.train, "actor");
+		log.add("The locomotive is completely broken. The train is stopped!");
+		log.newline();
+	} else {
+		// FIXME log
+
+	}
+}

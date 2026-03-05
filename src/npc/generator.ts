@@ -38,7 +38,7 @@ function createPerson(name: string) {
 	let entity = world.createEntity(components);
 	spatialIndex.update(entity);
 
-	let item = world.createEntity({item: {type: "horse", price: 10, speed: 5}, named: {name: "Look at my Horse"}});
+	let item = world.createEntity({item: {type: "horse", price: 10, duration: 5}, named: {name: "Look at my Horse"}});
 	person.items.push(item);
 
 	return entity;
