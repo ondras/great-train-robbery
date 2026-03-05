@@ -25,7 +25,6 @@ function createPerson(name: string) {
 		hp: rules.personHp
 	}
 
-
 	if (random.float() < rules.personBonusChance) { applyBonus(person, actor, named); }
 
 	let components = {
@@ -183,7 +182,6 @@ function isInsideBuilding(x: number, y: number, buildings: Building[]): boolean 
 	});
 }
 
-// fixme volne pozice spis jako atribut komponenty "town"?
 function computeFreePositions(): number[][] {
 	const { town } = world.findEntities("town").values().next().value!;
 

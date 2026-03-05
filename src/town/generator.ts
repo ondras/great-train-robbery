@@ -6,7 +6,6 @@ import * as buildings from "./buildings.ts";
 
 const EMPTY_PERCENTAGE = 0.26; // FIXME +- random
 const DOUBLE_CHANCE = 0.33; // FIXME +- random
-const TREES_CHANCE = 0.67;
 
 
 export function emptyTown(width: number, height: number): Town {
@@ -46,10 +45,6 @@ export function generateBuildings(town: Town) {
 			addBuilding(town, type, plot);
 		}
 	}
-
-	town.plots.filter(p => !p.building).forEach(plot => {
-		if (random.float() < TREES_CHANCE) { plot.trees = true;}
-	});
 }
 
 export function generateAllPaths(town: Town): Path[] {

@@ -9,6 +9,8 @@ import * as random from "../random.ts";
 const WINDOW_COLOR = "#338"; // FIXME
 const DOOR_COLOR = "saddlebrown"; // FIXME
 const INTERIOR_COLOR = "#888"; // FIXME
+const TREE_COLOR = ["#0a0", "#0c0", "#0e0"]; // FIXME
+const TREE_CHANCE = 0.05;
 
 interface RasterizerOptions {
 	roadWidth: number;
@@ -54,15 +56,18 @@ function rasterizeGround(width: number, height: number, options: RasterizerOptio
 
 function rasterizeTrees(town: Town, options: RasterizerOptions) {
 	let g = gutter(options);
-	town.plots.filter(plot => plot.trees).forEach(plot => {
+	town.plots.filter(plot => !plot.building).forEach(plot => {
 		let x = g + plot.x * (options.plotWidth + options.roadWidth);
 		let y = g + plot.y * (options.plotHeight + options.roadWidth);
 
 		for (let i=0; i<options.plotWidth; i++) {
 			for (let j=0; j<options.plotHeight; j++) {
-				if (random.float() < 0.05) {
-					// FIXME zrevidovat
-					display.draw(x+i, y+j, { ch: "T", fg: "#0a0" });
+				if (random.float() < TREE_CHANCE) {
+					let position = { x: x+i, y: y+j };
+					let blocks = { sight: false, movement: true };
+					let entity = world.createEntity({position, blocks});
+					spatialIndex.update(entity);
+					display.draw(position.x, position.y, { ch: "T", fg: TREE_COLOR.random() });
 				}
 			}
 		}
