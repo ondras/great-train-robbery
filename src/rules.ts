@@ -1,16 +1,16 @@
 import { world, } from "./world.ts";
 
 
-export const initialMoney = 500;
+export const initialMoney = 5000;
 
 export const personHp = 5;
 export const personPrice = 100;
 export const personBonusChance = 0.67;
 
-export const locomotiveHp = 10;
+export const locomotiveHp = 15;
 export const wagonHp = 10;
 export const baseTaskDuration = 10;
-export const trainTaskDuration = 10;
+export const trainTaskDuration = 3;
 
 export const goldPrice = 1000;
 export const droppedGoldCount = 2;

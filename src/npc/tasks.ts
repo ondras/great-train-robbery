@@ -57,8 +57,7 @@ export async function run(entity: Entity): Promise<number> {
 	}
 
 	console.log("!!!", entity);
-	await sleep(20);
-	return duration;
+	return 0;
 }
 
 async function moveTowardsDistance(entity: Entity, target: Position, idealDistance: number): Promise<number> {

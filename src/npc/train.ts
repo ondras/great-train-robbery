@@ -35,7 +35,9 @@ export function create(trackOffset: number) {
 
 	for (let i=0;i<WAGONS+1;i++) {
 		let parts: Entity[] = [];
-		let wagon: Wagon = { train, parts, hp: rules.wagonHp, locomotive: (i==0) };
+		let locomotive = (i==0);
+		let hp = (locomotive ? rules.locomotiveHp : rules.wagonHp);
+		let wagon: Wagon = { train, parts, hp, locomotive };
 		let wagonEntity = world.createEntity({ wagon });
 		wagons.push(wagonEntity);
 		let named = { name: (i==0 ? "locomotive" : "train"), unique:true };
@@ -101,7 +103,7 @@ function updateTrainPartVisual(visual: Visual, wagonIndex: number, partIndex: nu
 }
 
 export async function move(entity: Entity) {
-	let train = world.requireComponent(entity, "train");
+	let { train, actor } = world.requireComponents(entity, "train", "actor");
 	train.trackOffset++;
 
 	const { town } = world.findEntities("town").values().next().value!;
@@ -113,7 +115,7 @@ export async function move(entity: Entity) {
 
 	updateTrainPositions(train);
 	await sleep(conf.MOVE_DELAY);
-	return rules.baseTaskDuration;
+	return actor.duration;
 }
 
 export function getAllPositions(isLocomotive: boolean): Position[] {
@@ -123,6 +125,9 @@ export function getAllPositions(isLocomotive: boolean): Position[] {
 	for (let result of results.values()) {
 		let wagon = world.requireComponent(result.trainPart.wagon, "wagon");
 		if (wagon.locomotive != isLocomotive) { continue; }
+
+		if (isLocomotive && wagon.hp <= 0) { continue; } // broken locomotive is not a target
+
 		positions.push([result.position.x, result.position.y]);
 	}
 	return positions;
@@ -222,14 +227,17 @@ export function getLocomotivePosition(): Position | undefined {
 export function updateSpeed(train: Train) {
 	let locomotive = world.requireComponent(train.wagons[0], "wagon");
 
-	// FIXME
+	// 100% hp -> add 0 to duration
+	// 0% hp -> add 30 to duration
+	let actor = world.requireComponent(locomotive.train, "actor");
+	let hpFraction = locomotive.hp / rules.locomotiveHp;
+	actor.duration = rules.trainTaskDuration + (1-hpFraction) * 10;
 
 	if (locomotive.hp <= 0) {
 		world.removeComponents(locomotive.train, "actor");
 		log.add("The locomotive is completely broken. The train is stopped!");
 		log.newline();
 	} else {
-		// FIXME log
-
+		log.add("The train slows down a bit.");
 	}
 }

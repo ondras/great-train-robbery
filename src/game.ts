@@ -47,6 +47,9 @@ function createTown(W: number, H: number) {
 }
 
 export async function runAction() {
+	let failedActors = new Set<Entity>();
+	let actors = world.query("actor");
+
 	while (true) {
 		if (actionPaused) {
 			await sleep(50);
@@ -57,12 +60,25 @@ export async function runAction() {
 
 		let entity = scheduler.next();
 		if (!entity) { break; }
+
 		let time = await tasks.run(entity);
+
+		if (!time) { // failed to perform a task: 1) mark, 2) commit with a default duration
+			failedActors.add(entity);
+			time = rules.baseTaskDuration;
+		} else { // remove from failures
+			failedActors.delete(entity);
+		}
 
 		if (world.hasComponents(entity, "actor")) { // important: the actor might have been removed during the task
 			scheduler.commit(entity, time);
 		}
+
+		if (failedActors.size == actors.entities.size) { break; }
 	}
+
+	// weird situation: no actors are able to act (or we have none)
+	gameOver(seed);
 }
 
 
@@ -82,17 +98,19 @@ function isGameFinished(): boolean {
 	}
 
 	// FIXME nesmrtelny na strese
+	// FIXME zastavena lokomotiva
 
 	// all party members inactive (dead or away)
 	if (activePartyMembers == 0) { return true; }
 
-	// train away (all connected wagons gone) + all enemies dead + nothing to pick
-
+	// something to do: (attackable) train parts on the map
 	let trainParts = world.findEntities("trainPart", "position"); // FIXME query
 	if (trainParts.size > 0) { return false; }
 
+	// something to do: enemies are alive
 	if (enemies > 0) { return false; } // FIXME nemuze nastat nekonecna honicka?
 
+	// something to do: gold on the map
 	let items = world.findEntities("item", "position"); // FIXME query
 	let types = [...items.keys()].map(entity => world.requireComponent(entity, "item").type);
 	let gold = types.filter(t => t == "gold");
@@ -161,7 +179,6 @@ export async function init(s: number) {
 
 	await ui.init();
 
-//	gameOver(seed);
-	ui.activate("store");
-	startAction();
+	ui.activate("saloon");
+//	startAction();
 }

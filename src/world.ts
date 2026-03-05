@@ -54,7 +54,7 @@ export interface Building {
 	width: number;
 	height: number;
 	roof: boolean;
-	type: string; // FIXME
+	type: string;
 }
 
 export interface Train {

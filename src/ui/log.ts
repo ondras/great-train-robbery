@@ -24,12 +24,12 @@ export function add(message: string) {
 
 	if (message == lastMessage) {
 		lastMessageCount++;
-		lastMessageNode!.textContent = `${message}(x${lastMessageCount})`;
+		lastMessageNode!.innerHTML = `${message}(x${lastMessageCount})`;
 	} else {
 		lastMessage = message;
 		lastMessageCount = 1;
 		lastMessageNode = document.createElement("span");
-		lastMessageNode.textContent = message;
+		lastMessageNode.innerHTML = message;
 		lastParagraphNode.append(lastMessageNode, " ");
 	}
 
@@ -37,7 +37,7 @@ export function add(message: string) {
 }
 
 export function clear() {
-	node.textContent = "";
+	node.replaceChildren();
 	newline();
 }
 
@@ -46,7 +46,7 @@ function extractName(entity: Entity, type: string) {
 	if (!named) { return `entity ${entity}`; }
 
 	let { name } = named;
-	if (name.charAt(0) == name.charAt(0).toUpperCase()) { return name; } // given name
+	if (name.charAt(0) == name.charAt(0).toUpperCase()) { return `<i>${name}</i>`; } // given name
 
 	if (named.unique) { return `the ${name}`; }
 

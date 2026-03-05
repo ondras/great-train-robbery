@@ -65,11 +65,14 @@ async function doAttack(entity: Entity, target: Position, weapon: Weapon): Promi
 		log.add(str);
 	}
 
-	let visual = SHOT_VISUAL;
-	let id = "shot";
-	display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:visual.zIndex});
 	let dist = distEuclidean(currentPosition, target);
-	await display.move(id, target[0], target[1], 10*dist);
+	if (dist > 2) {
+		let visual = SHOT_VISUAL;
+		let id = "shot";
+		display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:visual.zIndex});
+		await display.move(id, target[0], target[1], 10*dist);
+		display.delete(id);
+	}
 
 /*
 	for (let i=0;i<path.length;i++) {
@@ -82,7 +85,6 @@ async function doAttack(entity: Entity, target: Position, weapon: Weapon): Promi
 		await sleep(2);
 	}
 */
-	display.delete(id);
 	damagePosition(target, weapon.damage);
 
 	// FIXME weapon duration?

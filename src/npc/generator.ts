@@ -13,7 +13,8 @@ function createPerson(name: string) {
 
 	let actor: Actor = {
 		wait: 0,
-		tasks: [{type:"escape"}, {type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[],
+//		tasks: [{type:"escape"}, {type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}] as Task[],
+		tasks: [{type:"attack", target:"locomotive"}] as Task[],
 		duration: rules.baseTaskDuration,
 	};
 

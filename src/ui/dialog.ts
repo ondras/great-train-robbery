@@ -1,6 +1,8 @@
 import * as keyboard from "./keyboard.ts";
 
 
+const game = document.querySelector("#game")!;
+
 export function createDialog() {
 	let dialog = document.createElement("dialog");
 	dialog.classList.add("border", "double", "inside");
@@ -23,7 +25,7 @@ export async function show<T>(dialog: HTMLDialogElement, handleKey: (e: Keyboard
 		return true;
 	}
 
-	document.querySelector("#game")!.append(dialog); // fixme
+	game.append(dialog);
 	dialog.showModal();
 	keyboard.pushHandler(handle);
 

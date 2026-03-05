@@ -4,8 +4,8 @@ import * as random from "../random.ts";
 import * as buildings from "./buildings.ts";
 
 
-const EMPTY_PERCENTAGE = 0.26; // FIXME +- random
-const DOUBLE_CHANCE = 0.33; // FIXME +- random
+const EMPTY_PERCENTAGE = 0.26;
+const DOUBLE_CHANCE = 0.33;
 
 
 export function emptyTown(width: number, height: number): Town {

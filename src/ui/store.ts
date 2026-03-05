@@ -104,11 +104,8 @@ export default class Store extends Pane {
 
 		let p1 = document.createElement("p");
 		fillPerson(p1, named, visual);
+		p1.append("'s inventory:")
 		node.append(p1);
-
-		let p3 = document.createElement("p");
-		p3.innerHTML = `Inventory:`;
-		node.append(p3);
 
 		let options = { rowBuilder: buildInventoryRow, activeId: item };
 		let inventoryTable = new ItemTable<InventoryItem>(options);
@@ -188,13 +185,14 @@ function buildPersonRow(row: HTMLTableRowElement, item: PersonItem, isActive: bo
 
 	fillPerson(row.insertCell(), named, visual);
 
-	let parts: string[] = [];
-
-	person.items.forEach(entity => {
-		let { named, item } = world.requireComponents(entity, "named", "item");
-		parts.push(`${named.name}`);
-	});
-	row.insertCell().innerHTML = parts.join(", ");
+	let str = "(no items)";
+	let count = person.items.length;
+	if (count == 1) {
+		str = "1 item";
+	} else if (count > 1) {
+		str = `${count} items`;
+	}
+	row.insertCell().innerHTML = str;
 }
 
 function buildInventoryRow(row: HTMLTableRowElement, item: InventoryItem, isActive: boolean) {
