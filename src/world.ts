@@ -85,7 +85,13 @@ export interface Town {
 
 export type Item = {
 	price: number;
-} & ( { type: "gold"} | { type: "horse"; speed: number; } | { type: "weapon"; damage: number; range: number; explosionRadius?: number } );
+} & (
+	{ type: "gold"} |
+	{ type: "horse"; durationDiff: number; } |
+	{ type: "aid"; } |
+	{ type: "dynamite"; damage: number; } |
+	{ type: "weapon"; damage: number; range: number; explosionRadius?: number }
+);
 
 interface Components {
 	position: Position;
