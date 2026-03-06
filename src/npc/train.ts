@@ -81,7 +81,7 @@ function updateTrainPartPosition(partEntity: Entity, index: number, town: Town, 
 	}
 
 	let visual = world.requireComponent(partEntity, "visual");
-	updateTrainPartVisual(visual, wagonIndex, partIndex, nextDirection!); // FIXME undefined
+	updateTrainPartVisual(visual, wagonIndex, partIndex, nextDirection);
 	display.draw(x, y, visual, {id: partEntity, zIndex:visual.zIndex, part:visual.part});
 	spatialIndex.update(partEntity);
 }
@@ -147,7 +147,7 @@ function createGuard(x: number, y: number, hasGun: boolean) {
 		person: { items, price: 0, relation: "enemy", hp:rules.guardHp, maxHp: rules.guardHp },
 		actor: { wait: 0, duration: rules.baseTaskDuration, tasks },
 		position: {x, y},
-		blocks: {projectile: true, movement: true},
+		blocks: {projectile: false, movement: true},
 		visual,
 		named: {name: "guard"}
 	});

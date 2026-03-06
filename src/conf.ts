@@ -1,1 +1,2 @@
-export const MOVE_DELAY = 5;
+export const MOVE_DELAY = 40;
+export const ATTACK_DELAY = 200;

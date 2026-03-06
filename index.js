@@ -911,7 +911,10 @@ function setMode(mode) {
       dom.status.innerHTML = "<strong>planning the robbery</strong>";
       break;
     case "action":
-      dom.status.innerHTML = "<strong>the heist is on!</strong> Press [<kbd>Space</kbd>] to pause/continue.";
+      dom.status.innerHTML = "<strong>the heist is on!</strong> Press [<kbd>Space</kbd>] to pause.";
+      break;
+    case "paused":
+      dom.status.innerHTML = "<strong>the heist is paused!</strong> Press [<kbd>Space</kbd>] to continue, [<kbd>A</kbd>] to abort.";
       break;
   }
   update();
@@ -1141,7 +1144,8 @@ function getDurationWithHorse(entity) {
 }
 
 // src/conf.ts
-var MOVE_DELAY = 5;
+var MOVE_DELAY = 40;
+var ATTACK_DELAY = 200;
 
 // src/npc/train.ts
 var WAGONS = 3;
@@ -1376,7 +1380,7 @@ function createGuard(x, y, hasGun) {
       y
     },
     blocks: {
-      projectile: true,
+      projectile: false,
       movement: true
     },
     visual,
@@ -1682,6 +1686,7 @@ async function doAttack(entity, target, weapon) {
     display_default.delete(id2);
   }
   await damagePosition(target, weapon.damage);
+  await sleep(ATTACK_DELAY);
   return actor.duration + weapon.duration;
 }
 function canBeAttacked(target, current, weapon, building) {
@@ -1815,8 +1820,8 @@ async function move2(entity, task) {
       {
         let { town } = world.findEntities("town").values().next().value;
         position = [
-          town.width / 2,
-          town.height / 2
+          Math.round(town.width / 2),
+          Math.round(town.height / 2)
         ];
       }
       break;
@@ -1863,6 +1868,7 @@ async function collect(entity) {
     ...spatialIndex.list(position.x, position.y)
   ].filter((e) => world.hasComponents(e, "item"));
   if (entitiesHere.length > 0) {
+    await sleep(MOVE_DELAY);
     return doCollect(entity, entitiesHere[0]);
   }
   let results = world.findEntities("item", "position");
@@ -1963,6 +1969,7 @@ async function dynamite(entity) {
       id: dynamiteEntity,
       zIndex: visual.zIndex
     });
+    await sleep(ATTACK_DELAY);
     return actor.duration;
   } else {
     return moveCloser(entity, closest);
@@ -2001,6 +2008,12 @@ async function run(entity) {
 async function moveTowardsDistance(entity, target, idealDistance) {
   let { town } = world.findEntities("town").values().next().value;
   let position = world.requireComponent(entity, "position");
+  if (dist4([
+    position.x,
+    position.y
+  ], target) == idealDistance) {
+    return 0;
+  }
   let forceInsideTown = false;
   let neighbors = getFreeNeighbors([
     position.x,
@@ -2338,14 +2351,16 @@ var Map2 = class extends Pane {
     super("map");
   }
   runDemo() {
-    let ac = new AbortController();
-    this.ac = ac;
-    runDemo(ac.signal);
+    let ac2 = new AbortController();
+    this.ac = ac2;
+    runDemo(ac2.signal);
   }
   activate() {
     super.activate();
     clear();
     add("Welcome! As you can see, the townsfolk are busy running their daily errands. Feel free to look around.");
+    newline();
+    add("You can learn more about playing this game by pressing the [<kbd>?</kbd>] key.");
     newline();
   }
   deactivate() {
@@ -3575,6 +3590,34 @@ function rasterize(town, path, options) {
   rasterizeBuildings(town, options);
   rasterizeTrees(town, options);
   let track = rasterizePath(path, options);
+  for (let i = 0; i < 3; i++) {
+    let tp = track[i];
+    let ch = [
+      "^",
+      ">",
+      "v",
+      "<"
+    ][tp.nextDirection];
+    let visual = {
+      ...TRACK_VISUAL,
+      ch
+    };
+    display_default.draw(tp.x, tp.y, visual);
+  }
+  for (let i = track.length - 3; i < track.length; i++) {
+    let tp = track[i];
+    let ch = [
+      "^",
+      ">",
+      "v",
+      "<"
+    ][tp.nextDirection];
+    let visual = {
+      ...TRACK_VISUAL,
+      ch
+    };
+    display_default.draw(tp.x, tp.y, visual);
+  }
   let t = {
     width,
     height,
@@ -4111,7 +4154,7 @@ function generateItems() {
   createWeapon("Sniper rifle", {
     price: 500,
     damage: 4,
-    range: 10,
+    range: 8,
     duration: 5
   });
   createWeapon("Rocket launcher", {
@@ -4122,7 +4165,7 @@ function generateItems() {
     explosionRadius: 1
   });
   createDynamite({
-    price: 500
+    price: 800
   });
 }
 
@@ -4155,6 +4198,7 @@ function formatParty(party) {
 }
 async function gameOver() {
   let node3 = createDialog();
+  node3.addEventListener("cancel", (e) => e.preventDefault());
   let party = [];
   let loot = 0;
   for (let entity of personQuery.entities) {
@@ -4212,9 +4256,14 @@ async function gameOver() {
 // src/game.ts
 var actionPaused = false;
 var seed2;
+var ac;
 function actionKeyboardHandler(e) {
   if (e.code == "Space") {
     actionPaused = !actionPaused;
+    setMode(actionPaused ? "paused" : "action");
+  }
+  if (e.key.toLowerCase() == "a" && actionPaused) {
+    ac && ac.abort();
   }
   return true;
 }
@@ -4242,7 +4291,9 @@ function createTown(W, H) {
 async function runAction() {
   let failedActors = /* @__PURE__ */ new Set();
   let actors = world.query("actor");
-  while (true) {
+  ac = new AbortController();
+  actionPaused = false;
+  while (!ac.signal.aborted) {
     if (actionPaused) {
       await sleep(50);
       continue;
@@ -4278,16 +4329,17 @@ function isGameFinished() {
   let activePartyMembers = 0;
   let enemies = 0;
   for (let entity of personQuery.entities) {
+    let actor = world.getComponent(entity, "actor");
+    if (!actor) {
+      continue;
+    }
     let person = world.requireComponent(entity, "person");
     switch (person.relation) {
       case "enemy":
         enemies++;
         break;
       case "party":
-        let actor = world.getComponent(entity, "actor");
-        if (actor) {
-          activePartyMembers++;
-        }
+        activePartyMembers++;
         break;
     }
   }
@@ -4318,59 +4370,10 @@ function removePersons() {
     spatialIndex.update(entity);
   }
 }
-function buildDebugParty() {
-  function getItemByName(name) {
-    let all = getAvailableItems();
-    return all.find((e) => {
-      let named = world.requireComponent(e, "named");
-      return named.name == name;
-    });
-  }
-  let buildings = world.findEntities("building");
-  let entities = [
-    ...personQuery.entities
-  ];
-  {
-    let { person, actor } = world.requireComponents(entities[0], "person", "actor");
-    person.relation = "party";
-    person.building = [
-      ...buildings.keys()
-    ][0];
-    actor.tasks = [
-      {
-        type: "attack",
-        target: "guard"
-      },
-      {
-        type: "attack",
-        target: "locomotive"
-      },
-      {
-        type: "attack",
-        target: "wagon"
-      }
-    ];
-    person.items = [
-      getItemByName("Sniper rifle")
-    ];
-  }
-  {
-    let { person, actor } = world.requireComponents(entities[1], "person", "actor");
-    person.relation = "party";
-    person.building = [
-      ...buildings.keys()
-    ][1];
-    actor.tasks = [
-      {
-        type: "collect"
-      }
-    ];
-  }
-}
 async function trainArrival() {
   let entity = create(0);
   add("The train arrives!");
-  let delay = DEBUG ? 0 : 200;
+  let delay = 200;
   for (let i = 0; i < 11; i++) {
     move(entity);
     await sleep(delay);
@@ -4425,7 +4428,7 @@ async function startAction() {
   startAction2();
   placeRandomly(otherEntities);
   await trainArrival();
-  await placeIntoBuildings(partyEntities, DEBUG ? 0 : 700);
+  await placeIntoBuildings(partyEntities, 700);
   pushHandler(actionKeyboardHandler);
   await runAction();
   popHandler();
@@ -4440,7 +4443,6 @@ async function startAction() {
   spatialIndex.reset();
   processGameOverResult(gameOverResult);
 }
-var DEBUG = false;
 async function init3(s2) {
   seed2 = s2;
   seed(seed2);
@@ -4448,10 +4450,6 @@ async function init3(s2) {
   await init2();
   on();
   startPlanning();
-  if (DEBUG) {
-    buildDebugParty();
-    startAction();
-  }
 }
 
 // src/intro.ts
@@ -4520,7 +4518,6 @@ async function init5() {
       seed3 = parsed;
     }
   }
-  seed3 = 454036;
   seed3 = await init4(seed3);
   await init3(seed3);
 }

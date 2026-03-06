@@ -17,7 +17,7 @@ async function init() {
         if (parsed) { seed = parsed; }
     }
 
-    seed = 454036; // override with debug
+//    seed = 454036; // override with debug
 	seed = await intro.init(seed); // override with user
 
 	await game.init(seed);

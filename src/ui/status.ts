@@ -43,14 +43,18 @@ export function update() {
 	updateParty();
 }
 
-export function setMode(mode: "planning" | "action") {
+export function setMode(mode: "planning" | "action" | "paused") {
 	switch (mode) {
 		case "planning":
 			dom.status.innerHTML = "<strong>planning the robbery</strong>";
 		break;
 
 		case "action":
-			dom.status.innerHTML = "<strong>the heist is on!</strong> Press [<kbd>Space</kbd>] to pause/continue.";
+			dom.status.innerHTML = "<strong>the heist is on!</strong> Press [<kbd>Space</kbd>] to pause.";
+		break;
+
+		case "paused":
+			dom.status.innerHTML = "<strong>the heist is paused!</strong> Press [<kbd>Space</kbd>] to continue, [<kbd>A</kbd>] to abort.";
 		break;
 	}
 	update();

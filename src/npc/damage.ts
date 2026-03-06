@@ -109,7 +109,8 @@ export async function damagePosition(position: Position, damage: Damage) {
 			log.add("The dynamite explodes!");
 			damage = {
 				amount: item.damage,
-				explosionRadius: 2			}
+				explosionRadius: 2
+			}
 			await damagePosition(position, damage);
 		}
 	}

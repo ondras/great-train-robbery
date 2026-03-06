@@ -29,9 +29,9 @@ export function generateItems() {
 
 	createWeapon("Revolver", {price: 100, damage: 2, range: 3, duration: 5});
 	createWeapon("Rifle", {price: 300, damage: 4, range: 5, duration: 5});
-	createWeapon("Sniper rifle", {price: 500, damage: 4, range: 10, duration: 5});
+	createWeapon("Sniper rifle", {price: 500, damage: 4, range: 8, duration: 5});
 
 	createWeapon("Rocket launcher", {price: 1000, damage: 5, range: 10, duration: 10, explosionRadius: 1});
 
-	createDynamite({price: 500});
+	createDynamite({price: 800});
 }

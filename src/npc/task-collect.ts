@@ -1,7 +1,8 @@
 import { world, Entity, spatialIndex } from "../world.ts";
-import { distEuclidean, getDurationWithHorse, Position } from "./util.ts";
+import { distEuclidean, getDurationWithHorse, Position, sleep } from "./util.ts";
 import { moveCloser } from "./tasks.ts";
 import * as log from "../ui/log.ts";
+import * as conf from "../conf.ts";
 import display from "../display.ts";
 
 
@@ -39,6 +40,7 @@ export async function collect(entity: Entity): Promise<number> {
 	let entitiesHere = [...spatialIndex.list(position.x, position.y)]
 						.filter(e => world.hasComponents(e, "item"));
 	if (entitiesHere.length > 0) {
+		await sleep(conf.MOVE_DELAY);
 		return doCollect(entity, entitiesHere[0]);
 	}
 

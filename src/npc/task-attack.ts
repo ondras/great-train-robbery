@@ -1,11 +1,12 @@
 import { world, spatialIndex, Entity, Building } from "../world.ts";
 import display from "../display.ts";
 import { AttackTask, moveCloser } from "./tasks.ts";
-import { dist8, distEuclidean, Position, computePath } from "./util.ts";
+import { dist8, distEuclidean, Position, computePath, sleep } from "./util.ts";
 import { Damage, damagePosition } from "./damage.ts";
 import * as train from "./train.ts";
 import * as rules from "../rules.ts";
 import * as log from "../ui/log.ts";
+import * as conf from "../conf.ts";
 
 
 interface Weapon {
@@ -92,6 +93,8 @@ async function doAttack(entity: Entity, target: Position, weapon: Weapon): Promi
 	}
 
 	await damagePosition(target, weapon.damage);
+
+	await sleep(conf.ATTACK_DELAY);
 
 	return actor.duration + weapon.duration;
 }

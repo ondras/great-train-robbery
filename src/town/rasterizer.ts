@@ -38,6 +38,19 @@ export function rasterize(town: Town, path: Path, options: RasterizerOptions) {
 	rasterizeTrees(town, options);
 	let track = rasterizePath(path, options);
 
+	for (let i=0; i<3; i++) {
+		let tp = track[i];
+		let ch = ["^", ">", "v", "<"][tp.nextDirection!];
+		let visual = { ...TRACK_VISUAL, ch };
+		display.draw(tp.x, tp.y, visual);
+	}
+	for (let i=track.length-3; i<track.length; i++) {
+		let tp = track[i];
+		let ch = ["^", ">", "v", "<"][tp.nextDirection!];
+		let visual = { ...TRACK_VISUAL, ch };
+		display.draw(tp.x, tp.y, visual);
+	}
+
 	let t = { width, height, track };
 	return world.createEntity({town: t});
 }
@@ -208,7 +221,7 @@ function rasterizeBuilding(building: Building, options: RasterizerOptions) {
 interface Position {
 	x: number;
 	y: number;
-	nextDirection?: number;
+	nextDirection: number;
 }
 
 function rasterizePath(path: Path, options: RasterizerOptions) {

@@ -25,6 +25,8 @@ export default class Map extends Pane {
 		log.clear();
 		log.add("Welcome! As you can see, the townsfolk are busy running their daily errands. Feel free to look around.");
 		log.newline();
+		log.add("You can learn more about playing this game by pressing the [<kbd>?</kbd>] key.");
+		log.newline();
 	}
 
 	deactivate() {

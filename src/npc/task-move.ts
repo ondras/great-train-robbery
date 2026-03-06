@@ -1,5 +1,5 @@
 import { spatialIndex, world, Entity } from "../world.ts";
-import { getDurationWithHorse, getFreeNeighbors, Position } from "./util.ts";
+import { getFreeNeighbors, Position } from "./util.ts";
 import { MoveTask, moveCloser } from "./tasks.ts";
 import display from "../display.ts";
 import * as train from "./train.ts";
@@ -18,7 +18,6 @@ export async function wander(entity: Entity) {
 	position.y = neighbor[1];
 	spatialIndex.update(entity);
 	await display.move(entity, position.x, position.y, conf.MOVE_DELAY);
-//	return getDurationWithHorse(entity);
 	return 0;
 }
 
@@ -28,7 +27,7 @@ export async function move(entity: Entity, task: MoveTask) {
 	switch (task.target) {
 		case "center": {
 			let { town } = world.findEntities("town").values().next().value!;
-			position = [town.width/2, town.height/2];
+			position = [Math.round(town.width/2), Math.round(town.height/2)];
 		} break;
 		case "locomotive": {
 			position = train.getLocomotivePosition();

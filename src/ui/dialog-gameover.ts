@@ -35,6 +35,7 @@ export type GameOverResult = "restart" | "new" | "github" | "retry";
 
 export async function gameOver(): Promise<GameOverResult> {
 	let node = dialog.createDialog();
+	node.addEventListener("cancel", e => e.preventDefault());
 
 	let party: Person[] = [];
 	let loot = 0;

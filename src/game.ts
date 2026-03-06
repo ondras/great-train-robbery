@@ -1,5 +1,6 @@
 import * as keyboard from "./ui/keyboard.ts";
 import * as ui from "./ui/ui.ts";
+import * as status from "./ui/status.ts";
 import * as log from "./ui/log.ts";
 import * as random from "./random.ts";
 import * as rules from "./rules.ts";
@@ -21,9 +22,16 @@ import { getAvailableItems } from "./ui/dialog-buy.ts";
 
 let actionPaused = false;
 let seed: number;
+let ac: AbortController | undefined;
 
 function actionKeyboardHandler(e: KeyboardEvent): boolean {
-	if (e.code == "Space") { actionPaused = !actionPaused; }
+	if (e.code == "Space") {
+		actionPaused = !actionPaused;
+		status.setMode(actionPaused ? "paused" : "action");
+	}
+	if (e.key.toLowerCase() == "a" && actionPaused) {
+		ac && ac.abort();
+	}
 	return true;
 }
 
@@ -52,8 +60,10 @@ function createTown(W: number, H: number) {
 export async function runAction() {
 	let failedActors = new Set<Entity>();
 	let actors = world.query("actor");
+	ac = new AbortController();
+	actionPaused = false;
 
-	while (true) {
+	while (!ac.signal.aborted) {
 		if (actionPaused) {
 			await sleep(50);
 			continue;
@@ -94,13 +104,13 @@ function isGameFinished(): boolean {
 	let enemies = 0;
 
 	for (let entity of rules.personQuery.entities) {
+		let actor = world.getComponent(entity, "actor");
+		if (!actor) { continue; }
+
 		let person = world.requireComponent(entity, "person");
 		switch (person.relation) {
 			case "enemy": enemies++; break;
-			case "party":
-				let actor = world.getComponent(entity, "actor");
-				if (actor) { activePartyMembers++; }
-			break;
+			case "party": activePartyMembers++; break;
 		}
 	}
 
@@ -170,7 +180,7 @@ async function trainArrival() {
 	let entity = train.create(0);
 	log.add("The train arrives!");
 
-	let delay = (DEBUG ? 0 : 200);
+	let delay = 200;
 
 	for (let i=0; i<11; i++) {
 		train.move(entity);
@@ -224,7 +234,7 @@ export async function startAction() {
 	npcGenerator.placeRandomly(otherEntities);
 
 	await trainArrival();
-	await npcGenerator.placeIntoBuildings(partyEntities, DEBUG ? 0 : 700);
+	await npcGenerator.placeIntoBuildings(partyEntities, 700);
 
 	keyboard.pushHandler(actionKeyboardHandler);
 	await runAction();
@@ -246,8 +256,6 @@ export async function startAction() {
 	processGameOverResult(gameOverResult);
 }
 
-const DEBUG = false;
-
 export async function init(s: number) {
 	seed = s;
 	random.seed(seed);
@@ -258,10 +266,6 @@ export async function init(s: number) {
 
 	ui.startPlanning();
 
-
-	if (DEBUG) {
-		buildDebugParty();
-
-		startAction();
-	}
+//		buildDebugParty();
+//		startAction();
 }

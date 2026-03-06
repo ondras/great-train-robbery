@@ -80,7 +80,7 @@ export interface Town {
 	track: {
 		x: number;
 		y: number;
-		nextDirection?: number;
+		nextDirection: number;
 	}[];
 }
 

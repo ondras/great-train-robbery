@@ -1,6 +1,7 @@
 import { world, Entity, spatialIndex } from "../world.ts";
 import * as log from "../ui/log.ts";
-import { dist8, Position } from "./util.ts";
+import * as conf from "../conf.ts";
+import { dist8, Position, sleep } from "./util.ts";
 import { moveCloser } from "./tasks.ts";
 import display from "../display.ts";
 
@@ -49,6 +50,8 @@ export async function dynamite(entity: Entity): Promise<number> {
 		world.addComponent(dynamiteEntity, "position", dynamitePosition);
 		spatialIndex.update(dynamiteEntity);
 		display.draw(dynamitePosition.x, dynamitePosition.y, visual, {id: dynamiteEntity, zIndex: visual.zIndex});
+
+		await sleep(conf.ATTACK_DELAY);
 
 		return actor.duration;
 	} else {

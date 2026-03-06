@@ -71,10 +71,11 @@ async function moveTowardsDistance(entity: Entity, target: Position, idealDistan
 
 	let position = world.requireComponent(entity, "position");
 
+	if (dist4([position.x, position.y], target) == idealDistance) { return 0; }
+
 	let forceInsideTown = false;
 	let neighbors = getFreeNeighbors([position.x, position.y], forceInsideTown);
 	if (neighbors.length == 0) { return 0; }
-
 
 	function CMP_DIST(a: Position, b: Position) {
 		let aToTarget = dist4(a, target);
