@@ -4149,19 +4149,19 @@ function generateItems() {
     price: 300,
     damage: 4,
     range: 5,
-    duration: 5
+    duration: 10
   });
   createWeapon("Sniper rifle", {
     price: 500,
     damage: 4,
     range: 8,
-    duration: 5
+    duration: 20
   });
   createWeapon("Rocket launcher", {
     price: 1e3,
     damage: 5,
     range: 10,
-    duration: 10,
+    duration: 40,
     explosionRadius: 1
   });
   createDynamite({

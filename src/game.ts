@@ -174,6 +174,17 @@ function buildDebugParty() {
 
 //		person.items = [getItemByName("Sniper rifle")!];
 	}
+
+	{
+		let { person, actor } = world.requireComponents(entities[2], "person", "actor");
+		person.relation = "party";
+		person.building = [...buildings.keys()][2];
+
+		actor.tasks = [{type:"escape", withGold:true}, {type:"collect"}, {type:"attack", target:"guard"}, {type:"attack", target:"locomotive"}, {type:"attack", target:"wagon"}];
+
+		person.items = [getItemByName("Rocket launcher")!];
+//		person.items = [getItemByName("Sniper rifle")!];
+	}
 }
 
 async function trainArrival() {
