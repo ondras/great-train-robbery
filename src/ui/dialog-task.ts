@@ -13,12 +13,12 @@ const allowedTasks: AllowedTask[] = [
 	{task: {type:"attack", target:"wagon"}, label: "Attack wagons with gold"},
 	{task: {type:"attack", target:"guard"}, label: "Attack train guards"},
 
+	{task: {type:"collect"}, label: "Collect gold looted from the train"},
 	{task: {type:"escape", withGold: true}, label: "Escape once there is nothing to collect"},
+
 	{task: {type:"move", target:"center"}, label: "Move towards the town center"},
 	{task: {type:"move", target:"locomotive"}, label: "Move towards the locomotive"},
-
-	{task: {type:"collect"}, label: "Collect gold looted from the train"},
-	{task: {type:"dynamite"}, label: "Place a dynamite on a railroad track"},
+	{task: {type:"dynamite"}, label: "Place a dynamite on a railroad track"}
 ];
 
 function objectsEqual(a: any, b: any): boolean {

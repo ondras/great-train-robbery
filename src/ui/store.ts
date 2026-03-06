@@ -91,7 +91,7 @@ export default class Store extends Pane {
 		this.activePerson = undefined;
 
 		let p = document.createElement("p");
-		p.textContent = "Select a party member to view their inventory and buy them new items.";
+		p.textContent = "Select a party member to view their inventory and buy them new items. One party member can carry multiple items.";
 		node.append(p, personTable.build(items));
 	}
 

@@ -71,18 +71,18 @@ export async function gameOver(): Promise<GameOverResult> {
 				return "retry";
 			} break;
 
-			case "Digit2":
-			case "Numpad2": {
+			case "Digit3":
+			case "Numpad3": {
 				return "restart";
 			} break;
 
-			case "Digit3":
-			case "Numpad3": {
+			case "Digit5":
+			case "Numpad5": {
 				return "new";
 			} break;
 
-			case "Digit4":
-			case "Numpad4":
+			case "Digit7":
+			case "Numpad7":
 				return "github";
 			break;
 		}

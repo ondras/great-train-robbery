@@ -141,7 +141,7 @@ export default class Hotel extends Pane {
 		this.activePerson = undefined;
 
 		let p = document.createElement("p");
-		p.textContent = "Select a party member to set their starting location and organize their tasks.";
+		p.textContent = "Select a party member to set their starting location and organize their tasks. Feel free to add multiple tasks for each person. They will be evaulated starting from the top.";
 		node.append(p, personTable.build(items));
 	}
 
