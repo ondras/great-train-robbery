@@ -24,14 +24,14 @@ function createDynamite(params: {price:number}) {
 }
 
 export function generateItems() {
-	createHorse("Regular Horse", {price: 10, duration: 6});
-	createHorse("Super-fast Horse", {price: 10, duration: 4});
+	createHorse("Regular Horse", {price: 200, duration: 6});
+	createHorse("Super-fast Horse", {price: 300, duration: 4});
 
-	createWeapon("Revolver", {price: 10, damage: 2, range: 3, duration: 5});
-	createWeapon("Rifle", {price: 10, damage: 4, range: 5, duration: 5});
-	createWeapon("Sniper rifle", {price: 10, damage: 4, range: 10, duration: 5});
+	createWeapon("Revolver", {price: 100, damage: 2, range: 3, duration: 5});
+	createWeapon("Rifle", {price: 300, damage: 4, range: 5, duration: 5});
+	createWeapon("Sniper rifle", {price: 500, damage: 4, range: 10, duration: 5});
 
-	createWeapon("Rocket launcher", {price: 10, damage: 5, range: 10, duration: 10, explosionRadius: 1});
+	createWeapon("Rocket launcher", {price: 1000, damage: 5, range: 10, duration: 10, explosionRadius: 1});
 
-	createDynamite({price: 10});
+	createDynamite({price: 500});
 }

@@ -1,4 +1,4 @@
-import { world } from "../world.ts";
+import { world, Person, Actor, Named } from "../world.ts";
 import Pane from "./pane.ts";
 import { confirm } from "./dialog.ts";
 import * as game from "../game.ts";
@@ -7,7 +7,17 @@ import * as log from "./log.ts";
 import { template } from "./util.ts";
 
 
-// FIXME check aid action+item, check dynamite action+item
+function checkDynamite(messages: string[], party: { person: Person, actor: Actor, named: Named }[]) {
+	party.forEach(member => {
+		let hasTask = member.actor.tasks.some(t => t.type == "dynamite");
+		let hasDynamite = member.person.items.some(e => {
+			return world.requireComponent(e, "item").type == "dynamite";
+		});
+		if (hasTask && !hasDynamite) {
+			messages.push(`✘ ${member.named.name} has a dynamite task assigned, but is not equipped with any dynamite.`);
+		}
+	});
+}
 
 export default class Action extends Pane {
 	protected ready = false;
@@ -29,7 +39,7 @@ export default class Action extends Pane {
 		let messages: string[] = [];
 
 		let { entities } = rules.personQuery;
-		let party = [...entities].map(e => world.requireComponents(e, "person", "actor")).filter(item => {
+		let party = [...entities].map(e => world.requireComponents(e, "person", "actor", "named")).filter(item => {
 			return item.person.relation == "party";
 		});
 
@@ -53,6 +63,8 @@ export default class Action extends Pane {
 				messages.push(`✘ Every member of your party needs to have at least one task assigned. Plan their tasks in the Hotel.`);
 			} else {
 				messages.push(`✔ Every member of your party has at least one task assigned.`);
+
+				checkDynamite(messages, party);
 
 				if (!locations) {
 					messages.push(`✘ Every member of your party needs to have a starting location assigned. Do that in the Hotel.`);

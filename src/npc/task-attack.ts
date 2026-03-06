@@ -83,11 +83,11 @@ async function doAttack(entity: Entity, target: Position, weapon: Weapon): Promi
 	}
 
 	let dist = distEuclidean(currentPosition, target);
-	if (dist > 2) {
+	if (dist > 2 || weapon.damage.explosionRadius > 0) {
 		let visual = SHOT_VISUAL;
 		let id = "shot";
 		display.draw(currentPosition[0], currentPosition[1], visual, {id, zIndex:visual.zIndex});
-		await display.move(id, target[0], target[1], 10*dist);
+		await display.move(id, target[0], target[1], 20*dist);
 		display.delete(id);
 	}
 
@@ -115,7 +115,7 @@ function canBeAttacked(target: Position, current: Position, weapon: Weapon, buil
 }
 
 function canBeReached(target: Position, current: Position, weapon: Weapon, building?: Building): boolean {
-	if (!building || building.roof) { return true; } // not roof-limited
+	if (!building || !building.roof) { return true; } // not roof-limited
 
 	// roof: if at least one roof corner is within range, we can move there
 	let { x, y, width, height } = building;

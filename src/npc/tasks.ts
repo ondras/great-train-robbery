@@ -63,7 +63,6 @@ export async function run(entity: Entity): Promise<number> {
 		if (time) { return time; }
 	}
 
-	console.log("!!!", entity);
 	return 0;
 }
 
@@ -75,6 +74,7 @@ async function moveTowardsDistance(entity: Entity, target: Position, idealDistan
 	let forceInsideTown = false;
 	let neighbors = getFreeNeighbors([position.x, position.y], forceInsideTown);
 	if (neighbors.length == 0) { return 0; }
+
 
 	function CMP_DIST(a: Position, b: Position) {
 		let aToTarget = dist4(a, target);

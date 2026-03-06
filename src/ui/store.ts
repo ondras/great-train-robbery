@@ -170,7 +170,7 @@ export default class Store extends Pane {
 
 		let { items } = world.requireComponent(person, "person");
 		if (uniqueGroups.has(item.type)) {
-			if (items.some(entity => uniqueGroups.has(world.requireComponent(entity, "item").type))) {
+			if (items.some(entity => world.requireComponent(entity, "item").type == item.type)) {
 				await alert(`You already have a ${item.type}. Sell it first if you want to buy another one.`);
 				return;
 			}

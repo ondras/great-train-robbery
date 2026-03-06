@@ -20,6 +20,9 @@ function handleEvent(e) {
 function on() {
   enabled = true;
 }
+function off() {
+  enabled = false;
+}
 window.addEventListener("keydown", (e) => {
   if (!enabled) {
     return;
@@ -537,7 +540,7 @@ function init() {
   window.addEventListener("resize", syncFontSize);
 }
 
-// deno:https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/query.ts
+// deno:https://cdn.jsdelivr.net/gh/ondras/face@6dbc79c/query.ts
 var Query = class extends EventTarget {
   ac = new AbortController();
   entities = /* @__PURE__ */ new Set();
@@ -551,11 +554,18 @@ var Query = class extends EventTarget {
     world2.addEventListener("component-add", (e) => this.onAddComponent(e.detail.entity, e.detail.component), options);
     world2.addEventListener("component-remove", (e) => this.onRemoveComponent(e.detail.entity, e.detail.component), options);
     world2.addEventListener("entity-remove", (e) => this.onRemoveEntity(e.detail.entity), options);
+    world2.addEventListener("reset", (e) => this.onReset(e.target), options);
     world2.findEntities(...components).keys().forEach((entity) => this.entities.add(entity));
   }
   destroy() {
     this.entities.clear();
     this.ac.abort();
+  }
+  onReset(world2) {
+    const { entities, components } = this;
+    entities.clear();
+    world2.findEntities(...components).keys().forEach((entity) => entities.add(entity));
+    this.dispatchEvent(new Event("change"));
   }
   onAddComponent(entity, component) {
     const { entities, components } = this;
@@ -583,7 +593,7 @@ var Query = class extends EventTarget {
   }
 };
 
-// deno:https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/typed-event-target.ts
+// deno:https://cdn.jsdelivr.net/gh/ondras/face@6dbc79c/typed-event-target.ts
 var TypedEventTarget = class extends EventTarget {
   addEventListener(type, listener, options) {
     return super.addEventListener(type, listener, options);
@@ -593,12 +603,12 @@ var TypedEventTarget = class extends EventTarget {
   }
 };
 
-// deno:https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/world.ts
+// deno:https://cdn.jsdelivr.net/gh/ondras/face@6dbc79c/world.ts
 var World = class extends TypedEventTarget {
   storage = /* @__PURE__ */ new Map();
   counter = 0;
   /** world.createEntity({position:{x,y}}) */
-  createEntity(init5) {
+  createEntity(init6) {
     let entity = ++this.counter;
     let detail = {
       entity
@@ -606,7 +616,7 @@ var World = class extends TypedEventTarget {
     this.dispatchEvent(new CustomEvent("entity-create", {
       detail
     }));
-    init5 && this.addComponents(entity, init5);
+    init6 && this.addComponents(entity, init6);
     return entity;
   }
   removeEntity(entity) {
@@ -707,12 +717,27 @@ var World = class extends TypedEventTarget {
   query(...components) {
     return new Query(this, ...components);
   }
+  toString() {
+    let dict = {};
+    for (let [entity, components] of this.storage.entries()) {
+      dict[entity] = components;
+    }
+    return JSON.stringify(dict);
+  }
+  fromString(str) {
+    let dict = JSON.parse(str);
+    this.storage.clear();
+    for (let key in dict) {
+      this.storage.set(Number(key), dict[key]);
+    }
+    this.dispatchEvent(new CustomEvent("reset"));
+  }
 };
 function keysPresent(data, keys) {
   return keys.every((key) => key in data);
 }
 
-// deno:https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/scheduler.ts
+// deno:https://cdn.jsdelivr.net/gh/ondras/face@6dbc79c/scheduler.ts
 var DurationActorScheduler = class {
   world;
   query;
@@ -749,7 +774,7 @@ function findMinWait(actors) {
   return minEntity;
 }
 
-// deno:https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/spatial-index.ts
+// deno:https://cdn.jsdelivr.net/gh/ondras/face@6dbc79c/spatial-index.ts
 var SpatialIndex = class {
   world;
   data = [];
@@ -777,6 +802,14 @@ var SpatialIndex = class {
     }
     return getSetFor(x, y, this.data);
   }
+  reset() {
+    const { world: world2 } = this;
+    this.data = [];
+    let entities = world2.findEntities("position").keys();
+    for (let entity of entities) {
+      this.update(entity);
+    }
+  }
 };
 function getSetFor(x, y, data) {
   while (data.length <= x) {
@@ -796,10 +829,10 @@ var scheduler = new DurationActorScheduler(world);
 window.world = world;
 
 // src/rules.ts
-var initialMoney = 5e3;
+var initialMoney = 4e3;
 var personHp = 5;
-var personPrice = 100;
-var personBonusChance = 0.67;
+var personPrice = 400;
+var personBonusChance = 0.4;
 var locomotiveHp = 15;
 var wagonHp = 10;
 var baseTaskDuration = 10;
@@ -1108,7 +1141,7 @@ function getDurationWithHorse(entity) {
 }
 
 // src/conf.ts
-var MOVE_DELAY = 1;
+var MOVE_DELAY = 5;
 
 // src/npc/train.ts
 var WAGONS = 3;
@@ -1222,6 +1255,7 @@ function create(trackOffset) {
   };
   world.addComponent(train, "train", trainComponent);
   updateTrainPositions(trainComponent);
+  return train;
 }
 function updateTrainPartPosition(partEntity, index, town, wagonIndex, partIndex) {
   let position = world.getComponent(partEntity, "position");
@@ -1301,7 +1335,7 @@ function getAllPositions(isLocomotive) {
   }
   return positions;
 }
-function createGuard(x, y) {
+function createGuard(x, y, hasGun) {
   let gun = world.createEntity({
     item: {
       type: "weapon",
@@ -1310,7 +1344,7 @@ function createGuard(x, y) {
     }
   });
   let items = [];
-  if (1) {
+  if (hasGun) {
     items.push(gun);
   }
   let visual = GUARD_VISUAL;
@@ -1368,7 +1402,7 @@ function dropGoldAndGuards(positions) {
   for (let i = 0; i < droppedGuardCount; i++) {
     let position = positions.random();
     removePosition(position);
-    createGuard(position[0], position[1]);
+    createGuard(position[0], position[1], i % 2 == 0);
   }
   add("Security guards jump out of the damaged wagon.");
   for (let i = 0; i < droppedGoldCount; i++) {
@@ -1386,7 +1420,7 @@ function dropGoldAndGuards(positions) {
       },
       visual,
       named: {
-        name: "Gold"
+        name: "bag of gold"
       }
     });
     spatialIndex.update(gold);
@@ -1403,7 +1437,7 @@ function disconnectLastWagon(train) {
   let freePositions = [];
   let { parts } = world.requireComponent(wagonEntity, "wagon");
   parts.forEach((partEntity) => {
-    world.removeComponents(partEntity, "trainPart");
+    world.removeComponents(partEntity, "trainPart", "blocks");
     let position = world.getComponent(partEntity, "position");
     if (position) {
       freePositions.push(...getFreeNeighbors([
@@ -1637,14 +1671,14 @@ async function doAttack(entity, target, weapon) {
     add(str);
   }
   let dist = distEuclidean(currentPosition, target);
-  if (dist > 2) {
+  if (dist > 2 || weapon.damage.explosionRadius > 0) {
     let visual = SHOT_VISUAL;
     let id2 = "shot";
     display_default.draw(currentPosition[0], currentPosition[1], visual, {
       id: id2,
       zIndex: visual.zIndex
     });
-    await display_default.move(id2, target[0], target[1], 10 * dist);
+    await display_default.move(id2, target[0], target[1], 20 * dist);
     display_default.delete(id2);
   }
   await damagePosition(target, weapon.damage);
@@ -1667,7 +1701,7 @@ function canBeAttacked(target, current, weapon, building) {
   return true;
 }
 function canBeReached(target, current, weapon, building) {
-  if (!building || building.roof) {
+  if (!building || !building.roof) {
     return true;
   }
   let { x, y, width, height } = building;
@@ -1772,7 +1806,7 @@ async function wander(entity) {
   position.y = neighbor[1];
   spatialIndex.update(entity);
   await display_default.move(entity, position.x, position.y, MOVE_DELAY);
-  return getDurationWithHorse(entity);
+  return 0;
 }
 async function move2(entity, task) {
   let position;
@@ -1818,7 +1852,13 @@ function doCollect(entity, item) {
   return getDurationWithHorse(entity);
 }
 async function collect(entity) {
-  const { position } = world.requireComponents(entity, "position");
+  const { position, person } = world.requireComponents(entity, "position", "person");
+  if (person.building) {
+    let building = world.requireComponent(person.building, "building");
+    if (building.roof) {
+      return 0;
+    }
+  }
   let entitiesHere = [
     ...spatialIndex.list(position.x, position.y)
   ].filter((e) => world.hasComponents(e, "item"));
@@ -1956,7 +1996,6 @@ async function run(entity) {
       return time;
     }
   }
-  console.log("!!!", entity);
   return 0;
 }
 async function moveTowardsDistance(entity, target, idealDistance) {
@@ -1999,6 +2038,299 @@ async function moveFurther(entity, target) {
   return moveTowardsDistance(entity, target, 1e3);
 }
 
+// src/random.ts
+function splitmix32(a) {
+  return function() {
+    a |= 0;
+    a = a + 2654435769 | 0;
+    var t = a ^ a >>> 16;
+    t = Math.imul(t, 569420461);
+    t = t ^ t >>> 15;
+    t = Math.imul(t, 1935289751);
+    return ((t = t ^ t >>> 15) >>> 0) / 4294967296;
+  };
+}
+var generator = splitmix32(0);
+function seed(seed3) {
+  generator = splitmix32(seed3);
+}
+function float() {
+  return generator();
+}
+function arrayIndex(arr) {
+  return Math.floor(float() * arr.length);
+}
+function arrayItem(arr) {
+  return arr[arrayIndex(arr)];
+}
+Array.prototype.random = function() {
+  return arrayItem(this);
+};
+
+// src/npc/generator.ts
+function createPerson(name) {
+  let blocks = {
+    projectile: true,
+    movement: true
+  };
+  let visual = {
+    ch: "@",
+    fg: color2(),
+    zIndex: 2
+  };
+  let named = {
+    name
+  };
+  let actor = {
+    wait: 0,
+    tasks: [],
+    duration: baseTaskDuration
+  };
+  let person = {
+    items: [],
+    price: personPrice,
+    relation: "npc",
+    building: void 0,
+    hp: 0,
+    maxHp: personHp
+  };
+  if (float() < personBonusChance) {
+    applyBonus(person, actor, named);
+  }
+  person.hp = person.maxHp;
+  let components = {
+    actor,
+    visual,
+    person,
+    blocks,
+    named
+  };
+  let entity = world.createEntity(components);
+  spatialIndex.update(entity);
+  return entity;
+}
+var COUNT = 10;
+var NAMES = [
+  "Bodie",
+  "Boone",
+  "Briggs",
+  "Buck",
+  "Billy",
+  "Colt",
+  "Emmett",
+  "Emily",
+  "Flint",
+  "Gideon",
+  "Gonzales",
+  "Harlan",
+  "Jackie",
+  "Knox",
+  "Luther",
+  "Mercer",
+  "Nash",
+  "Quincy",
+  "Remy",
+  "Rhett",
+  "Rowdy",
+  "Sawyer",
+  "Silas",
+  "Stetson",
+  "Trace",
+  "Tucker",
+  "Virgil",
+  "Wade",
+  "Wyatt"
+];
+var BONUSES = [
+  {
+    names: [
+      "Healthy %s",
+      "%s the Healthy",
+      "Big %s",
+      "%s the Tough"
+    ],
+    values: {
+      maxHp: Math.ceil(personHp * 0.5)
+    }
+  },
+  {
+    names: [
+      "Weak %s",
+      "%s the Sick"
+    ],
+    values: {
+      maxHp: -Math.floor(personHp * 0.5)
+    }
+  },
+  {
+    names: [
+      "Cheap %s",
+      "%s the Cheap"
+    ],
+    values: {
+      price: -Math.floor(personPrice * 0.25)
+    }
+  },
+  {
+    names: [
+      "Expensive %s",
+      "%s the Luxurious"
+    ],
+    values: {
+      price: Math.floor(personPrice * 0.25)
+    }
+  },
+  {
+    names: [
+      "Speedy %s",
+      "%s the Lightning"
+    ],
+    values: {
+      speed: 0.5
+    }
+  },
+  {
+    names: [
+      "Slow %s",
+      "%s the Snail"
+    ],
+    values: {
+      speed: 2
+    }
+  }
+];
+function applyBonus(person, actor, named) {
+  let bonus = BONUSES.random();
+  Object.entries(bonus.values).forEach(([key, value]) => {
+    if (key == "maxHp") {
+      person.maxHp += value;
+    }
+    if (key == "price") {
+      person.price += value;
+    }
+    if (key == "speed") {
+      actor.duration = Math.round(actor.duration * value);
+    }
+  });
+  let template2 = bonus.names.random();
+  named.name = template2.replace("%s", named.name);
+}
+function placeRandomly(entities) {
+  let freePositions = computeFreePositions();
+  entities.forEach((entity) => {
+    let index = arrayIndex(freePositions);
+    let pos = freePositions.splice(index, 1)[0];
+    let visual = world.requireComponent(entity, "visual");
+    world.addComponents(entity, {
+      position: {
+        x: pos[0],
+        y: pos[1]
+      }
+    });
+    spatialIndex.update(entity);
+    display_default.draw(pos[0], pos[1], visual, {
+      id: entity,
+      zIndex: visual.zIndex
+    });
+  });
+}
+async function placeIntoBuildings(entities, delay) {
+  function getFreePositions(building) {
+    let positions = [];
+    for (let i = 1; i < building.width - 1; i++) {
+      for (let j = 1; j < building.height - 1; j++) {
+        let x = building.x + i;
+        let y = building.y + j;
+        let entities2 = spatialIndex.list(x, y);
+        if (entities2.size == 0) {
+          positions.push([
+            x,
+            y
+          ]);
+        }
+      }
+    }
+    let cx = building.x + Math.ceil(building.width / 2);
+    let cy = building.y + Math.ceil(building.height / 2);
+    positions.sort((a, b) => {
+      let da = Math.abs(a[1] - cy);
+      let db = Math.abs(b[1] - cy);
+      if (da != db) {
+        return da - db;
+      }
+      da = Math.abs(a[0] - cx);
+      db = Math.abs(b[0] - cx);
+      return da - db;
+    });
+    return positions;
+  }
+  for (let entity of entities) {
+    let { person, visual } = world.requireComponents(entity, "person", "visual");
+    let building = world.requireComponent(person.building, "building");
+    let pos = getFreePositions(building).shift();
+    world.addComponents(entity, {
+      position: {
+        x: pos[0],
+        y: pos[1]
+      }
+    });
+    spatialIndex.update(entity);
+    display_default.draw(pos[0], pos[1], visual, {
+      id: entity,
+      zIndex: visual.zIndex
+    });
+    await display_default.fx(entity, {
+      scale: [
+        5,
+        1
+      ]
+    }, delay).finished;
+  }
+  ;
+}
+function generatePeople() {
+  let names = NAMES.slice();
+  let entities = [];
+  for (let i = 0; i < COUNT; i++) {
+    let nameIndex = arrayIndex(names);
+    let name = names.splice(nameIndex, 1)[0];
+    let entity = createPerson(name);
+    entities.push(entity);
+  }
+}
+function color2() {
+  let h = Math.round(float() * 360);
+  let l = float() * 0.5 + 0.25;
+  return `hsl(${h | 0} 100% ${l * 100 | 0}%)`;
+}
+function isInsideBuilding(x, y, buildings) {
+  return buildings.some((b) => {
+    return x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height;
+  });
+}
+function computeFreePositions() {
+  const { town } = world.findEntities("town").values().next().value;
+  let buildings = [
+    ...world.findEntities("building").values()
+  ].map((e) => e.building);
+  let positions = [];
+  for (let x = 0; x < town.width; x++) {
+    for (let y = 0; y < town.height; y++) {
+      if (isInsideBuilding(x, y, buildings)) {
+        continue;
+      }
+      let items = spatialIndex.list(x, y);
+      if (items.size == 0) {
+        positions.push([
+          x,
+          y
+        ]);
+      }
+    }
+  }
+  return positions;
+}
+
 // src/ui/map.ts
 var Map2 = class extends Pane {
   ac;
@@ -2023,15 +2355,18 @@ var Map2 = class extends Pane {
   }
 };
 async function runDemo(signal) {
+  placeRandomly([
+    ...personQuery.entities
+  ]);
   while (!signal.aborted) {
     let entity = scheduler.next();
     if (!entity) {
       break;
     }
-    let time = await runTask({
+    await runTask({
       type: "wander"
     }, entity);
-    scheduler.commit(entity, time);
+    scheduler.commit(entity, baseTaskDuration);
   }
 }
 
@@ -2352,12 +2687,6 @@ var allowedTasks = [
       target: "guard"
     },
     label: "Attack train guards"
-  },
-  {
-    task: {
-      type: "wander"
-    },
-    label: "Wander around cluelessly"
   },
   {
     task: {
@@ -2843,7 +3172,7 @@ var Store = class extends Pane {
     ]);
     let { items } = world.requireComponent(person, "person");
     if (uniqueGroups.has(item.type)) {
-      if (items.some((entity) => uniqueGroups.has(world.requireComponent(entity, "item").type))) {
+      if (items.some((entity) => world.requireComponent(entity, "item").type == item.type)) {
         await alert(`You already have a ${item.type}. Sell it first if you want to buy another one.`);
         return;
       }
@@ -2885,6 +3214,17 @@ function buildInventoryRow2(row, item, isActive) {
 }
 
 // src/ui/action.ts
+function checkDynamite(messages, party) {
+  party.forEach((member) => {
+    let hasTask = member.actor.tasks.some((t) => t.type == "dynamite");
+    let hasDynamite = member.person.items.some((e) => {
+      return world.requireComponent(e, "item").type == "dynamite";
+    });
+    if (hasTask && !hasDynamite) {
+      messages.push(`\u2718 ${member.named.name} has a dynamite task assigned, but is not equipped with any dynamite.`);
+    }
+  });
+}
 var Action = class extends Pane {
   ready = false;
   constructor() {
@@ -2901,7 +3241,7 @@ var Action = class extends Pane {
     let { entities } = personQuery;
     let party = [
       ...entities
-    ].map((e) => world.requireComponents(e, "person", "actor")).filter((item) => {
+    ].map((e) => world.requireComponents(e, "person", "actor", "named")).filter((item) => {
       return item.person.relation == "party";
     });
     let itemCount = 0;
@@ -2921,6 +3261,7 @@ var Action = class extends Pane {
         messages.push(`\u2718 Every member of your party needs to have at least one task assigned. Plan their tasks in the Hotel.`);
       } else {
         messages.push(`\u2714 Every member of your party has at least one task assigned.`);
+        checkDynamite(messages, party);
         if (!locations) {
           messages.push(`\u2718 Every member of your party needs to have a starting location assigned. Do that in the Hotel.`);
         } else {
@@ -2968,16 +3309,23 @@ var Help = class extends Pane {
   constructor() {
     super("help");
   }
+  activate() {
+    super.activate();
+    clear();
+    add(`To learn more about this project, you can visit its the GitHub repository at <br><a href="https://github.com/ondras/great-train-robbery">https://github.com/ondras/great-train-robbery</a>.`);
+    newline();
+  }
 };
 
 // src/ui/ui.ts
 var dom2 = {
   game: document.querySelector("#game"),
   map: document.querySelector("#map"),
+  nav: document.querySelector("#nav"),
   tabs: []
 };
 dom2.tabs = [
-  ...document.querySelectorAll("#nav [data-content]")
+  ...dom2.nav.querySelectorAll("[data-content]")
 ];
 var panes = {
   map: new Map2(),
@@ -3008,6 +3356,7 @@ function navKeyboardHandler(e) {
 function activate(pane) {
   if (activePane) {
     activePane.deactivate();
+    activePane = void 0;
   }
   activePane = panes[pane];
   activePane.activate();
@@ -3019,7 +3368,9 @@ function activate(pane) {
 function startAction2() {
   if (activePane) {
     activePane.deactivate();
+    activePane = void 0;
   }
+  dom2.nav.classList.add("disabled");
   popHandler();
   setMode("action");
   showNav("map");
@@ -3028,44 +3379,23 @@ function startAction2() {
   add("This is it. The Great Train Robbery is about to start. Let's just wait for the train...");
   newline();
 }
+function startPlanning() {
+  if (activePane) {
+    activePane.deactivate();
+    activePane = void 0;
+  }
+  dom2.nav.classList.remove("disabled");
+  setMode("planning");
+  update();
+  pushHandler(navKeyboardHandler);
+  activate("map");
+}
 async function init2() {
   dom2.map.append(display_default);
   await document.fonts.ready;
   dom2.game.hidden = false;
   init();
-  setMode("planning");
-  pushHandler(navKeyboardHandler);
-  on();
 }
-
-// src/random.ts
-function splitmix32(a) {
-  return function() {
-    a |= 0;
-    a = a + 2654435769 | 0;
-    var t = a ^ a >>> 16;
-    t = Math.imul(t, 569420461);
-    t = t ^ t >>> 15;
-    t = Math.imul(t, 1935289751);
-    return ((t = t ^ t >>> 15) >>> 0) / 4294967296;
-  };
-}
-var generator = splitmix32(0);
-function seed(seed3) {
-  generator = splitmix32(seed3);
-}
-function float() {
-  return generator();
-}
-function arrayIndex(arr) {
-  return Math.floor(float() * arr.length);
-}
-function arrayItem(arr) {
-  return arr[arrayIndex(arr)];
-}
-Array.prototype.random = function() {
-  return arrayItem(this);
-};
 
 // src/town/buildings.ts
 var WALL_DESIGNS = [
@@ -3231,6 +3561,11 @@ var TREE_CH = [
   "Y"
 ];
 var TREE_CHANCE = 0.05;
+var TRACK_VISUAL = {
+  ch: "#",
+  fg: "#777",
+  bg: "rgb(80 40 0)"
+};
 function rasterize(town, path, options) {
   let g = gutter(options);
   let fp = getFurthestPlot(town);
@@ -3312,7 +3647,7 @@ function isWindow(i, j, bbox) {
   if (edgeX && edgeY) {
     return false;
   }
-  let chance = float() < 0.5;
+  let chance = float() < 0.8;
   if (!edgeX) {
     return i % 2 == 0 && chance;
   }
@@ -3488,11 +3823,7 @@ function rasterizePathSegment(crossing, i, path, options) {
       nextDirection: direction
     };
     positions.push(position);
-    display_default.draw(x, y, {
-      ch: "#",
-      fg: "#777",
-      bg: "rgb(80 40 0)"
-    });
+    display_default.draw(x, y, TRACK_VISUAL);
   }
   return positions;
 }
@@ -3711,280 +4042,6 @@ function id(what) {
   return `${what.x},${what.y}`;
 }
 
-// src/npc/generator.ts
-function createPerson(name) {
-  let blocks = {
-    projectile: true,
-    movement: true
-  };
-  let visual = {
-    ch: "@",
-    fg: color2(),
-    zIndex: 2
-  };
-  let named = {
-    name
-  };
-  let actor = {
-    wait: 0,
-    tasks: [
-      {
-        type: "escape",
-        withGold: true
-      },
-      {
-        type: "collect"
-      },
-      {
-        type: "attack",
-        target: "wagon"
-      },
-      {
-        type: "wander"
-      }
-    ],
-    //		tasks: [{type:"attack", target:"locomotive"}] as Task[],
-    duration: baseTaskDuration
-  };
-  let person = {
-    items: [],
-    price: personPrice,
-    relation: float() > 0.5 ? "npc" : "party",
-    building: void 0,
-    hp: 0,
-    maxHp: personHp
-  };
-  if (float() < personBonusChance) {
-    applyBonus(person, actor, named);
-  }
-  person.hp = person.maxHp;
-  let components = {
-    actor,
-    visual,
-    person,
-    blocks,
-    named
-  };
-  let entity = world.createEntity(components);
-  spatialIndex.update(entity);
-  return entity;
-}
-var COUNT = 10;
-var NAMES = [
-  "Bodie",
-  "Boone",
-  "Briggs",
-  "Buck",
-  "Billy",
-  "Colt",
-  "Emmett",
-  "Emily",
-  "Flint",
-  "Gideon",
-  "Gonzales",
-  "Harlan",
-  "Jasper",
-  "Knox",
-  "Luther",
-  "Mercer",
-  "Nash",
-  "Quincy",
-  "Remy",
-  "Rhett",
-  "Rowdy",
-  "Sawyer",
-  "Silas",
-  "Stetson",
-  "Trace",
-  "Tucker",
-  "Virgil",
-  "Wade",
-  "Wyatt"
-];
-var BONUSES = [
-  {
-    names: [
-      "Healthy %s",
-      "%s the Healthy",
-      "Big %s",
-      "%s the Tough"
-    ],
-    values: {
-      maxHp: Math.ceil(personHp * 0.5)
-    }
-  },
-  {
-    names: [
-      "Weak %s",
-      "%s the Sick"
-    ],
-    values: {
-      maxHp: -Math.floor(personHp * 0.5)
-    }
-  },
-  {
-    names: [
-      "Cheap %s",
-      "%s the Cheap"
-    ],
-    values: {
-      price: -Math.floor(personPrice * 0.4)
-    }
-  },
-  {
-    names: [
-      "Expensive %s",
-      "%s the Luxurious"
-    ],
-    values: {
-      price: Math.floor(personPrice * 0.4)
-    }
-  },
-  {
-    names: [
-      "Speedy %s",
-      "%s the Lightning"
-    ],
-    values: {
-      speed: 0.5
-    }
-  },
-  {
-    names: [
-      "Slow %s",
-      "%s the Snail"
-    ],
-    values: {
-      speed: 2
-    }
-  }
-];
-function applyBonus(person, actor, named) {
-  let bonus = BONUSES.random();
-  Object.entries(bonus.values).forEach(([key, value]) => {
-    if (key == "maxHp") {
-      person.maxHp += value;
-    }
-    if (key == "price") {
-      person.price += value;
-    }
-    if (key == "speed") {
-      actor.duration = Math.round(actor.duration * value);
-    }
-  });
-  let template2 = bonus.names.random();
-  named.name = template2.replace("%s", named.name);
-}
-function placeRandomly(entities) {
-  let freePositions = computeFreePositions();
-  entities.forEach((entity) => {
-    let index = arrayIndex(freePositions);
-    let pos = freePositions.splice(index, 1)[0];
-    let visual = world.requireComponent(entity, "visual");
-    world.addComponents(entity, {
-      position: {
-        x: pos[0],
-        y: pos[1]
-      }
-    });
-    spatialIndex.update(entity);
-    display_default.draw(pos[0], pos[1], visual, {
-      id: entity,
-      zIndex: visual.zIndex
-    });
-  });
-}
-function placeIntoBuildings(entities) {
-  function getFreePositions(building) {
-    let positions = [];
-    for (let i = 1; i < building.width - 1; i++) {
-      for (let j = 1; j < building.height - 1; j++) {
-        let x = building.x + i;
-        let y = building.y + j;
-        let entities2 = spatialIndex.list(x, y);
-        if (entities2.size == 0) {
-          positions.push([
-            x,
-            y
-          ]);
-        }
-      }
-    }
-    let cx = building.x + Math.ceil(building.width / 2);
-    let cy = building.y + Math.ceil(building.height / 2);
-    positions.sort((a, b) => {
-      let da = Math.abs(a[1] - cy);
-      let db = Math.abs(b[1] - cy);
-      if (da != db) {
-        return da - db;
-      }
-      da = Math.abs(a[0] - cx);
-      db = Math.abs(b[0] - cx);
-      return da - db;
-    });
-    return positions;
-  }
-  entities.forEach((entity) => {
-    let { person, visual } = world.requireComponents(entity, "person", "visual");
-    let building = world.requireComponent(person.building, "building");
-    let pos = getFreePositions(building).shift();
-    world.addComponents(entity, {
-      position: {
-        x: pos[0],
-        y: pos[1]
-      }
-    });
-    spatialIndex.update(entity);
-    display_default.draw(pos[0], pos[1], visual, {
-      id: entity,
-      zIndex: visual.zIndex
-    });
-  });
-}
-function generatePeople() {
-  let names = NAMES.slice();
-  let entities = [];
-  for (let i = 0; i < COUNT; i++) {
-    let nameIndex = arrayIndex(names);
-    let name = names.splice(nameIndex, 1)[0];
-    let entity = createPerson(name);
-    entities.push(entity);
-  }
-  placeRandomly(entities);
-}
-function color2() {
-  let h = Math.round(float() * 360);
-  let l = float() * 0.5 + 0.25;
-  return `hsl(${h | 0} 100% ${l * 100 | 0}%)`;
-}
-function isInsideBuilding(x, y, buildings) {
-  return buildings.some((b) => {
-    return x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height;
-  });
-}
-function computeFreePositions() {
-  const { town } = world.findEntities("town").values().next().value;
-  let buildings = [
-    ...world.findEntities("building").values()
-  ].map((e) => e.building);
-  let positions = [];
-  for (let x = 0; x < town.width; x++) {
-    for (let y = 0; y < town.height; y++) {
-      if (isInsideBuilding(x, y, buildings)) {
-        continue;
-      }
-      let items = spatialIndex.list(x, y);
-      if (items.size == 0) {
-        positions.push([
-          x,
-          y
-        ]);
-      }
-    }
-  }
-  return positions;
-}
-
 // src/items/generator.ts
 var DYNAMITE_VISUAL = {
   ch: "\u203C",
@@ -4032,40 +4089,40 @@ function createDynamite(params) {
 }
 function generateItems() {
   createHorse("Regular Horse", {
-    price: 10,
+    price: 200,
     duration: 6
   });
   createHorse("Super-fast Horse", {
-    price: 10,
+    price: 300,
     duration: 4
   });
   createWeapon("Revolver", {
-    price: 10,
+    price: 100,
     damage: 2,
     range: 3,
     duration: 5
   });
   createWeapon("Rifle", {
-    price: 10,
+    price: 300,
     damage: 4,
     range: 5,
     duration: 5
   });
   createWeapon("Sniper rifle", {
-    price: 10,
+    price: 500,
     damage: 4,
     range: 10,
     duration: 5
   });
   createWeapon("Rocket launcher", {
-    price: 10,
+    price: 1e3,
     damage: 5,
     range: 10,
     duration: 10,
     explosionRadius: 1
   });
   createDynamite({
-    price: 10
+    price: 500
   });
 }
 
@@ -4096,7 +4153,7 @@ function formatParty(party) {
   }
   return components.join(", ");
 }
-async function gameOver(seed3) {
+async function gameOver() {
   let node3 = createDialog();
   let party = [];
   let loot = 0;
@@ -4128,22 +4185,24 @@ async function gameOver(seed3) {
       case "Digit1":
       case "Numpad1":
         {
-          let url = new URL(location.href);
-          url.search = `seed=${seed3.toString(16).toUpperCase()}`;
-          location.href = url.href;
+          return "retry";
         }
         break;
       case "Digit2":
       case "Numpad2":
         {
-          let url = new URL(location.href);
-          url.search = "";
-          location.href = url.href;
+          return "restart";
         }
         break;
       case "Digit3":
       case "Numpad3":
-        window.open("https://github.com/ondras/great-train-robbery", "_blank");
+        {
+          return "new";
+        }
+        break;
+      case "Digit4":
+      case "Numpad4":
+        return "github";
         break;
     }
   }
@@ -4189,7 +4248,7 @@ async function runAction() {
       continue;
     }
     if (isGameFinished()) {
-      return gameOver(seed2);
+      return;
     }
     let entity = scheduler.next();
     if (!entity) {
@@ -4202,6 +4261,11 @@ async function runAction() {
     } else {
       failedActors.delete(entity);
     }
+    for (let failedActor of failedActors) {
+      if (!actors.entities.has(failedActor)) {
+        failedActors.delete(failedActor);
+      }
+    }
     if (world.hasComponents(entity, "actor")) {
       scheduler.commit(entity, time);
     }
@@ -4209,7 +4273,6 @@ async function runAction() {
       break;
     }
   }
-  gameOver(seed2);
 }
 function isGameFinished() {
   let activePartyMembers = 0;
@@ -4255,64 +4318,200 @@ function removePersons() {
     spatialIndex.update(entity);
   }
 }
-function debugParty(partyEntities) {
+function buildDebugParty() {
+  function getItemByName(name) {
+    let all = getAvailableItems();
+    return all.find((e) => {
+      let named = world.requireComponent(e, "named");
+      return named.name == name;
+    });
+  }
   let buildings = world.findEntities("building");
-  partyEntities.forEach((entity) => {
-    let person2 = world.requireComponent(entity, "person");
-    person2.building = [
+  let entities = [
+    ...personQuery.entities
+  ];
+  {
+    let { person, actor } = world.requireComponents(entities[0], "person", "actor");
+    person.relation = "party";
+    person.building = [
       ...buildings.keys()
-    ].random();
-  });
-  return;
-  placeRandomly(partyEntities);
-  let pe = partyEntities[0];
-  let { position, visual, person } = world.requireComponents(pe, "position", "visual", "person");
-  position.x = 20;
-  position.y = 18;
-  spatialIndex.update(pe);
-  display_default.draw(position.x, position.y, visual, {
-    id: pe,
-    zIndex: visual.zIndex
-  });
-  let gold = world.createEntity({
-    item: {
-      type: "gold",
-      price: 100
-    },
-    visual: {
-      ch: "$",
-      fg: "yellow",
-      zIndex: 2
-    }
-  });
-  person.items.push(gold);
+    ][0];
+    actor.tasks = [
+      {
+        type: "attack",
+        target: "guard"
+      },
+      {
+        type: "attack",
+        target: "locomotive"
+      },
+      {
+        type: "attack",
+        target: "wagon"
+      }
+    ];
+    person.items = [
+      getItemByName("Sniper rifle")
+    ];
+  }
+  {
+    let { person, actor } = world.requireComponents(entities[1], "person", "actor");
+    person.relation = "party";
+    person.building = [
+      ...buildings.keys()
+    ][1];
+    actor.tasks = [
+      {
+        type: "collect"
+      }
+    ];
+  }
+}
+async function trainArrival() {
+  let entity = create(0);
+  add("The train arrives!");
+  let delay = DEBUG ? 0 : 200;
+  for (let i = 0; i < 11; i++) {
+    move(entity);
+    await sleep(delay);
+  }
+}
+function processGameOverResult(result) {
+  switch (result) {
+    case "restart":
+      {
+        let url = new URL(location.href);
+        url.search = `seed=${seed2.toString(16).toUpperCase()}`;
+        location.href = url.href;
+      }
+      break;
+    case "retry":
+      {
+        startPlanning();
+      }
+      break;
+    case "new":
+      {
+        let url = new URL(location.href);
+        url.search = "";
+        location.href = url.href;
+      }
+      break;
+    case "github":
+      {
+        window.open("https://github.com/ondras/great-train-robbery", "_blank");
+      }
+      break;
+  }
 }
 async function startAction() {
-  removePersons();
+  let worldState = world.toString();
   let partyEntities = [];
   let otherEntities = [];
   for (let entity of personQuery.entities) {
     let person = world.requireComponent(entity, "person");
     (person.relation == "party" ? partyEntities : otherEntities).push(entity);
   }
-  debugParty(partyEntities);
+  otherEntities.forEach((e) => {
+    let actor = world.requireComponent(e, "actor");
+    actor.tasks = [
+      {
+        type: "wander"
+      }
+    ];
+  });
+  seed(seed2);
+  removePersons();
   startAction2();
   placeRandomly(otherEntities);
-  placeIntoBuildings(partyEntities);
-  create(12);
+  await trainArrival();
+  await placeIntoBuildings(partyEntities, DEBUG ? 0 : 700);
   pushHandler(actionKeyboardHandler);
-  runAction();
+  await runAction();
+  popHandler();
+  let gameOverResult = await gameOver();
+  world.findEntities("item", "position").forEach((_, entity) => {
+    display_default.delete(entity);
+  });
+  world.findEntities("town").values().next().value.town.track.forEach(({ x, y }) => {
+    display_default.deleteAt(x, y, 2);
+  });
+  world.fromString(worldState);
+  spatialIndex.reset();
+  processGameOverResult(gameOverResult);
 }
+var DEBUG = false;
 async function init3(s2) {
   seed2 = s2;
   seed(seed2);
   createTown(4, 4);
   await init2();
-  activate("store");
+  on();
+  startPlanning();
+  if (DEBUG) {
+    buildDebugParty();
+    startAction();
+  }
+}
+
+// src/intro.ts
+var intro = document.querySelector("#intro");
+var dom3 = {
+  intro,
+  seed: intro.querySelector("[name=seed]"),
+  sections: [
+    ...intro.querySelectorAll("section")
+  ]
+};
+var sectionIndex = 0;
+function done(resolve) {
+  off();
+  popHandler();
+  dom3.intro.hidden = true;
+  let seed3 = parseInt(dom3.seed.value, 16);
+  resolve(seed3);
+}
+function showSection(index) {
+  sectionIndex = index;
+  dom3.sections[1].hidden = index != 1;
+}
+function init4(seed3) {
+  let { resolve, promise } = Promise.withResolvers();
+  dom3.seed.value = seed3.toString(16);
+  showSection(0);
+  function handleKey(e) {
+    if (sectionIndex == 0) {
+      if (e.key == "Enter") {
+        showSection(1);
+        dom3.sections[0].querySelector(".continue")?.remove();
+        return true;
+      } else {
+        return false;
+      }
+    }
+    if (sectionIndex == 1) {
+      if (e.key == "Enter") {
+        done(resolve);
+        return true;
+      } else if (e.key.toLowerCase() == "e" && e.target != dom3.seed) {
+        e.preventDefault();
+        dom3.seed.focus();
+        dom3.seed.select();
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+  dom3.intro.hidden = false;
+  pushHandler(handleKey);
+  on();
+  return promise;
 }
 
 // src/index.ts
-async function init4() {
+async function init5() {
   let seed3 = Math.random() * 16777216 | 0;
   let sp = new URL(location.href).searchParams;
   if (sp.has("seed")) {
@@ -4322,6 +4521,7 @@ async function init4() {
     }
   }
   seed3 = 454036;
+  seed3 = await init4(seed3);
   await init3(seed3);
 }
-init4();
+init5();

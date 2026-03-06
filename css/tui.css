@@ -24,7 +24,6 @@ dialog {
 	background-color: inherit;
 
 	&::backdrop { background-color: var(--backdrop); }
-
 }
 
 menu {
@@ -33,6 +32,7 @@ menu {
 	padding: 0 1ch;
 	display: flex;
 	justify-content: space-between;
+	gap: 3ch;
 
 	&:has(li:only-child) {
 		justify-content: center;
@@ -43,6 +43,7 @@ input {
 	border: none;
 	padding: 0;
 	outline: none;
+	color: inherit;
 	background-color: transparent;
 	&:focus { background-color: var(--active-bg); }
 }
@@ -149,6 +150,8 @@ table.game-over {
 
 #nav {
 	display: flex;
+
+	&.disabled { opacity: 0.5; }
 
 	span {
 		padding: 0.5lh 0.5ch;

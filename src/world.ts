@@ -1,4 +1,4 @@
-import * as face from "https://cdn.jsdelivr.net/gh/ondras/face@1fc5794/face.ts";
+import * as face from "https://cdn.jsdelivr.net/gh/ondras/face@6dbc79c/face.ts";
 import { Task } from "./npc/tasks.ts";
 
 

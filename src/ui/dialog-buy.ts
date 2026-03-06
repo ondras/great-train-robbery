@@ -14,7 +14,7 @@ function buildInventoryRow(row: HTMLTableRowElement, item: InventoryItem) {
 	row.insertCell().innerHTML = `<span class="gold">${item.item.price}</span>`;
 }
 
-function getAvailableItems(): Entity[] {
+export function getAvailableItems(): Entity[] {
 	let allItems = new Set(world.findEntities("item").keys());
 
 	let persons = world.findEntities("person");

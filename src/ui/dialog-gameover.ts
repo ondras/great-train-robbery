@@ -31,7 +31,9 @@ function formatParty(party: Person[]): string {
 	return components.join(", ");
 }
 
-export async function gameOver(seed: number) {
+export type GameOverResult = "restart" | "new" | "github" | "retry";
+
+export async function gameOver(): Promise<GameOverResult> {
 	let node = dialog.createDialog();
 
 	let party: Person[] = [];
@@ -65,21 +67,22 @@ export async function gameOver(seed: number) {
 		switch (e.code) {
 			case "Digit1":
 			case "Numpad1": {
-				let url = new URL(location.href);
-				url.search = `seed=${seed.toString(16).toUpperCase()}`;
-				location.href = url.href;
+				return "retry";
 			} break;
 
 			case "Digit2":
 			case "Numpad2": {
-				let url = new URL(location.href);
-				url.search = "";
-				location.href = url.href;
+				return "restart";
 			} break;
 
 			case "Digit3":
-			case "Numpad3":
-				window.open("https://github.com/ondras/great-train-robbery", "_blank");
+			case "Numpad3": {
+				return "new";
+			} break;
+
+			case "Digit4":
+			case "Numpad4":
+				return "github";
 			break;
 		}
 	}

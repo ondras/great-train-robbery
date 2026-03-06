@@ -24,7 +24,7 @@ ___┬──┬__   ______            _   ∙
 					<p>Why let all that glitter roll on by, fat and happy, when it could be jinglin’ sweet in our own pockets? I say we stop that train, help ourselves to its treasure, and ride off richer than kings at high noon.”</p>
 				</blockquote>
 
-				<p>
+				<p class="continue">
 					press [<kbd>Enter</kbd>] to continue
 				</p>
 			</section>
@@ -38,7 +38,7 @@ ___┬──┬__   ______            _   ∙
 
 		<main id="game" hidden>
 			<section id="nav">
-				<span data-content="map">Town <kbd>M</kbd>ap</span>
+				<span data-content="map">Town <kbd>m</kbd>ap</span>
 				<span data-content="saloon">Sal<kbd>o</kbd>on</span>
 				<span data-content="store"><kbd>G</kbd>eneral Store</span>
 				<span data-content="hotel">Ho<kbd>t</kbd>el</span>
@@ -54,7 +54,19 @@ ___┬──┬__   ______            _   ∙
 				<section id="store"></section>
 				<section id="hotel"></section>
 				<section id="action"></section>
-				<section id="help">???</section>
+				<section id="help">
+					<p>The main goal of the game is to successfully perform a heist. Beware: <strong>you cannot directly control individual characters.</strong>
+						Instead, you plan the whole robbery before and then just watch how it unravels.</p>
+					<p>You will need to hire people, buy them equipment and -- most importantly -- give them tasks.
+						Once the heist starts, your party will <strong>only act based on the tasks given.</strong></p>
+					<p>It is very important to give your team members their tasks in a correct order. They will <strong>pick the first task</strong> that
+						can be performed. For example: if the orders are specified as "1) RUN AWAY, 2) SHOOT", then no shooting will happen (they will run away instead).</p>
+					<p>Robbing a train is no easy feat. You need to shoot the train in order to disconnect a wagon; this will open it up for looting. But beware of guards!</p>
+					<p>Alternatively, you may order your party members to attack the locomotive. This will cause the train to slow down and stop eventually.</p>
+					<p>There are many buildings in the town; these act as starting points for your group members.
+						Some buildings are walk-through (accessible through doors and windows), some only offer roof access.
+						Standing on a roof has both benefits (longer range, safe from close-distance attacks) and limitations (it is not possible to leave the roof).</p>
+				</section>
 			</section>
 
 			<section id="log"></section>
@@ -91,7 +103,7 @@ ___┬──┬__   ______            _   ∙
 						<td><span class="party"></span></td>
 					</tr>
 					<tr>
-						<td>Money looted from the train:</td>
+						<td>Gold looted from the train:</td>
 						<td><span class="loot gold"></span></td>
 					</tr>
 					<tr class="total">
@@ -101,9 +113,12 @@ ___┬──┬__   ______            _   ∙
 				</table>
 
 				<menu>
-					<li>[<kbd>1</kbd>] Replay</li>
-					<li>[<kbd>2</kbd>] New Game</li>
-					<li>[<kbd>3</kbd>] GitHub</li>
+					<li>[<kbd>1</kbd>] Retry (same town, same crew)</li>
+					<li>[<kbd>3</kbd>] New Game</li>
+				</menu>
+				<menu>
+					<li>[<kbd>2</kbd>] Restart (same town, new crew)</li>
+					<li>[<kbd>4</kbd>] GitHub</li>
 				</menu>
 			</template>
 

@@ -13,7 +13,6 @@ const allowedTasks: AllowedTask[] = [
 	{task: {type:"attack", target:"wagon"}, label: "Attack wagons with gold"},
 	{task: {type:"attack", target:"guard"}, label: "Attack train guards"},
 
-	{task: {type:"wander"}, label: "Wander around cluelessly"},
 	{task: {type:"escape", withGold: true}, label: "Escape once there is nothing to collect"},
 	{task: {type:"move", target:"center"}, label: "Move towards the town center"},
 	{task: {type:"move", target:"locomotive"}, label: "Move towards the locomotive"},
@@ -75,5 +74,3 @@ export async function pickTask(): Promise<Task | false> {
 	if (taskIndex === false) { return false; }
 	return allowedTasks[taskIndex].task;
 }
-
-

@@ -18,12 +18,9 @@ async function init() {
     }
 
     seed = 454036; // override with debug
-//	seed = await intro.init(seed); // override with user
+	seed = await intro.init(seed); // override with user
 
 	await game.init(seed);
 }
 
 init();
-
-
-// minimalni rozmery: 1000 x 600 ?

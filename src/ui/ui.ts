@@ -17,9 +17,10 @@ import Help from "./help.ts";
 const dom = {
 	game: document.querySelector<HTMLElement>("#game")!,
 	map: document.querySelector("#map")!,
+	nav: document.querySelector("#nav")!,
 	tabs: [] as HTMLElement[]
 }
-dom.tabs = [...document.querySelectorAll<HTMLElement>("#nav [data-content]")];
+dom.tabs = [...dom.nav.querySelectorAll<HTMLElement>("[data-content]")];
 
 const panes = {
 	map: new Map(),
@@ -49,8 +50,11 @@ function navKeyboardHandler(e: KeyboardEvent): boolean {
 	return true;
 }
 
-export function activate(pane: PaneName) {
-	if (activePane) { activePane.deactivate(); }
+function activate(pane: PaneName) {
+	if (activePane) {
+		activePane.deactivate();
+		activePane = undefined;
+	}
 
 	activePane = panes[pane];
 	activePane.activate();
@@ -59,9 +63,13 @@ export function activate(pane: PaneName) {
 }
 
 export function startAction() {
-	if (activePane) { activePane.deactivate(); }
+	if (activePane) {
+		activePane.deactivate();
+		activePane = undefined;
+	}
 
-	keyboard.popHandler(); // FIXME disable tabs visually?
+	dom.nav.classList.add("disabled");
+	keyboard.popHandler();
 	status.setMode("action");
 
 	showNav("map");
@@ -72,15 +80,23 @@ export function startAction() {
 	log.newline();
 }
 
+export function startPlanning() {
+	if (activePane) {
+		activePane.deactivate();
+		activePane = undefined;
+	}
+
+	dom.nav.classList.remove("disabled");
+	status.setMode("planning");
+	status.update();
+	keyboard.pushHandler(navKeyboardHandler);
+	activate("map");
+}
+
 export async function init() {
 	dom.map.append(display);
 	await document.fonts.ready;
 
 	dom.game.hidden = false;
 	viewport.init();
-
-	status.setMode("planning");
-
-	keyboard.pushHandler(navKeyboardHandler);
-	keyboard.on();
 }

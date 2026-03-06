@@ -18,7 +18,8 @@ export async function wander(entity: Entity) {
 	position.y = neighbor[1];
 	spatialIndex.update(entity);
 	await display.move(entity, position.x, position.y, conf.MOVE_DELAY);
-	return getDurationWithHorse(entity);
+//	return getDurationWithHorse(entity);
+	return 0;
 }
 
 export async function move(entity: Entity, task: MoveTask) {

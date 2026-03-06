@@ -30,7 +30,11 @@ function doCollect(entity: Entity, item: Entity) {
 }
 
 export async function collect(entity: Entity): Promise<number> {
-	const { position } = world.requireComponents(entity, "position");
+	const { position, person } = world.requireComponents(entity, "position", "person");
+	if (person.building) {
+		let building = world.requireComponent(person.building, "building");
+		if (building.roof) { return 0; } // on roof, nothing to collect
+	}
 
 	let entitiesHere = [...spatialIndex.list(position.x, position.y)]
 						.filter(e => world.hasComponents(e, "item"));

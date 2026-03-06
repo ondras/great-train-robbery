@@ -32,7 +32,7 @@ export function init(seed: number): Promise<number> {
 		if (sectionIndex == 0) {
 			if (e.key == "Enter") {
 				showSection(1);
-				// FIXME schovat text o enteru
+				dom.sections[0].querySelector(".continue")?.remove();
 				return true;
 			} else {
 				return false;

@@ -1,1 +1,1 @@
-export const MOVE_DELAY = 1;
+export const MOVE_DELAY = 5;

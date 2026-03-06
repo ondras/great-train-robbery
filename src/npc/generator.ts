@@ -12,15 +12,14 @@ function createPerson(name: string) {
 
 	let actor: Actor = {
 		wait: 0,
-		tasks: [{type:"escape", withGold: true}, {type:"collect"}, {type:"attack", target:"wagon"}, {type:"wander"}],
-//		tasks: [{type:"attack", target:"locomotive"}] as Task[],
+		tasks: [],
 		duration: rules.baseTaskDuration,
 	};
 
 	let person: Person = {
 		items: [],
 		price: rules.personPrice,
-		relation: random.float() > 0.5 ? "npc" : "party",
+		relation: "npc",
 		building: undefined,
 		hp: 0,
 		maxHp: rules.personHp
@@ -40,17 +39,14 @@ function createPerson(name: string) {
 
 	let entity = world.createEntity(components);
 	spatialIndex.update(entity);
-/*
-	let item = world.createEntity({item: {type: "weapon", price: 10, range: 10, damage: 5, duration: 20, explosionRadius: 1}});
-	person.items.push(item);
-*/
+
 	return entity;
 }
 
 
 const COUNT = 10;
 const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Emily","Flint","Gideon","Gonzales","Harlan",
-		    "Jasper","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
+		    "Jackie","Knox","Luther","Mercer","Nash","Quincy","Remy","Rhett","Rowdy","Sawyer","Silas",
 			"Stetson","Trace","Tucker","Virgil","Wade","Wyatt"];
 
 interface Bonus {
@@ -76,12 +72,12 @@ const BONUSES: Bonus[] = [
 	},	{
 		names: ["Cheap %s", "%s the Cheap"],
 		values: {
-			price: -Math.floor(rules.personPrice * 0.4)
+			price: -Math.floor(rules.personPrice * 0.25)
 		}
 	},	{
 		names: ["Expensive %s", "%s the Luxurious"],
 		values: {
-			price: Math.floor(rules.personPrice * 0.4)
+			price: Math.floor(rules.personPrice * 0.25)
 		}
 	},	{
 		names: ["Speedy %s", "%s the Lightning"],
@@ -122,7 +118,7 @@ export function placeRandomly(entities: Entity[]) {
 	});
 }
 
-export function placeIntoBuildings(entities: Entity[]) {
+export async function placeIntoBuildings(entities: Entity[], delay: number) {
 	function getFreePositions(building: Building): Position[] {
 		let positions: Position[] = [];
 		for (let i=1; i<building.width-1; i++) {
@@ -147,7 +143,7 @@ export function placeIntoBuildings(entities: Entity[]) {
 		return positions;
 	}
 
-	entities.forEach(entity => {
+	for (let entity of entities) {
 		let { person, visual } = world.requireComponents(entity, "person", "visual");
 		let building = world.requireComponent(person.building!, "building");
 		let pos = getFreePositions(building).shift()!;
@@ -155,7 +151,9 @@ export function placeIntoBuildings(entities: Entity[]) {
 		world.addComponents(entity, {position: {x: pos[0], y: pos[1]}});
 		spatialIndex.update(entity);
 		display.draw(pos[0], pos[1], visual, {id:entity, zIndex:visual.zIndex});
-	});
+
+		await display.fx(entity, {scale: [5, 1]}, delay)!.finished;
+	};
 }
 
 export function generatePeople() {
@@ -169,8 +167,6 @@ export function generatePeople() {
 		let entity = createPerson(name);
 		entities.push(entity);
 	}
-
-	placeRandomly(entities);
 }
 
 function color() {

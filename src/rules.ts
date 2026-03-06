@@ -1,11 +1,11 @@
 import { world, } from "./world.ts";
 
 
-export const initialMoney = 5000;
+export const initialMoney = 4000;
 
 export const personHp = 5;
-export const personPrice = 100;
-export const personBonusChance = 0.67;
+export const personPrice = 400;
+export const personBonusChance = 0.4;
 
 export const locomotiveHp = 15;
 export const wagonHp = 10;

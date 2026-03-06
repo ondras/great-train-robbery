@@ -1,5 +1,6 @@
 import * as keyboard from "./ui/keyboard.ts";
 import * as ui from "./ui/ui.ts";
+import * as log from "./ui/log.ts";
 import * as random from "./random.ts";
 import * as rules from "./rules.ts";
 import display from "./display.ts";
@@ -12,8 +13,10 @@ import * as itemGenerator from "./items/generator.ts";
 import { scheduler, spatialIndex, world, Entity } from "./world.ts";
 import * as tasks from "./npc/tasks.ts";
 import * as train from "./npc/train.ts";
-import { gameOver } from "./ui/dialog-gameover.ts";
+import { gameOver, GameOverResult } from "./ui/dialog-gameover.ts";
 import { sleep } from "./npc/util.ts";
+
+import { getAvailableItems } from "./ui/dialog-buy.ts";
 
 
 let actionPaused = false;
@@ -56,7 +59,7 @@ export async function runAction() {
 			continue;
 		}
 
-		if (isGameFinished()) { return gameOver(seed); }
+		if (isGameFinished()) { return; }
 
 		let entity = scheduler.next();
 		if (!entity) { break; }
@@ -70,6 +73,11 @@ export async function runAction() {
 			failedActors.delete(entity);
 		}
 
+		// delete failed actors that are no longer actors
+		for (let failedActor of failedActors) {
+			if (!actors.entities.has(failedActor)) { failedActors.delete(failedActor); }
+		}
+
 		if (world.hasComponents(entity, "actor")) { // important: the actor might have been removed during the task
 			scheduler.commit(entity, time);
 		}
@@ -78,7 +86,6 @@ export async function runAction() {
 	}
 
 	// weird situation: no actors are able to act (or we have none)
-	gameOver(seed);
 }
 
 
@@ -107,7 +114,7 @@ function isGameFinished(): boolean {
 	// something to do: enemies are alive
 	if (enemies > 0) { return false; } // FIXME nemuze nastat nekonecna honicka?
 
-	// something to do: gold on the map
+	// something to do: gold on the map, some party members can pick them up
 	let items = world.findEntities("item", "position"); // FIXME query
 	let types = [...items.keys()].map(entity => world.requireComponent(entity, "item").type);
 	let gold = types.filter(t => t == "gold");
@@ -125,29 +132,78 @@ function removePersons() {
 	}
 }
 
-function debugParty(partyEntities: Entity[]) {
+function buildDebugParty() {
+	function getItemByName(name: string): Entity | undefined {
+		let all = getAvailableItems();
+		return all.find(e => {
+			let named = world.requireComponent(e, "named");
+			return (named.name == name);
+		});
+	}
+
 	let buildings = world.findEntities("building");
-	partyEntities.forEach(entity => {
-		let person = world.requireComponent(entity, "person");
-		person.building = [...buildings.keys()].random();
-	});
 
-	return;
+	let entities = [...rules.personQuery.entities];
 
-	npcGenerator.placeRandomly(partyEntities);
-	let pe = partyEntities[0];
-	let { position, visual, person } = world.requireComponents(pe, "position", "visual", "person");
-	position.x = 20;
-	position.y = 18;
-	spatialIndex.update(pe);
-	display.draw(position.x, position.y, visual, {id:pe, zIndex: visual.zIndex});
-	let gold = world.createEntity({item: {type:"gold", price:100}, visual: {ch: "$", fg: "yellow", zIndex: 2}});
-	person.items.push(gold);
+	{
+		let { person, actor } = world.requireComponents(entities[0], "person", "actor");
+		person.relation = "party";
+		person.building = [...buildings.keys()][0];
 
+		actor.tasks = [{type:"attack", target:"guard"}, {type:"attack", target:"locomotive"}, {type:"attack", target:"wagon"}];
+
+		person.items = [getItemByName("Sniper rifle")!];
+	}
+
+	{
+		let { person, actor } = world.requireComponents(entities[1], "person", "actor");
+		person.relation = "party";
+		person.building = [...buildings.keys()][1];
+
+		actor.tasks = [{type:"collect"}];
+
+//		person.items = [getItemByName("Sniper rifle")!];
+	}
+}
+
+async function trainArrival() {
+	let entity = train.create(0);
+	log.add("The train arrives!");
+
+	let delay = (DEBUG ? 0 : 200);
+
+	for (let i=0; i<11; i++) {
+		train.move(entity);
+		await sleep(delay);
+	}
+}
+
+function processGameOverResult(result: GameOverResult) {
+	switch (result) {
+		case "restart": {
+			let url = new URL(location.href);
+			url.search = `seed=${seed.toString(16).toUpperCase()}`;
+			location.href = url.href;
+		} break;
+
+		case "retry": {
+			ui.startPlanning();
+		} break;
+
+		case "new": {
+			let url = new URL(location.href);
+			url.search = "";
+			location.href = url.href;
+		} break;
+
+		case "github": {
+			window.open("https://github.com/ondras/great-train-robbery", "_blank");
+		} break;
+	}
 }
 
 export async function startAction() {
-	removePersons();
+	let worldState = world.toString();
 
 	let partyEntities: Entity[] = [];
 	let otherEntities: Entity[] = [];
@@ -156,18 +212,41 @@ export async function startAction() {
 		(person.relation == "party" ? partyEntities : otherEntities).push(entity);
 	}
 
-	debugParty(partyEntities);
+	otherEntities.forEach(e => {
+		let actor = world.requireComponent(e, "actor");
+		actor.tasks = [{type:"wander"}];
+	});
 
+	random.seed(seed); // reset because the gameplay may change its state
+	removePersons();
 	ui.startAction();
 
 	npcGenerator.placeRandomly(otherEntities);
-	npcGenerator.placeIntoBuildings(partyEntities);
 
-	train.create(12);
+	await trainArrival();
+	await npcGenerator.placeIntoBuildings(partyEntities, DEBUG ? 0 : 700);
 
 	keyboard.pushHandler(actionKeyboardHandler);
-	runAction();
+	await runAction();
+	keyboard.popHandler();
+
+	let gameOverResult = await gameOver();
+
+	// cleanup: gold+dynamite, train parts
+	world.findEntities("item", "position").forEach((_, entity) => {
+		display.delete(entity);
+	});
+	world.findEntities("town").values().next().value!.town.track.forEach(({x, y}) => {
+		display.deleteAt(x, y, 2);
+	});
+
+	world.fromString(worldState);
+	spatialIndex.reset();
+
+	processGameOverResult(gameOverResult);
 }
+
+const DEBUG = false;
 
 export async function init(s: number) {
 	seed = s;
@@ -175,7 +254,14 @@ export async function init(s: number) {
 	createTown(4, 4);
 
 	await ui.init();
+	keyboard.on();
 
-	ui.activate("store");
-//	startAction();
+	ui.startPlanning();
+
+
+	if (DEBUG) {
+		buildDebugParty();
+
+		startAction();
+	}
 }

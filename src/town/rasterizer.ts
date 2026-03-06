@@ -13,6 +13,13 @@ const TREE_COLOR = ["#653", "#353", "#9a6"];
 const TREE_CH = ["T", "Y"];
 const TREE_CHANCE = 0.05;
 
+const TRACK_VISUAL = {
+	ch: "#",
+	fg: "#777",
+	bg: "rgb(80 40 0)"
+};
+
+
 interface RasterizerOptions {
 	roadWidth: number;
 	plotWidth: number;
@@ -92,7 +99,7 @@ function isWindow(i: number, j: number, bbox: ReturnType<typeof computeBuildingB
 
 	if (edgeX && edgeY)	{ return false; } // no windows in corners
 
-	let chance = (random.float() < 0.5);
+	let chance = (random.float() < 0.8);
 
 	if (!edgeX) { // horizontal walls
 		return (i % 2 == 0) && chance;
@@ -236,11 +243,7 @@ function rasterizePathSegment(crossing: Crossing, i: number, path: Path, options
 		let position = { x, y, nextDirection: direction };
 		positions.push(position);
 
-		display.draw(x, y, {
-			ch: "#",
-			fg: "#777",
-			bg: "rgb(80 40 0)"
-		});
+		display.draw(x, y, TRACK_VISUAL);
 	}
 
 	return positions;

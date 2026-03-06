@@ -45,8 +45,6 @@ function damagePerson(person: Person, entity: Entity, damage: Damage) {
 		spatialIndex.update(entity);
 		display.delete(entity);
 
-		// FIXME corpse?
-
 		let str = log.format("%The is killed!", entity);
 		log.add(str);
 		log.newline();

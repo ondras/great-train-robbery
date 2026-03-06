@@ -57,6 +57,8 @@ export function create(trackOffset: number) {
 	world.addComponent(train, "train", trainComponent);
 
 	updateTrainPositions(trainComponent);
+
+	return train;
 }
 
 function updateTrainPartPosition(partEntity: Entity, index: number, town: Town, wagonIndex: number, partIndex: number) {
@@ -131,14 +133,13 @@ export function getAllPositions(isLocomotive: boolean): Position[] {
 	return positions;
 }
 
-function createGuard(x: number, y: number) {
-	// FIXME gun jen nekteri
+function createGuard(x: number, y: number, hasGun: boolean) {
 	let gun = world.createEntity({
 		item: {type: "weapon", price: 0, ...rules.guardGun},
 	});
 
 	let items: Entity[] = [];
-	if (1) { items.push(gun); }
+	if (hasGun) { items.push(gun); }
 
 	let visual = GUARD_VISUAL;
 	let tasks = [{type:"attack", target:"party"} as const, {type:"escape", withGold: false} as const];
@@ -167,7 +168,7 @@ function dropGoldAndGuards(positions: Position[]) {
 	for (let i=0; i<rules.droppedGuardCount; i++) {
 		let position = positions.random();
 		removePosition(position);
-		createGuard(position[0], position[1]);
+		createGuard(position[0], position[1], i % 2 == 0);
 	}
 	log.add("Security guards jump out of the damaged wagon.");
 
@@ -180,7 +181,7 @@ function dropGoldAndGuards(positions: Position[]) {
 			position: {x: position[0], y: position[1]},
 			item: {type: "gold", price: rules.goldPrice},
 			visual,
-			named: {name: "Gold"}
+			named: {name: "bag of gold"}
 		});
 		spatialIndex.update(gold);
 		display.draw(position[0], position[1], visual, {id:gold, zIndex: visual.zIndex});
@@ -194,10 +195,11 @@ export function disconnectLastWagon(train: Train) {
 	let forceInsideTown = true;
 	let freePositions: Position[] = [];
 
-	// no longer a train part
+	// no longer a train part, no longer blocks
 	let { parts } = world.requireComponent(wagonEntity, "wagon");
 	parts.forEach(partEntity => {
-		world.removeComponents(partEntity, "trainPart");
+		world.removeComponents(partEntity, "trainPart", "blocks");
+
 		let position = world.getComponent(partEntity, "position");
 		if (position) {
 			freePositions.push(...getFreeNeighbors([position.x, position.y], forceInsideTown));

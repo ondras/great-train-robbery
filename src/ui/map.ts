@@ -1,7 +1,9 @@
 import Pane from "./pane.ts";
 import { scheduler } from "../world.ts";
 import * as tasks from "../npc/tasks.ts";
+import * as rules from "../rules.ts";
 import * as log from "./log.ts";
+import { placeRandomly } from "../npc/generator.ts";
 
 
 export default class Map extends Pane {
@@ -34,10 +36,12 @@ export default class Map extends Pane {
 }
 
 async function runDemo(signal: AbortSignal) {
+	placeRandomly([...rules.personQuery.entities]);
+
 	while (!signal.aborted) {
 		let entity = scheduler.next();
 		if (!entity) { break; }
-		let time = await tasks.runTask({type:"wander"}, entity);
-		scheduler.commit(entity, time);
+		await tasks.runTask({type:"wander"}, entity);
+		scheduler.commit(entity, rules.baseTaskDuration);
 	}
 }
