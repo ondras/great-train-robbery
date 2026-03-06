@@ -22,10 +22,13 @@ function createPerson(name: string) {
 		price: rules.personPrice,
 		relation: random.float() > 0.5 ? "npc" : "party",
 		building: undefined,
-		hp: rules.personHp
+		hp: 0,
+		maxHp: rules.personHp
 	}
 
 	if (random.float() < rules.personBonusChance) { applyBonus(person, actor, named); }
+
+	person.hp = person.maxHp;
 
 	let components = {
 		actor,
@@ -37,10 +40,10 @@ function createPerson(name: string) {
 
 	let entity = world.createEntity(components);
 	spatialIndex.update(entity);
-
-	let item = world.createEntity({item: {type: "horse", price: 10, duration: 5}, named: {name: "Look at my Horse"}});
+/*
+	let item = world.createEntity({item: {type: "weapon", price: 10, range: 10, damage: 5, duration: 20, explosionRadius: 1}});
 	person.items.push(item);
-
+*/
 	return entity;
 }
 
@@ -53,7 +56,7 @@ const NAMES = ["Bodie","Boone","Briggs","Buck","Billy","Colt","Emmett","Emily","
 interface Bonus {
 	names: string[];
 	values: {
-		hp?: number;
+		maxHp?: number;
 		price?: number;
 		speed?: number;
 	}
@@ -63,12 +66,12 @@ const BONUSES: Bonus[] = [
 	{
 		names: ["Healthy %s", "%s the Healthy", "Big %s", "%s the Tough"],
 		values: {
-			hp: Math.ceil(rules.personHp * 0.5)
+			maxHp: Math.ceil(rules.personHp * 0.5)
 		}
 	},	{
 		names: ["Weak %s", "%s the Sick"],
 		values: {
-			hp: -Math.floor(rules.personHp * 0.5)
+			maxHp: -Math.floor(rules.personHp * 0.5)
 		}
 	},	{
 		names: ["Cheap %s", "%s the Cheap"],
@@ -96,7 +99,7 @@ const BONUSES: Bonus[] = [
 function applyBonus(person: Person, actor: Actor, named: Named) {
 	let bonus = BONUSES.random();
 	Object.entries(bonus.values).forEach(([key, value]) => {
-		if (key == "hp") { person.hp += value; }
+		if (key == "maxHp") { person.maxHp += value; }
 		if (key == "price") { person.price += value; }
 		if (key == "speed") { actor.duration = Math.round(actor.duration * value); }
 	});

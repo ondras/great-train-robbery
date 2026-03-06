@@ -46,6 +46,7 @@ export interface Person {
 	relation: "npc" | "party" | "enemy";
 	building?: Entity;
 	hp: number;
+	maxHp: number;
 }
 
 export interface Building {
@@ -88,9 +89,9 @@ export type Item = {
 } & (
 	{ type: "gold"} |
 	{ type: "horse"; duration: number; } |
-	{ type: "aid"; } |
+	{ type: "aid"; hp: number; } |
 	{ type: "dynamite"; damage: number; } |
-	{ type: "weapon"; damage: number; range: number; explosionRadius?: number }
+	{ type: "weapon"; damage: number; range: number; duration: number; explosionRadius?: number }
 );
 
 interface Components {

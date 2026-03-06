@@ -1,9 +1,10 @@
 import { world, spatialIndex, Entity } from "../world.ts";
-import { sleep, Position, dist4, getFreeNeighbors } from "./util.ts";
+import { sleep, Position, dist4, getFreeNeighbors, getDurationWithHorse } from "./util.ts";
 import { attack } from "./task-attack.ts";
 import { wander, move } from "./task-move.ts";
 import { collect } from "./task-collect.ts";
 import { escape } from "./task-escape.ts";
+import { dynamite } from "./task-dynamite.ts";
 import display from "../display.ts";
 import * as train from "./train.ts";
 import * as conf from "../conf.ts";
@@ -36,7 +37,11 @@ export interface MoveTask {
 	target: "center" | "locomotive";
 }
 
-export type Task = TrainTask | WanderTask | AttackTask | CollectTask | EscapeTask | MoveTask;
+export interface DynamiteTask {
+	type: "dynamite";
+}
+
+export type Task = TrainTask | WanderTask | AttackTask | CollectTask | EscapeTask | MoveTask | DynamiteTask;
 
 export async function runTask(task: Task, entity: Entity): Promise<number> {
 	switch (task.type) {
@@ -46,11 +51,12 @@ export async function runTask(task: Task, entity: Entity): Promise<number> {
 		case "collect": return collect(entity);
 		case "escape": return escape(entity, task);
 		case "move": return move(entity, task);
+		case "dynamite": return dynamite(entity);
 	}
 }
 
 export async function run(entity: Entity): Promise<number> {
-	let { tasks, duration } = world.requireComponent(entity, "actor");
+	let { tasks } = world.requireComponent(entity, "actor");
 
 	for (let task of tasks) {
 		let time = await runTask(task, entity);
@@ -64,7 +70,7 @@ export async function run(entity: Entity): Promise<number> {
 async function moveTowardsDistance(entity: Entity, target: Position, idealDistance: number): Promise<number> {
 	let { town } = world.findEntities("town").values().next().value!;
 
-	let { position, actor } = world.requireComponents(entity, "position", "actor");
+	let position = world.requireComponent(entity, "position");
 
 	let forceInsideTown = false;
 	let neighbors = getFreeNeighbors([position.x, position.y], forceInsideTown);
@@ -93,7 +99,7 @@ async function moveTowardsDistance(entity: Entity, target: Position, idealDistan
 	}
 
 	await sleep(conf.MOVE_DELAY);
-	return actor.duration;
+	return getDurationWithHorse(entity);
 }
 
 export async function moveCloser(entity: Entity, target: Position): Promise<number> {

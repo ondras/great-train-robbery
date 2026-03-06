@@ -1,5 +1,5 @@
 import { spatialIndex, world, Entity } from "../world.ts";
-import { getFreeNeighbors, Position } from "./util.ts";
+import { getDurationWithHorse, getFreeNeighbors, Position } from "./util.ts";
 import { MoveTask, moveCloser } from "./tasks.ts";
 import display from "../display.ts";
 import * as train from "./train.ts";
@@ -7,7 +7,7 @@ import * as conf from "../conf.ts";
 
 
 export async function wander(entity: Entity) {
-	let { position, actor } = world.requireComponents(entity, "position", "actor");
+	let position = world.requireComponent(entity, "position");
 
 	let forceInsideTown = true;
 	let neighbors = getFreeNeighbors([position.x, position.y], forceInsideTown);
@@ -18,7 +18,7 @@ export async function wander(entity: Entity) {
 	position.y = neighbor[1];
 	spatialIndex.update(entity);
 	await display.move(entity, position.x, position.y, conf.MOVE_DELAY);
-	return actor.duration;
+	return getDurationWithHorse(entity);
 }
 
 export async function move(entity: Entity, task: MoveTask) {

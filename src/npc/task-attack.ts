@@ -12,6 +12,7 @@ interface Weapon {
 	damage: Damage;
 	range: number;
 	verb: string;
+	duration: number;
 }
 
 const SHOT_VISUAL = {ch: "*", fg: "#fff", zIndex: 3};
@@ -90,21 +91,9 @@ async function doAttack(entity: Entity, target: Position, weapon: Weapon): Promi
 		display.delete(id);
 	}
 
-/*
-	for (let i=0;i<path.length;i++) {
-		let pos = path[i];
-		if (i) {
-			display.move(id, pos[0], pos[1], 0);
-		} else {
-			display.draw(pos[0], pos[1], visual, {id, zIndex:3});
-		}
-		await sleep(2);
-	}
-*/
-	damagePosition(target, weapon.damage);
+	await damagePosition(target, weapon.damage);
 
-	// FIXME weapon duration?
-	return actor.duration;
+	return actor.duration + weapon.duration;
 }
 
 function canBeAttacked(target: Position, current: Position, weapon: Weapon, building?: Building): boolean {
@@ -158,7 +147,8 @@ export async function attack(entity: Entity, task: AttackTask): Promise<number> 
 				weapon = {
 					verb: "shoots at",
 					range: item.range + (building && building.roof ? rules.roofRangeBonus : 0),
-					damage: { amount: item.damage, explosionRadius: item.explosionRadius || 0 }
+					damage: { amount: item.damage, explosionRadius: item.explosionRadius || 0 },
+					duration: item.duration
 				}
 			}
 		});
@@ -176,7 +166,8 @@ export async function attack(entity: Entity, task: AttackTask): Promise<number> 
 		weapon = { // fist
 			verb: "punches",
 			damage: { amount: rules.punchDamage, explosionRadius: 0 },
-			range: 1.5 // allow punching diagonally where distEuclidean is ~1.4
+			range: 1.5, // allow punching diagonally where distEuclidean is ~1.4
+			duration: 0
 		}
 	}
 

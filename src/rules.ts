@@ -16,14 +16,15 @@ export const goldPrice = 1000;
 export const droppedGoldCount = 2;
 export const droppedGuardCount = 2;
 
-export const roofRangeBonus = 3;
+export const roofRangeBonus = 5;
 
 export const punchDamage = 1;
 export const guardHp = 3;
 export const guardGun = {
 	range: 3,
 	damage: 2,
-	explosionRadius: 0
+	explosionRadius: 0,
+	duration: 2
 }
 
 

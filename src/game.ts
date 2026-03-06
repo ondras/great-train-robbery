@@ -97,8 +97,6 @@ function isGameFinished(): boolean {
 		}
 	}
 
-	// FIXME nesmrtelny na strese
-
 	// all party members inactive (dead or away)
 	if (activePartyMembers == 0) { return true; }
 

@@ -3,37 +3,24 @@ import { createDialog, show } from "./dialog.ts";
 import { Task } from "../npc/tasks.ts";
 
 
-const taskGroups = {
-	"attack": "Attacking",
-	"movement": "Movement",
-	"other": "Other"
-}
-
 interface AllowedTask {
 	task: Task;
 	label: string;
-	group: keyof typeof taskGroups;
 }
 
 const allowedTasks: AllowedTask[] = [
-	{task: {type:"attack", target:"locomotive"}, label: "Attack the locomotive", group: "attack"} ,
-	{task: {type:"attack", target:"wagon"}, label: "Attack wagons with gold", group: "attack"},
-	{task: {type:"attack", target:"guard"}, label: "Attack train guards", group: "attack"},
+	{task: {type:"attack", target:"locomotive"}, label: "Attack the locomotive"} ,
+	{task: {type:"attack", target:"wagon"}, label: "Attack wagons with gold"},
+	{task: {type:"attack", target:"guard"}, label: "Attack train guards"},
 
-	{task: {type:"wander"}, label: "Wander around cluelessly", group: "movement"},
-	{task: {type:"escape", withGold: true}, label: "Escape once there is nothing to collect", group: "movement"},
-	{task: {type:"move", target:"center"}, label: "Move towards the town center", group: "movement"},
-	{task: {type:"move", target:"locomotive"}, label: "Move towards the locomotive", group: "movement"},
+	{task: {type:"wander"}, label: "Wander around cluelessly"},
+	{task: {type:"escape", withGold: true}, label: "Escape once there is nothing to collect"},
+	{task: {type:"move", target:"center"}, label: "Move towards the town center"},
+	{task: {type:"move", target:"locomotive"}, label: "Move towards the locomotive"},
 
-	{task: {type:"collect"}, label: "Collect gold looted from the train", group: "other"}
+	{task: {type:"collect"}, label: "Collect gold looted from the train"},
+	{task: {type:"dynamite"}, label: "Place a dynamite on a railroad track"},
 ];
-
-/** FIXME
- * Place dynamite
- * Heal self
- * Heal others
- * Smoke a cigar
- */
 
 function objectsEqual(a: any, b: any): boolean {
 	let keys = new Set<string>();
@@ -57,89 +44,36 @@ interface TaskItem {
 	task: AllowedTask;
 }
 
-async function pickTaskInGroup(dialog: HTMLDialogElement, groupIndex: number): Promise<Task | false | "back"> {
+function buildTaskRow(row: HTMLTableRowElement, item: TaskItem) {
+	row.insertCell().textContent = item.task.label;
+}
+
+export async function pickTask(): Promise<Task | false> {
+	let dialog = createDialog();
+
 	let options = { rowBuilder: buildTaskRow };
 	let taskTable = new ItemTable<TaskItem>(options);
 
-	let groupId = Object.keys(taskGroups)[groupIndex] as keyof typeof taskGroups;
-	let groupTasks = allowedTasks.filter(task => task.group == groupId);
-	let items = groupTasks.map((task, id) => ({ id, task }));
+	let items = allowedTasks.map((task, id) => ({ id, task }));
 
 	function handleKey(e: KeyboardEvent) {
 		let id = taskTable.keyToId(e);
 		if (id != undefined) { return id; }
 
 		if (e.key == "Escape") { return false; }
-		if (e.key.toLowerCase() == "b") { return "back" as const; }
 	}
 
 	let p = document.createElement("p");
-	p.innerHTML = `Chosen task category: ${taskGroups[groupId]}`;
-
-	let menu = document.createElement("menu");
-	menu.innerHTML = "<li><kbd>B</kbd>ack</li><li>[<kbd>Esc</kbd>] to cancel</li>";
-
-	dialog.replaceChildren(p, taskTable.build(items), menu);
-
-	let taskIndex = await show(dialog, handleKey);
-
-	if (taskIndex === false) { return false; }
-	if (taskIndex == "back") { return "back"; }
-
-	return groupTasks[taskIndex].task;
-}
-
-function buildTaskRow(row: HTMLTableRowElement, item: TaskItem) {
-	row.insertCell().textContent = item.task.label;
-}
-
-interface GroupItem {
-	id: number;
-	label: string;
-}
-
-async function pickGroup(dialog: HTMLDialogElement): Promise<number | false> {
-	let options = { rowBuilder: buildGroupRow };
-	let groupTable = new ItemTable<GroupItem>(options);
-
-	let items = Object.values(taskGroups).map((label, id) => ({ id, label }));
-
-	function handleKey(e: KeyboardEvent) {
-		let id = groupTable.keyToId(e);
-		if (id != undefined) { return id; }
-
-		if (e.key == "Escape") { return false; }
-	}
-
-	let p = document.createElement("p");
-	p.innerHTML = "To pick a task, first choose a category:";
+	p.innerHTML = `Pick a task:`;
 
 	let menu = document.createElement("menu");
 	menu.innerHTML = "<li>[<kbd>Esc</kbd>] to cancel</li>";
 
-	dialog.replaceChildren(p, groupTable.build(items), menu);
+	dialog.replaceChildren(p, taskTable.build(items), menu);
 
-	return show(dialog, handleKey);
-}
-
-function buildGroupRow(row: HTMLTableRowElement, item: GroupItem) {
-	row.insertCell().textContent = item.label;
-}
-
-export async function pickTask(): Promise<Task | false> {
-	let dialog = createDialog();
-
-	while (true) {
-		let groupIndex = await pickGroup(dialog);
-		if (groupIndex === false) { return false; }
-
-		let task = await pickTaskInGroup(dialog, groupIndex);
-		if (task === false) { return false; }
-
-		if (task == "back") { continue; }
-
-		return task;
-	}
+	let taskIndex = await show(dialog, handleKey);
+	if (taskIndex === false) { return false; }
+	return allowedTasks[taskIndex].task;
 }
 
 

@@ -7,6 +7,8 @@ import * as log from "./log.ts";
 import { template } from "./util.ts";
 
 
+// FIXME check aid action+item, check dynamite action+item
+
 export default class Action extends Pane {
 	protected ready = false;
 

@@ -110,7 +110,7 @@ export async function move(entity: Entity) {
 	if (train.trackOffset < town.track.length) {
 		let {x, y} = town.track[train.trackOffset];
 		let damage = { amount: 10, explosionRadius: 0 };
-		damagePosition([x, y], damage);
+		await damagePosition([x, y], damage);
 	}
 
 	updateTrainPositions(train);
@@ -143,7 +143,7 @@ function createGuard(x: number, y: number) {
 	let visual = GUARD_VISUAL;
 	let tasks = [{type:"attack", target:"party"} as const, {type:"escape", withGold: false} as const];
 	let guard = world.createEntity({
-		person: { items, price: 0, relation: "enemy", hp:rules.guardHp },
+		person: { items, price: 0, relation: "enemy", hp:rules.guardHp, maxHp: rules.guardHp },
 		actor: { wait: 0, duration: rules.baseTaskDuration, tasks },
 		position: {x, y},
 		blocks: {projectile: true, movement: true},

@@ -4,7 +4,6 @@ import { template } from "./util.ts";
 import { world, Person } from "../world.ts";
 
 
-
 function computeScore(money: number, loot: number, party: Person[]) {
 	let dead = party.filter(p => p.hp <= 0).length;
 	if (dead == party.length || loot == 0) { return 0; }

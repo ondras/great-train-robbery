@@ -1,5 +1,6 @@
-import { spatialIndex, world } from "../world.ts";
+import { spatialIndex, world, Entity } from "../world.ts";
 import { DIRS_8 } from "../dirs.ts";
+import * as rules from "../rules.ts";
 
 
 export function sleep(ms: number): Promise<void> {
@@ -57,4 +58,18 @@ export function getFreeNeighbors(center: Position, forceInsideTown: boolean): Po
 			return !blocks.movement;
 		});
 	});
+}
+
+export function getDurationWithHorse(entity: Entity) {
+	let person = world.requireComponent(entity, "person");
+
+	for (let itemEntity of person.items) {
+		let item = world.requireComponent(itemEntity, "item");
+		if (item.type == "horse") {
+			return item.duration;
+		}
+	}
+
+	let actor = world.getComponent(entity, "actor"); // might got removed when moving away
+	return (actor ? actor.duration : rules.baseTaskDuration);
 }

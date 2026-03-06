@@ -1,5 +1,5 @@
 import { world, spatialIndex, Train, Person, Entity } from "../world.ts";
-import { Position } from "./util.ts";
+import { Position, sleep } from "./util.ts";
 import * as train from "./train.ts";
 import * as log from "../ui/log.ts";
 import * as status from "../ui/status.ts";
@@ -41,23 +41,9 @@ function damagePerson(person: Person, entity: Entity, damage: Damage) {
 	person.hp -= damage.amount;
 
 	if (person.hp <= 0) {
-		let position = world.requireComponent(entity, "position");
-
 		world.removeComponents(entity, "position", "actor");
 		spatialIndex.update(entity);
 		display.delete(entity);
-
-		// had gold? place it on the ground.
-		person.items.forEach(e => {
-			let item = world.requireComponent(e, "item");
-			if (item.type != "gold") { return; }
-
-			let visual = world.requireComponent(e, "visual");
-
-			world.addComponent(e, "position", { ...position });
-			spatialIndex.update(e);
-			display.draw(position.x, position.y, visual, {id: e, zIndex: visual.zIndex});
-		});
 
 		// FIXME corpse?
 
@@ -69,7 +55,40 @@ function damagePerson(person: Person, entity: Entity, damage: Damage) {
 	status.update();
 }
 
-export function damagePosition(position: Position, damage: Damage) {
+async function drawExplosion(position: Position, radius: number) {
+	let ids: number[] = [];
+	const COLORS = ["#ff0", "#f00", "#f80"]
+
+	for (let i=-radius; i<=radius; i++) {
+		for (let j=-radius; j<=radius; j++) {
+			let x = position[0] + i;
+			let y = position[1] + j;
+
+			let id = display.draw(x, y, {ch: "*", fg: COLORS.random()}, {zIndex: 3});
+			ids.push(id);
+		}
+	}
+
+	await sleep(500);
+	ids.forEach(id => display.delete(id));
+}
+
+export async function damagePosition(position: Position, damage: Damage) {
+	if (damage.explosionRadius > 0) {
+		let r = damage.explosionRadius;
+		await drawExplosion(position, r);
+
+		for (let i=-r; i<=r; i++) {
+			for (let j=-r; j<=r; j++) {
+				let x = position[0] + i;
+				let y = position[1] + j;
+				damagePosition([x, y], {amount: damage.amount, explosionRadius: 0});
+			}
+		}
+
+		return;
+	}
+
 	let entities = spatialIndex.list(position[0], position[1]);
 
 	for (let entity of entities) {
@@ -82,5 +101,18 @@ export function damagePosition(position: Position, damage: Damage) {
 
 		let person = world.getComponent(entity, "person");
 		person && damagePerson(person, entity, damage);
+
+		let item = world.getComponent(entity, "item");
+		if (item && item.type == "dynamite") {
+			world.removeComponents(entity, "position");
+			spatialIndex.update(entity);
+
+			log.newline();
+			log.add("The dynamite explodes!");
+			damage = {
+				amount: item.damage,
+				explosionRadius: 2			}
+			await damagePosition(position, damage);
+		}
 	}
 }

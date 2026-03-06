@@ -9,8 +9,6 @@ import { fillPerson, template } from "./util.ts";
 import * as log from "./log.ts";
 
 
-// FIXME vic logovani
-
 interface PersonItem {
 	id: number;
 	visual: Visual;

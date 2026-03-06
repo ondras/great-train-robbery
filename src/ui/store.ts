@@ -1,7 +1,7 @@
 import Pane from "./pane.ts";
 import { world, Entity, Person, Visual, Named, Item } from "../world.ts";
 import { confirm, alert } from "./dialog.ts";
-import { pickItem, itemGroups } from "./dialog-buy.ts";
+import { pickItem } from "./dialog-buy.ts";
 import ItemTable from "./item-table.ts";
 import { fillPerson, template } from "./util.ts";
 import * as status from "./status.ts";
@@ -166,9 +166,11 @@ export default class Store extends Pane {
 			return;
 		}
 
+		const uniqueGroups = new Set(["weapon", "horse"]);
+
 		let { items } = world.requireComponent(person, "person");
-		if (item.type in itemGroups) {
-			if (items.some(entity => world.requireComponent(entity, "item").type == item.type)) {
+		if (uniqueGroups.has(item.type)) {
+			if (items.some(entity => uniqueGroups.has(world.requireComponent(entity, "item").type))) {
 				await alert(`You already have a ${item.type}. Sell it first if you want to buy another one.`);
 				return;
 			}
