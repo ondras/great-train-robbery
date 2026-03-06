@@ -4141,7 +4141,7 @@ function generateItems() {
   });
   createWeapon("Revolver", {
     price: 100,
-    damage: 2,
+    damage: 3,
     range: 3,
     duration: 5
   });
@@ -4153,7 +4153,7 @@ function generateItems() {
   });
   createWeapon("Sniper rifle", {
     price: 500,
-    damage: 4,
+    damage: 5,
     range: 8,
     duration: 20
   });
@@ -4408,6 +4408,9 @@ function processGameOverResult(result) {
   }
 }
 async function startAction() {
+  for (let item of world.findEntities("actor").values()) {
+    item.actor.wait = 0;
+  }
   let worldState = world.toString();
   let partyEntities = [];
   let otherEntities = [];

@@ -185,6 +185,17 @@ function buildDebugParty() {
 		person.items = [getItemByName("Rocket launcher")!];
 //		person.items = [getItemByName("Sniper rifle")!];
 	}
+
+	{
+		let { person, actor } = world.requireComponents(entities[3], "person", "actor");
+		person.relation = "party";
+		person.building = [...buildings.keys()][4];
+
+		actor.tasks = [{type:"dynamite"}];
+
+		person.items = [getItemByName("Dynamite")!];
+//		person.items = [getItemByName("Sniper rifle")!];
+	}
 }
 
 async function trainArrival() {
@@ -224,6 +235,8 @@ function processGameOverResult(result: GameOverResult) {
 }
 
 export async function startAction() {
+	for (let item of world.findEntities("actor").values()) { item.actor.wait = 0; }
+
 	let worldState = world.toString();
 
 	let partyEntities: Entity[] = [];
